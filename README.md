@@ -51,6 +51,9 @@ npm run serve
 
 ## 🌐 Despliegue Estático en Vercel
 
+* **URL de Producción en Vivo:** [https://docs-nu-three-75.vercel.app](https://docs-nu-three-75.vercel.app)
+* **Referencia API Interactiva (Scalar):** [https://docs-nu-three-75.vercel.app/reference.html](https://docs-nu-three-75.vercel.app/reference.html)
+
 Vercel publica la documentación compilada directamente desde la carpeta `docs/`.
 
 ### Configuración del Proyecto en Vercel:
