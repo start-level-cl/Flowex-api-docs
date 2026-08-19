@@ -1,0 +1,2232 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Flowex API Specification",
+    "version": "1.0.0",
+    "description": "Documentación OpenAPI unificada para los microservicios serverless y arquitecturas en la nube de **Flowex** (Autenticación JWT, Registro con validación de RUT Módulo 11, Motor OTP con Meta WhatsApp Cloud API, Pasarelas de Pago Mercado Pago y Fintoc Open Banking, Amazon SES y Administración VPC).",
+    "contact": {
+      "name": "Flowex Engineering Team",
+      "email": "contacto@flowex.cl",
+      "url": "https://flowex.cl"
+    },
+    "license": {
+      "name": "Proprietary"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.flowex.cl",
+      "description": "Ambiente de Producción Flowex"
+    },
+    {
+      "url": "https://api-dev.flowex.cl",
+      "description": "Ambiente de Desarrollo / Staging"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor Local Serverless Offline"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Autenticación pública, emisión y validación de tokens JWT y gestión de cookies HttpOnly seguras"
+    },
+    {
+      "name": "Registration",
+      "description": "Flujo público de onboarding y registro con validación de RUT Módulo 11 y carga de comprobantes en S3"
+    },
+    {
+      "name": "OTP & WhatsApp",
+      "description": "Generación y verificación de OTPs de 6 dígitos, integración con Meta WhatsApp Cloud API y auto-activación"
+    },
+    {
+      "name": "Payments",
+      "description": "Integración transaccional con pasarelas de pago (Mercado Pago Checkout Pro / WebPay y Fintoc A2A)"
+    },
+    {
+      "name": "Notifications",
+      "description": "Servicio de notificaciones transaccionales vía Amazon SES (HTML emails) y SMS"
+    },
+    {
+      "name": "Users Administration",
+      "description": "Gestión CRUD interna de usuarios en VPC (Roles: root, admin, driver, client)"
+    },
+    {
+      "name": "Admin Overrides",
+      "description": "Endpoints y eventos administrativos para activación forzada o resolución manual de registros"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Inicio de sesión de usuario (Generación de JWT y Cookies HttpOnly)",
+        "operationId": "auth_post_login",
+        "responses": {
+          "200": {
+            "description": "Login exitoso. Devuelve tokens y establece cookies HttpOnly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Credenciales incompletas o inválidas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "x-service": "auth-api-lambda",
+        "x-source": "Flowex-auth-api-lambda/src/index.ts",
+        "x-roles": [
+          "root",
+          "admin",
+          "driver",
+          "client"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Cierre de sesión e invalidación de cookies de acceso",
+        "operationId": "auth_post_logout",
+        "responses": {
+          "200": {
+            "description": "Sesión finalizada. Cookies eliminadas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token no provisto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAccessAuth": []
+          }
+        ],
+        "x-service": "auth-api-lambda",
+        "x-source": "Flowex-auth-api-lambda/src/index.ts"
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Renovación de Access Token mediante Refresh Token",
+        "operationId": "auth_post_refresh",
+        "responses": {
+          "200": {
+            "description": "Access Token renovado correctamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshTokenResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refresh token ausente, expirado o manipulado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieRefreshAuth": []
+          }
+        ],
+        "x-service": "auth-api-lambda",
+        "x-source": "Flowex-auth-api-lambda/src/index.ts"
+      }
+    },
+    "/auth/validate": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Validación de token activo y resolución de claims/rol",
+        "operationId": "auth_get_validate",
+        "responses": {
+          "200": {
+            "description": "Token válido con claims activos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token expirado o inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAccessAuth": []
+          }
+        ],
+        "x-service": "auth-api-lambda",
+        "x-source": "Flowex-auth-api-lambda/src/index.ts"
+      }
+    },
+    "/auth/change-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Cambio y actualización de contraseña de usuario",
+        "operationId": "auth_post_change_password",
+        "responses": {
+          "200": {
+            "description": "Contraseña actualizada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campos requeridos faltantes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido o expirado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          }
+        },
+        "x-service": "auth-api-lambda",
+        "x-source": "Flowex-auth-api-lambda/src/index.ts"
+      }
+    },
+    "/internal/users": {
+      "post": {
+        "tags": [
+          "Users Administration"
+        ],
+        "summary": "Crear usuario interno en VPC (Roles: root, admin, driver, client)",
+        "operationId": "internal_post_users",
+        "responses": {
+          "201": {
+            "description": "Usuario interno creado exitosamente en VPC.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error de validación en los campos o rol desconocido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InternalUserCreateRequest"
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root",
+          "admin"
+        ]
+      }
+    },
+    "/internal/users/{userId}": {
+      "get": {
+        "tags": [
+          "Users Administration"
+        ],
+        "summary": "Obtener información y estado de usuario interno por ID",
+        "operationId": "internal_get_user_by_id",
+        "responses": {
+          "200": {
+            "description": "Datos del usuario interno.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalUserResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Identificador del usuario en el sistema"
+          }
+        ],
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root",
+          "admin"
+        ]
+      },
+      "put": {
+        "tags": [
+          "Users Administration"
+        ],
+        "summary": "Actualizar datos de perfil, estado o rol de usuario interno",
+        "operationId": "internal_put_user_by_id",
+        "responses": {
+          "200": {
+            "description": "Usuario actualizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InternalUserUpdateRequest"
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root",
+          "admin"
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Users Administration"
+        ],
+        "summary": "Eliminar o desactivar usuario interno",
+        "operationId": "internal_delete_user_by_id",
+        "responses": {
+          "200": {
+            "description": "Usuario eliminado del sistema.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root",
+          "admin"
+        ]
+      }
+    },
+    "/registration/requests": {
+      "post": {
+        "tags": [
+          "Registration"
+        ],
+        "summary": "Crear solicitud de registro pública (Clientes/Conductores con validación RUT)",
+        "operationId": "registration_post_requests",
+        "responses": {
+          "201": {
+            "description": "Solicitud de registro creada. Pendiente de verificación OTP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "request": {
+                      "$ref": "#/components/schemas/RegistrationRequestStatusResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Fallo de validación en RUT (Módulo 11), teléfono E.164 o contraseña.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Consentimiento no otorgado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationRequestCreate"
+              }
+            }
+          }
+        },
+        "x-service": "registration-public-lambda",
+        "x-source": "Flowex-registration-public-lambda/src/index.ts"
+      }
+    },
+    "/registration/requests/{email}/status": {
+      "get": {
+        "tags": [
+          "Registration"
+        ],
+        "summary": "Consultar estado de verificación y progreso de solicitud por email",
+        "operationId": "registration_get_request_status",
+        "responses": {
+          "200": {
+            "description": "Estado de avance de la solicitud de registro.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationRequestStatusResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "email"
+            },
+            "description": "Correo electrónico del solicitante"
+          }
+        ],
+        "x-service": "registration-public-lambda",
+        "x-source": "Flowex-registration-public-lambda/src/index.ts"
+      }
+    },
+    "/registration/requests/{email}/update-contact": {
+      "put": {
+        "tags": [
+          "Registration"
+        ],
+        "summary": "Actualizar teléfono o correo de contacto en solicitud pendiente",
+        "operationId": "registration_put_update_contact",
+        "responses": {
+          "200": {
+            "description": "Contacto actualizado correctamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "email"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateContactRequest"
+              }
+            }
+          }
+        },
+        "x-service": "registration-public-lambda",
+        "x-source": "Flowex-registration-public-lambda/src/index.ts"
+      }
+    },
+    "/registration/requests/{email}/reupload-comprobante": {
+      "put": {
+        "tags": [
+          "Registration"
+        ],
+        "summary": "Subir o reemplazar comprobante en S3 para solicitud pendiente",
+        "operationId": "registration_put_reupload_comprobante",
+        "responses": {
+          "200": {
+            "description": "Comprobante almacenado en S3 exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "email"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReuploadComprobanteRequest"
+              }
+            }
+          }
+        },
+        "x-service": "registration-public-lambda",
+        "x-source": "Flowex-registration-public-lambda/src/index.ts"
+      }
+    },
+    "/otp/send": {
+      "post": {
+        "tags": [
+          "OTP & WhatsApp"
+        ],
+        "summary": "Generar y despachar código OTP multicanal (SMS, WhatsApp, SQS/Email)",
+        "operationId": "otp_post_send",
+        "responses": {
+          "200": {
+            "description": "OTP despachado por SMS/WhatsApp/Email.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendOtpResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendOtpRequest"
+              }
+            }
+          }
+        },
+        "x-service": "otp-service-lambda",
+        "x-source": "Flowex-otp-service-lambda/src/index.ts"
+      }
+    },
+    "/otp/send-whatsapp": {
+      "post": {
+        "tags": [
+          "OTP & WhatsApp"
+        ],
+        "summary": "Enviar código OTP vía Meta WhatsApp Cloud API (Template flowex_otp_code)",
+        "operationId": "otp_post_send_whatsapp",
+        "responses": {
+          "200": {
+            "description": "OTP enviado por Meta WhatsApp Cloud API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendWhatsAppOtpResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendWhatsAppOtpRequest"
+              }
+            }
+          }
+        },
+        "x-service": "otp-service-lambda",
+        "x-source": "Flowex-otp-service-lambda/src/index.ts"
+      }
+    },
+    "/otp/verify": {
+      "post": {
+        "tags": [
+          "OTP & WhatsApp"
+        ],
+        "summary": "Verificar código OTP, auto-activar registro y generar Status Token HMAC",
+        "operationId": "otp_post_verify",
+        "responses": {
+          "200": {
+            "description": "OTP validado con éxito. Cuenta activada y Status Token generado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyOtpResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Código OTP erróneo o expirado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpRequest"
+              }
+            }
+          }
+        },
+        "x-service": "otp-service-lambda",
+        "x-source": "Flowex-otp-service-lambda/src/index.ts"
+      }
+    },
+    "/notifications/whatsapp": {
+      "post": {
+        "tags": [
+          "OTP & WhatsApp"
+        ],
+        "summary": "Despachar plantillas transaccionales de WhatsApp (Envíos, Tránsito, Incidentes)",
+        "operationId": "notifications_post_whatsapp",
+        "responses": {
+          "200": {
+            "description": "Notificación de plantilla WhatsApp enviada al destinatario.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WhatsAppNotificationRequest"
+              }
+            }
+          }
+        },
+        "x-service": "otp-service-lambda",
+        "x-source": "Flowex-otp-service-lambda/src/index.ts"
+      }
+    },
+    "/admin/registration-requests/{email}/override-activate": {
+      "post": {
+        "tags": [
+          "Admin Overrides"
+        ],
+        "summary": "Aprobación manual y activación forzada de solicitud por administrador",
+        "operationId": "admin_post_override_activate_registration",
+        "responses": {
+          "200": {
+            "description": "Cuenta activada manualmente por administrador.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOverrideActivateResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acceso denegado: Requiere rol admin o root.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "email"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminOverrideActivateRequest"
+              }
+            }
+          }
+        },
+        "x-service": "registration-admin-lambda",
+        "x-source": "Flowex-registration-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root",
+          "admin"
+        ]
+      }
+    },
+    "/payments/mercadopago/preference": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Crear preferencia de pago Mercado Pago (Checkout Pro / WebPay)",
+        "operationId": "payments_post_mercadopago_preference",
+        "responses": {
+          "200": {
+            "description": "Preferencia de Checkout Pro generada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MercadoPagoPreferenceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Monto, email o identificador de orden faltantes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MercadoPagoPreferenceRequest"
+              }
+            }
+          }
+        },
+        "x-service": "payments-api-lambda",
+        "x-source": "Flowex-payments-api-lambda/src/index.ts",
+        "x-roles": [
+          "client",
+          "admin"
+        ]
+      }
+    },
+    "/payments/fintoc/payment-intent": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Crear intención de pago Fintoc (Transferencia bancaria A2A Open Banking)",
+        "operationId": "payments_post_fintoc_payment_intent",
+        "responses": {
+          "200": {
+            "description": "Intención de pago Fintoc A2A generada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FintocPaymentIntentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros obligatorios ausentes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FintocPaymentIntentRequest"
+              }
+            }
+          }
+        },
+        "x-service": "payments-api-lambda",
+        "x-source": "Flowex-payments-api-lambda/src/index.ts",
+        "x-roles": [
+          "client",
+          "admin"
+        ]
+      }
+    },
+    "/webhooks/mercadopago": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Webhook receptor de notificaciones IPN de Mercado Pago",
+        "operationId": "payments_post_webhook_mercadopago",
+        "responses": {
+          "200": {
+            "description": "Notificación IPN recibida y procesada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookMercadoPagoResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "x-service": "payments-api-lambda",
+        "x-source": "Flowex-payments-api-lambda/src/index.ts"
+      }
+    },
+    "/webhooks/fintoc": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Webhook receptor de eventos de Fintoc con firma x-fintoc-signature",
+        "operationId": "payments_post_webhook_fintoc",
+        "responses": {
+          "200": {
+            "description": "Evento de Fintoc procesado con verificación de firma.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookFintocResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "x-service": "payments-api-lambda",
+        "x-source": "Flowex-payments-api-lambda/src/index.ts"
+      }
+    },
+    "/notifications/email/verify-account": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Enviar correo HTML de verificación con código OTP vía Amazon SES",
+        "operationId": "notifications_post_email_verify_account",
+        "responses": {
+          "200": {
+            "description": "Correo HTML de verificación despachado por Amazon SES.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailVerifyAccountRequest"
+              }
+            }
+          }
+        },
+        "x-service": "notification-lambda",
+        "x-source": "Flowex-notification-lambda/src/index.ts"
+      }
+    },
+    "/notifications/sms/verify-phone": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Enviar SMS de verificación a número telefónico E.164",
+        "operationId": "notifications_post_sms_verify_phone",
+        "responses": {
+          "200": {
+            "description": "Mensaje de texto SMS despachado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SmsVerifyPhoneRequest"
+              }
+            }
+          }
+        },
+        "x-service": "notification-lambda",
+        "x-source": "Flowex-notification-lambda/src/index.ts"
+      }
+    },
+    "/notifications/email/welcome": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Enviar correo de bienvenida con enlace de acceso tras activación",
+        "operationId": "notifications_post_email_welcome",
+        "responses": {
+          "200": {
+            "description": "Correo de bienvenida enviado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailWelcomeRequest"
+              }
+            }
+          }
+        },
+        "x-service": "notification-lambda",
+        "x-source": "Flowex-notification-lambda/src/index.ts"
+      }
+    },
+    "/notifications/email/order-created": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Enviar confirmación de despacho con número de tracking y PIN de entrega",
+        "operationId": "notifications_post_email_order_created",
+        "responses": {
+          "200": {
+            "description": "Comprobante de envío con tracking y PIN de entrega despachado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailOrderCreatedRequest"
+              }
+            }
+          }
+        },
+        "x-service": "notification-lambda",
+        "x-source": "Flowex-notification-lambda/src/index.ts"
+      }
+    },
+    "/notifications/email/order-status-update": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Enviar actualización de estado del envío al cliente destinatario",
+        "operationId": "notifications_post_email_order_status_update",
+        "responses": {
+          "200": {
+            "description": "Actualización de tracking despachada al cliente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailOrderStatusUpdateRequest"
+              }
+            }
+          }
+        },
+        "x-service": "notification-lambda",
+        "x-source": "Flowex-notification-lambda/src/index.ts"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token JWT de corta duración enviado en encabezado Authorization: Bearer <token>"
+      },
+      "cookieAccessAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "access_token",
+        "description": "Cookie HTTP-only que contiene el access token JWT"
+      },
+      "cookieRefreshAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "refresh_token",
+        "description": "Cookie HTTP-only que contiene el refresh token JWT de 30 días de duración"
+      },
+      "statusTokenAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Status-Token",
+        "description": "Token firmado HMAC-SHA256 para consultar estados de onboarding en proceso"
+      }
+    },
+    "schemas": {
+      "UserRole": {
+        "type": "string",
+        "enum": [
+          "root",
+          "admin",
+          "driver",
+          "client"
+        ],
+        "description": "Rol asignado al usuario dentro de Flowex"
+      },
+      "OrderStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "paid",
+          "pickup_assigned",
+          "picked_up",
+          "in_hub",
+          "transit",
+          "delivered",
+          "incident"
+        ],
+        "description": "Ciclo de vida del estado del envío"
+      },
+      "PaymentMethod": {
+        "type": "string",
+        "enum": [
+          "mercadopago",
+          "fintoc",
+          "webpay",
+          "credit_card",
+          "transfer"
+        ],
+        "description": "Pasarela o método de pago utilizado"
+      },
+      "HousingType": {
+        "type": "string",
+        "enum": [
+          "casa",
+          "departamento",
+          "oficina"
+        ],
+        "description": "Tipo de domicilio del cliente"
+      },
+      "TransporteOption": {
+        "type": "string",
+        "enum": [
+          "maritimo",
+          "aereo"
+        ],
+        "description": "Modalidad de transporte"
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "usuario@flowex.cl"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "Flowex2026!Pass"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole",
+            "example": "client"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Token JWT firmado válido por 1 hora"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Token JWT para renovación válido por 30 días"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "sub": {
+                "type": "string",
+                "example": "usr_flowex_123"
+              },
+              "email": {
+                "type": "string",
+                "example": "usuario@flowex.cl"
+              },
+              "name": {
+                "type": "string",
+                "example": "Usuario FlowEx"
+              },
+              "role": {
+                "$ref": "#/components/schemas/UserRole"
+              }
+            }
+          }
+        }
+      },
+      "RefreshTokenRequest": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token opcional en cuerpo si no se envía en Cookie"
+          }
+        }
+      },
+      "RefreshTokenResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Nuevo access token generado"
+          }
+        }
+      },
+      "ValidateResponse": {
+        "type": "object",
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "example": true
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "sub": {
+                "type": "string",
+                "example": "usr_flowex_123"
+              },
+              "email": {
+                "type": "string",
+                "example": "usuario@flowex.cl"
+              },
+              "role": {
+                "$ref": "#/components/schemas/UserRole"
+              },
+              "exp": {
+                "type": "integer",
+                "example": 1771344000
+              },
+              "iss": {
+                "type": "string",
+                "example": "flowex-auth"
+              }
+            }
+          }
+        }
+      },
+      "ChangePasswordRequest": {
+        "type": "object",
+        "required": [
+          "token",
+          "password",
+          "newPassword"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token de autorización para cambio de clave"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "Contraseña actual"
+          },
+          "newPassword": {
+            "type": "string",
+            "format": "password",
+            "description": "Nueva contraseña segura"
+          }
+        }
+      },
+      "InternalUserCreateRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "password",
+          "phone",
+          "role",
+          "rut"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Carlos Chofer"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "carlos.chofer@flowex.cl"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "ChoferPass2026!"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+56987654321"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "rut": {
+            "type": "string",
+            "example": "12345678-5"
+          }
+        }
+      },
+      "InternalUserUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Carlos Chofer Actualizado"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "carlos.chofer@flowex.cl"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+56987654321"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "InternalUserResponse": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "example": "usr_1771344000000"
+          },
+          "name": {
+            "type": "string",
+            "example": "Carlos Chofer"
+          },
+          "email": {
+            "type": "string",
+            "example": "carlos.chofer@flowex.cl"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+56987654321"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "rut": {
+            "type": "string",
+            "example": "12345678-5"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RegistrationRequestCreate": {
+        "type": "object",
+        "required": [
+          "email",
+          "name",
+          "rut",
+          "phone",
+          "password",
+          "consentimiento"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "cliente.nuevo@gmail.com"
+          },
+          "name": {
+            "type": "string",
+            "example": "Andrea Morales"
+          },
+          "rut": {
+            "type": "string",
+            "description": "RUT chileno validado por Módulo 11",
+            "example": "19876543-2"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Teléfono formato E.164 (+569...)",
+            "example": "+56991234567"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "Contraseña segura (mínimo 8 caracteres, mayúscula, minúscula, número y símbolo)"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole",
+            "default": "client"
+          },
+          "consentimiento": {
+            "type": "boolean",
+            "description": "Consentimiento informado obligatorio",
+            "example": true
+          },
+          "housingType": {
+            "$ref": "#/components/schemas/HousingType"
+          },
+          "streetAndNumber": {
+            "type": "string",
+            "example": "Av. Providencia 1234"
+          },
+          "deptOrOffice": {
+            "type": "string",
+            "example": "Oficina 502"
+          },
+          "region": {
+            "type": "string",
+            "example": "Región Metropolitana"
+          },
+          "comuna": {
+            "type": "string",
+            "example": "Providencia"
+          },
+          "reference": {
+            "type": "string",
+            "example": "Frente a estación Metro Manuel Montt"
+          },
+          "agency": {
+            "type": "string",
+            "example": "Sucursal Central"
+          },
+          "transportType": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransporteOption"
+            },
+            "example": [
+              "maritimo",
+              "aereo"
+            ]
+          },
+          "facturaRequired": {
+            "type": "boolean",
+            "example": false
+          },
+          "razonSocial": {
+            "type": "string",
+            "example": "Morales Logística SpA"
+          },
+          "rutEmpresa": {
+            "type": "string",
+            "example": "76123456-7"
+          },
+          "giro": {
+            "type": "string",
+            "example": "Servicios de Distribución"
+          },
+          "licenseNumber": {
+            "type": "string",
+            "description": "Para rol driver: Número de licencia de conducir"
+          },
+          "vehicleType": {
+            "type": "string",
+            "description": "Para rol driver: Tipo de vehículo"
+          },
+          "vehiclePlate": {
+            "type": "string",
+            "description": "Para rol driver: Patente del vehículo"
+          },
+          "comprobante": {
+            "type": "string",
+            "description": "Comprobante opcional en Base64 o Data URL"
+          },
+          "comprobanteFileName": {
+            "type": "string",
+            "example": "comprobante_residencia.pdf"
+          },
+          "comprobanteContentType": {
+            "type": "string",
+            "example": "application/pdf"
+          }
+        }
+      },
+      "RegistrationRequestStatusResponse": {
+        "type": "object",
+        "properties": {
+          "exists": {
+            "type": "boolean",
+            "example": true
+          },
+          "email": {
+            "type": "string",
+            "example": "cliente.nuevo@gmail.com"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_VERIFICATION",
+              "APPROVED",
+              "REJECTED"
+            ],
+            "example": "PENDING_VERIFICATION"
+          },
+          "is_verified": {
+            "type": "boolean",
+            "example": false
+          },
+          "is_email_verified": {
+            "type": "boolean",
+            "example": false
+          },
+          "is_phone_verified": {
+            "type": "boolean",
+            "example": false
+          },
+          "requires_otp": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "UpdateContactRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "nuevo.correo@gmail.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+56999887766"
+          }
+        }
+      },
+      "ReuploadComprobanteRequest": {
+        "type": "object",
+        "required": [
+          "comprobante"
+        ],
+        "properties": {
+          "comprobante": {
+            "type": "string",
+            "description": "Archivo codificado en Base64 o Data URL"
+          },
+          "comprobanteFileName": {
+            "type": "string",
+            "example": "nuevo_comprobante.pdf"
+          },
+          "comprobanteContentType": {
+            "type": "string",
+            "example": "application/pdf"
+          }
+        }
+      },
+      "SendOtpRequest": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "type": "string",
+            "description": "Correo o teléfono destino",
+            "example": "cliente.nuevo@gmail.com"
+          },
+          "email": {
+            "type": "string",
+            "example": "cliente.nuevo@gmail.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+56991234567"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "sms",
+              "whatsapp",
+              "email",
+              "both"
+            ],
+            "example": "both"
+          }
+        }
+      },
+      "SendOtpResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "OTP generado y enviado por SMS/WhatsApp/Email correctamente"
+          },
+          "email": {
+            "type": "string",
+            "example": "cliente.nuevo@gmail.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+56991234567"
+          },
+          "channel": {
+            "type": "string",
+            "example": "both"
+          },
+          "mockOtpCode": {
+            "type": "string",
+            "example": "654321"
+          }
+        }
+      },
+      "SendWhatsAppOtpRequest": {
+        "type": "object",
+        "required": [
+          "phone"
+        ],
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "+56991234567"
+          }
+        }
+      },
+      "SendWhatsAppOtpResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Código OTP enviado por WhatsApp exitosamente"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+56991234567"
+          },
+          "channel": {
+            "type": "string",
+            "example": "whatsapp"
+          },
+          "otp": {
+            "type": "string",
+            "example": "482910"
+          },
+          "whatsappResponse": {
+            "type": "object"
+          }
+        }
+      },
+      "VerifyOtpRequest": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "target": {
+            "type": "string",
+            "example": "cliente.nuevo@gmail.com"
+          },
+          "email": {
+            "type": "string",
+            "example": "cliente.nuevo@gmail.com"
+          },
+          "code": {
+            "type": "string",
+            "description": "Código OTP de 6 dígitos numéricos",
+            "example": "482910"
+          }
+        }
+      },
+      "VerifyOtpResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Información validada por OTP. Registro aprobado y cuenta activada exitosamente."
+          },
+          "status": {
+            "type": "string",
+            "example": "APPROVED"
+          },
+          "account": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "example": "cliente.nuevo@gmail.com"
+              },
+              "status": {
+                "type": "string",
+                "example": "APPROVED"
+              },
+              "isActive": {
+                "type": "boolean",
+                "example": true
+              },
+              "is_verified": {
+                "type": "boolean",
+                "example": true
+              },
+              "activatedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "statusToken": {
+            "type": "string",
+            "description": "Token de acceso seguro al perfil de onboarding"
+          }
+        }
+      },
+      "WhatsAppNotificationRequest": {
+        "type": "object",
+        "required": [
+          "phone",
+          "notificationType"
+        ],
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "+56991234567"
+          },
+          "notificationType": {
+            "type": "string",
+            "enum": [
+              "ORDER_CREATED",
+              "ORDER_IN_TRANSIT",
+              "ORDER_DELIVERED",
+              "DELIVERY_INCIDENT"
+            ],
+            "example": "ORDER_CREATED"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "FLX-2026-8492",
+              "Hub Central Quilicura"
+            ]
+          }
+        }
+      },
+      "AdminOverrideActivateRequest": {
+        "type": "object",
+        "properties": {
+          "reviewedBy": {
+            "type": "string",
+            "example": "admin_root"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole",
+            "example": "client"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Aprobación manual autorizada por jefatura de operaciones"
+          }
+        }
+      },
+      "AdminOverrideActivateResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Registro forzado/activado manualmente por administrador"
+          },
+          "email": {
+            "type": "string",
+            "example": "cliente.nuevo@gmail.com"
+          },
+          "reviewedBy": {
+            "type": "string",
+            "example": "admin_root"
+          },
+          "assignedRole": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "status": {
+            "type": "string",
+            "example": "APPROVED"
+          }
+        }
+      },
+      "MercadoPagoPreferenceRequest": {
+        "type": "object",
+        "required": [
+          "orderId",
+          "amount",
+          "payerEmail"
+        ],
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "example": "ord_1771344928"
+          },
+          "trackingNumber": {
+            "type": "string",
+            "example": "FLX-2026-8492"
+          },
+          "amount": {
+            "type": "number",
+            "example": 14500
+          },
+          "payerEmail": {
+            "type": "string",
+            "format": "email",
+            "example": "cliente@gmail.com"
+          },
+          "payerName": {
+            "type": "string",
+            "example": "Juan Pérez"
+          }
+        }
+      },
+      "MercadoPagoPreferenceResponse": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "example": "mercadopago"
+          },
+          "preferenceId": {
+            "type": "string",
+            "example": "pref_mp_1771344928000"
+          },
+          "initPoint": {
+            "type": "string",
+            "example": "https://www.mercadopago.cl/checkout/v1/redirect?pref_id=pref_mp_1771344928000"
+          },
+          "sandboxInitPoint": {
+            "type": "string",
+            "example": "https://sandbox.mercadopago.cl/checkout/v1/redirect?pref_id=pref_mp_1771344928000"
+          },
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "FintocPaymentIntentRequest": {
+        "type": "object",
+        "required": [
+          "orderId",
+          "amount",
+          "payerEmail"
+        ],
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "example": "ord_1771344928"
+          },
+          "trackingNumber": {
+            "type": "string",
+            "example": "FLX-2026-8492"
+          },
+          "amount": {
+            "type": "number",
+            "example": 14500
+          },
+          "payerEmail": {
+            "type": "string",
+            "format": "email",
+            "example": "cliente@gmail.com"
+          }
+        }
+      },
+      "FintocPaymentIntentResponse": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "example": "fintoc"
+          },
+          "paymentIntentId": {
+            "type": "string",
+            "example": "pi_fintoc_1771344928000"
+          },
+          "widgetToken": {
+            "type": "string",
+            "example": "wt_a1b2c3d4e5f6g7h8i9j0"
+          },
+          "checkoutUrl": {
+            "type": "string",
+            "example": "https://checkout.fintoc.com/p/wt_a1b2c3d4e5f6g7h8i9j0"
+          },
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "WebhookMercadoPagoResponse": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "type": "boolean",
+            "example": true
+          },
+          "provider": {
+            "type": "string",
+            "example": "mercadopago"
+          },
+          "status": {
+            "type": "string",
+            "example": "approved"
+          },
+          "paymentId": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "orderStatus": {
+            "type": "string",
+            "example": "paid"
+          },
+          "transactionId": {
+            "type": "string",
+            "example": "TX-MP-1234567890"
+          }
+        }
+      },
+      "WebhookFintocResponse": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "type": "boolean",
+            "example": true
+          },
+          "provider": {
+            "type": "string",
+            "example": "fintoc"
+          },
+          "status": {
+            "type": "string",
+            "example": "succeeded"
+          },
+          "orderId": {
+            "type": "string",
+            "example": "ord_1771344928"
+          },
+          "orderStatus": {
+            "type": "string",
+            "example": "paid"
+          },
+          "transactionId": {
+            "type": "string",
+            "example": "TX-FINTOC-pi_fintoc_123"
+          }
+        }
+      },
+      "EmailVerifyAccountRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "code"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "cliente@flowex.cl"
+          },
+          "code": {
+            "type": "string",
+            "example": "839201"
+          },
+          "name": {
+            "type": "string",
+            "example": "Rodrigo Fuentes"
+          }
+        }
+      },
+      "SmsVerifyPhoneRequest": {
+        "type": "object",
+        "required": [
+          "phone",
+          "code"
+        ],
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "+56987654321"
+          },
+          "code": {
+            "type": "string",
+            "example": "839201"
+          }
+        }
+      },
+      "EmailWelcomeRequest": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "cliente@flowex.cl"
+          },
+          "name": {
+            "type": "string",
+            "example": "Rodrigo Fuentes"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          }
+        }
+      },
+      "EmailOrderCreatedRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "trackingNumber"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "cliente@flowex.cl"
+          },
+          "recipientName": {
+            "type": "string",
+            "example": "María López"
+          },
+          "trackingNumber": {
+            "type": "string",
+            "example": "FLX-2026-8492"
+          },
+          "deliveryCode": {
+            "type": "string",
+            "description": "PIN de 4 dígitos para entrega al conductor",
+            "example": "4920"
+          },
+          "totalCost": {
+            "type": "number",
+            "example": 8900
+          }
+        }
+      },
+      "EmailOrderStatusUpdateRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "trackingNumber",
+          "newStatus"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "cliente@flowex.cl"
+          },
+          "recipientName": {
+            "type": "string",
+            "example": "María López"
+          },
+          "trackingNumber": {
+            "type": "string",
+            "example": "FLX-2026-8492"
+          },
+          "newStatus": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "details": {
+            "type": "string",
+            "example": "El paquete se encuentra en el vehículo de reparto rumbo a su domicilio"
+          }
+        }
+      },
+      "StandardSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Operación ejecutada con éxito"
+          }
+        }
+      },
+      "StandardErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Descripción detallada del error de validación o servidor"
+          },
+          "error": {
+            "type": "string",
+            "example": "BAD_REQUEST"
+          }
+        }
+      }
+    }
+  }
+}

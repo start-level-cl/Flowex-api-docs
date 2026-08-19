@@ -1,0 +1,23 @@
+{
+  "name": "flowex-api-docs",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Documentación técnica OpenAPI y portal de arquitectura para Flowex",
+  "scripts": {
+    "build": "node scripts/build-openapi.mjs && vitepress build docs-src",
+    "docs:dev": "vitepress dev docs-src",
+    "docs:build": "node scripts/build-openapi.mjs && vitepress build docs-src",
+    "docs:preview": "vitepress preview docs-src",
+    "generate:types": "node scripts/generate-types.mjs",
+    "validate": "node scripts/validate-openapi.mjs",
+    "serve": "node scripts/serve-docs.mjs",
+    "split:routes": "node scripts/split-routes.mjs"
+  },
+  "devDependencies": {
+    "markdown-it-mathjax3": "^4.3.2",
+    "mermaid": "^11.15.0",
+    "vitepress": "^1.2.0",
+    "vitepress-plugin-mermaid": "^2.0.17"
+  }
+}

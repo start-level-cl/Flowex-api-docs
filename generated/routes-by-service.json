@@ -1,0 +1,628 @@
+{
+  "auth-api-lambda": [
+    {
+      "path": "/auth/login",
+      "method": "post",
+      "operationId": "auth_post_login",
+      "summary": "Inicio de sesión de usuario (Generación de JWT y Cookies HttpOnly)",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Login exitoso. Devuelve tokens y establece cookies HttpOnly.",
+          "schema": {
+            "$ref": "#/components/schemas/LoginResponse"
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Credenciales incompletas o inválidas.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/auth/logout",
+      "method": "post",
+      "operationId": "auth_post_logout",
+      "summary": "Cierre de sesión e invalidación de cookies de acceso",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Sesión finalizada. Cookies eliminadas.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        },
+        "401": {
+          "description": "Token no provisto.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/auth/refresh",
+      "method": "post",
+      "operationId": "auth_post_refresh",
+      "summary": "Renovación de Access Token mediante Refresh Token",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Access Token renovado correctamente.",
+          "schema": {
+            "$ref": "#/components/schemas/RefreshTokenResponse"
+          },
+          "example": null
+        },
+        "401": {
+          "description": "Refresh token ausente, expirado o manipulado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/auth/validate",
+      "method": "get",
+      "operationId": "auth_get_validate",
+      "summary": "Validación de token activo y resolución de claims/rol",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Token válido con claims activos.",
+          "schema": {
+            "$ref": "#/components/schemas/ValidateResponse"
+          },
+          "example": null
+        },
+        "401": {
+          "description": "Token expirado o inválido.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/auth/change-password",
+      "method": "post",
+      "operationId": "auth_post_change_password",
+      "summary": "Cambio y actualización de contraseña de usuario",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Contraseña actualizada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Campos requeridos faltantes.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "401": {
+          "description": "Token inválido o expirado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    }
+  ],
+  "auth-admin-lambda": [
+    {
+      "path": "/internal/users",
+      "method": "post",
+      "operationId": "internal_post_users",
+      "summary": "Crear usuario interno en VPC (Roles: root, admin, driver, client)",
+      "tags": [
+        "Users Administration"
+      ],
+      "parameters": [],
+      "responses": {
+        "201": {
+          "description": "Usuario interno creado exitosamente en VPC.",
+          "schema": {
+            "$ref": "#/components/schemas/InternalUserResponse"
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Error de validación en los campos o rol desconocido.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/users/{userId}",
+      "method": "get",
+      "operationId": "internal_get_user_by_id",
+      "summary": "Obtener información y estado de usuario interno por ID",
+      "tags": [
+        "Users Administration"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Datos del usuario interno.",
+          "schema": {
+            "$ref": "#/components/schemas/InternalUserResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/users/{userId}",
+      "method": "put",
+      "operationId": "internal_put_user_by_id",
+      "summary": "Actualizar datos de perfil, estado o rol de usuario interno",
+      "tags": [
+        "Users Administration"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Usuario actualizado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/users/{userId}",
+      "method": "delete",
+      "operationId": "internal_delete_user_by_id",
+      "summary": "Eliminar o desactivar usuario interno",
+      "tags": [
+        "Users Administration"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Usuario eliminado del sistema.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    }
+  ],
+  "registration-public-lambda": [
+    {
+      "path": "/registration/requests",
+      "method": "post",
+      "operationId": "registration_post_requests",
+      "summary": "Crear solicitud de registro pública (Clientes/Conductores con validación RUT)",
+      "tags": [
+        "Registration"
+      ],
+      "parameters": [],
+      "responses": {
+        "201": {
+          "description": "Solicitud de registro creada. Pendiente de verificación OTP.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "request": {
+                "$ref": "#/components/schemas/RegistrationRequestStatusResponse"
+              }
+            }
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Fallo de validación en RUT (Módulo 11), teléfono E.164 o contraseña.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Consentimiento no otorgado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/registration/requests/{email}/status",
+      "method": "get",
+      "operationId": "registration_get_request_status",
+      "summary": "Consultar estado de verificación y progreso de solicitud por email",
+      "tags": [
+        "Registration"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Estado de avance de la solicitud de registro.",
+          "schema": {
+            "$ref": "#/components/schemas/RegistrationRequestStatusResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/registration/requests/{email}/update-contact",
+      "method": "put",
+      "operationId": "registration_put_update_contact",
+      "summary": "Actualizar teléfono o correo de contacto en solicitud pendiente",
+      "tags": [
+        "Registration"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Contacto actualizado correctamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/registration/requests/{email}/reupload-comprobante",
+      "method": "put",
+      "operationId": "registration_put_reupload_comprobante",
+      "summary": "Subir o reemplazar comprobante en S3 para solicitud pendiente",
+      "tags": [
+        "Registration"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Comprobante almacenado en S3 exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    }
+  ],
+  "otp-service-lambda": [
+    {
+      "path": "/otp/send",
+      "method": "post",
+      "operationId": "otp_post_send",
+      "summary": "Generar y despachar código OTP multicanal (SMS, WhatsApp, SQS/Email)",
+      "tags": [
+        "OTP & WhatsApp"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "OTP despachado por SMS/WhatsApp/Email.",
+          "schema": {
+            "$ref": "#/components/schemas/SendOtpResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/otp/send-whatsapp",
+      "method": "post",
+      "operationId": "otp_post_send_whatsapp",
+      "summary": "Enviar código OTP vía Meta WhatsApp Cloud API (Template flowex_otp_code)",
+      "tags": [
+        "OTP & WhatsApp"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "OTP enviado por Meta WhatsApp Cloud API.",
+          "schema": {
+            "$ref": "#/components/schemas/SendWhatsAppOtpResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/otp/verify",
+      "method": "post",
+      "operationId": "otp_post_verify",
+      "summary": "Verificar código OTP, auto-activar registro y generar Status Token HMAC",
+      "tags": [
+        "OTP & WhatsApp"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "OTP validado con éxito. Cuenta activada y Status Token generado.",
+          "schema": {
+            "$ref": "#/components/schemas/VerifyOtpResponse"
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Código OTP erróneo o expirado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/notifications/whatsapp",
+      "method": "post",
+      "operationId": "notifications_post_whatsapp",
+      "summary": "Despachar plantillas transaccionales de WhatsApp (Envíos, Tránsito, Incidentes)",
+      "tags": [
+        "OTP & WhatsApp"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Notificación de plantilla WhatsApp enviada al destinatario.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    }
+  ],
+  "registration-admin-lambda": [
+    {
+      "path": "/admin/registration-requests/{email}/override-activate",
+      "method": "post",
+      "operationId": "admin_post_override_activate_registration",
+      "summary": "Aprobación manual y activación forzada de solicitud por administrador",
+      "tags": [
+        "Admin Overrides"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Cuenta activada manualmente por administrador.",
+          "schema": {
+            "$ref": "#/components/schemas/AdminOverrideActivateResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Requiere rol admin o root.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    }
+  ],
+  "payments-api-lambda": [
+    {
+      "path": "/payments/mercadopago/preference",
+      "method": "post",
+      "operationId": "payments_post_mercadopago_preference",
+      "summary": "Crear preferencia de pago Mercado Pago (Checkout Pro / WebPay)",
+      "tags": [
+        "Payments"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Preferencia de Checkout Pro generada.",
+          "schema": {
+            "$ref": "#/components/schemas/MercadoPagoPreferenceResponse"
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Monto, email o identificador de orden faltantes.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/payments/fintoc/payment-intent",
+      "method": "post",
+      "operationId": "payments_post_fintoc_payment_intent",
+      "summary": "Crear intención de pago Fintoc (Transferencia bancaria A2A Open Banking)",
+      "tags": [
+        "Payments"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Intención de pago Fintoc A2A generada.",
+          "schema": {
+            "$ref": "#/components/schemas/FintocPaymentIntentResponse"
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Parámetros obligatorios ausentes.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/webhooks/mercadopago",
+      "method": "post",
+      "operationId": "payments_post_webhook_mercadopago",
+      "summary": "Webhook receptor de notificaciones IPN de Mercado Pago",
+      "tags": [
+        "Payments"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Notificación IPN recibida y procesada.",
+          "schema": {
+            "$ref": "#/components/schemas/WebhookMercadoPagoResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/webhooks/fintoc",
+      "method": "post",
+      "operationId": "payments_post_webhook_fintoc",
+      "summary": "Webhook receptor de eventos de Fintoc con firma x-fintoc-signature",
+      "tags": [
+        "Payments"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Evento de Fintoc procesado con verificación de firma.",
+          "schema": {
+            "$ref": "#/components/schemas/WebhookFintocResponse"
+          },
+          "example": null
+        }
+      }
+    }
+  ],
+  "notification-lambda": [
+    {
+      "path": "/notifications/email/verify-account",
+      "method": "post",
+      "operationId": "notifications_post_email_verify_account",
+      "summary": "Enviar correo HTML de verificación con código OTP vía Amazon SES",
+      "tags": [
+        "Notifications"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Correo HTML de verificación despachado por Amazon SES.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/notifications/sms/verify-phone",
+      "method": "post",
+      "operationId": "notifications_post_sms_verify_phone",
+      "summary": "Enviar SMS de verificación a número telefónico E.164",
+      "tags": [
+        "Notifications"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Mensaje de texto SMS despachado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/notifications/email/welcome",
+      "method": "post",
+      "operationId": "notifications_post_email_welcome",
+      "summary": "Enviar correo de bienvenida con enlace de acceso tras activación",
+      "tags": [
+        "Notifications"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Correo de bienvenida enviado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/notifications/email/order-created",
+      "method": "post",
+      "operationId": "notifications_post_email_order_created",
+      "summary": "Enviar confirmación de despacho con número de tracking y PIN de entrega",
+      "tags": [
+        "Notifications"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Comprobante de envío con tracking y PIN de entrega despachado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/notifications/email/order-status-update",
+      "method": "post",
+      "operationId": "notifications_post_email_order_status_update",
+      "summary": "Enviar actualización de estado del envío al cliente destinatario",
+      "tags": [
+        "Notifications"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Actualización de tracking despachada al cliente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    }
+  ]
+}

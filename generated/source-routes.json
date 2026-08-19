@@ -1,0 +1,406 @@
+[
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/login",
+    "operationId": "auth_post_login",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Inicio de sesión de usuario (Generación de JWT y Cookies HttpOnly)",
+    "roles": [
+      "root",
+      "admin",
+      "driver",
+      "client"
+    ],
+    "security": false
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/logout",
+    "operationId": "auth_post_logout",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Cierre de sesión e invalidación de cookies de acceso",
+    "roles": [],
+    "security": "cookieAccessAuth"
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/refresh",
+    "operationId": "auth_post_refresh",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Renovación de Access Token mediante Refresh Token",
+    "roles": [],
+    "security": "cookieRefreshAuth"
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "get",
+    "path": "/auth/validate",
+    "operationId": "auth_get_validate",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Validación de token activo y resolución de claims/rol",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/change-password",
+    "operationId": "auth_post_change_password",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Cambio y actualización de contraseña de usuario",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/users",
+    "operationId": "internal_post_users",
+    "tag": "Users Administration",
+    "tags": [
+      "Users Administration"
+    ],
+    "summary": "Crear usuario interno en VPC (Roles: root, admin, driver, client)",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/users/{userId}",
+    "operationId": "internal_get_user_by_id",
+    "tag": "Users Administration",
+    "tags": [
+      "Users Administration"
+    ],
+    "summary": "Obtener información y estado de usuario interno por ID",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/internal/users/{userId}",
+    "operationId": "internal_put_user_by_id",
+    "tag": "Users Administration",
+    "tags": [
+      "Users Administration"
+    ],
+    "summary": "Actualizar datos de perfil, estado o rol de usuario interno",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "delete",
+    "path": "/internal/users/{userId}",
+    "operationId": "internal_delete_user_by_id",
+    "tag": "Users Administration",
+    "tags": [
+      "Users Administration"
+    ],
+    "summary": "Eliminar o desactivar usuario interno",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "registration-public-lambda",
+    "source": "Flowex-registration-public-lambda/src/index.ts",
+    "method": "post",
+    "path": "/registration/requests",
+    "operationId": "registration_post_requests",
+    "tag": "Registration",
+    "tags": [
+      "Registration"
+    ],
+    "summary": "Crear solicitud de registro pública (Clientes/Conductores con validación RUT)",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "registration-public-lambda",
+    "source": "Flowex-registration-public-lambda/src/index.ts",
+    "method": "get",
+    "path": "/registration/requests/{email}/status",
+    "operationId": "registration_get_request_status",
+    "tag": "Registration",
+    "tags": [
+      "Registration"
+    ],
+    "summary": "Consultar estado de verificación y progreso de solicitud por email",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "registration-public-lambda",
+    "source": "Flowex-registration-public-lambda/src/index.ts",
+    "method": "put",
+    "path": "/registration/requests/{email}/update-contact",
+    "operationId": "registration_put_update_contact",
+    "tag": "Registration",
+    "tags": [
+      "Registration"
+    ],
+    "summary": "Actualizar teléfono o correo de contacto en solicitud pendiente",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "registration-public-lambda",
+    "source": "Flowex-registration-public-lambda/src/index.ts",
+    "method": "put",
+    "path": "/registration/requests/{email}/reupload-comprobante",
+    "operationId": "registration_put_reupload_comprobante",
+    "tag": "Registration",
+    "tags": [
+      "Registration"
+    ],
+    "summary": "Subir o reemplazar comprobante en S3 para solicitud pendiente",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "otp-service-lambda",
+    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "method": "post",
+    "path": "/otp/send",
+    "operationId": "otp_post_send",
+    "tag": "OTP & WhatsApp",
+    "tags": [
+      "OTP & WhatsApp"
+    ],
+    "summary": "Generar y despachar código OTP multicanal (SMS, WhatsApp, SQS/Email)",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "otp-service-lambda",
+    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "method": "post",
+    "path": "/otp/send-whatsapp",
+    "operationId": "otp_post_send_whatsapp",
+    "tag": "OTP & WhatsApp",
+    "tags": [
+      "OTP & WhatsApp"
+    ],
+    "summary": "Enviar código OTP vía Meta WhatsApp Cloud API (Template flowex_otp_code)",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "otp-service-lambda",
+    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "method": "post",
+    "path": "/otp/verify",
+    "operationId": "otp_post_verify",
+    "tag": "OTP & WhatsApp",
+    "tags": [
+      "OTP & WhatsApp"
+    ],
+    "summary": "Verificar código OTP, auto-activar registro y generar Status Token HMAC",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "otp-service-lambda",
+    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/whatsapp",
+    "operationId": "notifications_post_whatsapp",
+    "tag": "OTP & WhatsApp",
+    "tags": [
+      "OTP & WhatsApp"
+    ],
+    "summary": "Despachar plantillas transaccionales de WhatsApp (Envíos, Tránsito, Incidentes)",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "registration-admin-lambda",
+    "source": "Flowex-registration-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/admin/registration-requests/{email}/override-activate",
+    "operationId": "admin_post_override_activate_registration",
+    "tag": "Admin Overrides",
+    "tags": [
+      "Admin Overrides"
+    ],
+    "summary": "Aprobación manual y activación forzada de solicitud por administrador",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "payments-api-lambda",
+    "source": "Flowex-payments-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/payments/mercadopago/preference",
+    "operationId": "payments_post_mercadopago_preference",
+    "tag": "Payments",
+    "tags": [
+      "Payments"
+    ],
+    "summary": "Crear preferencia de pago Mercado Pago (Checkout Pro / WebPay)",
+    "roles": [
+      "client",
+      "admin"
+    ],
+    "security": false
+  },
+  {
+    "service": "payments-api-lambda",
+    "source": "Flowex-payments-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/payments/fintoc/payment-intent",
+    "operationId": "payments_post_fintoc_payment_intent",
+    "tag": "Payments",
+    "tags": [
+      "Payments"
+    ],
+    "summary": "Crear intención de pago Fintoc (Transferencia bancaria A2A Open Banking)",
+    "roles": [
+      "client",
+      "admin"
+    ],
+    "security": false
+  },
+  {
+    "service": "payments-api-lambda",
+    "source": "Flowex-payments-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/webhooks/mercadopago",
+    "operationId": "payments_post_webhook_mercadopago",
+    "tag": "Payments",
+    "tags": [
+      "Payments"
+    ],
+    "summary": "Webhook receptor de notificaciones IPN de Mercado Pago",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "payments-api-lambda",
+    "source": "Flowex-payments-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/webhooks/fintoc",
+    "operationId": "payments_post_webhook_fintoc",
+    "tag": "Payments",
+    "tags": [
+      "Payments"
+    ],
+    "summary": "Webhook receptor de eventos de Fintoc con firma x-fintoc-signature",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "notification-lambda",
+    "source": "Flowex-notification-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/email/verify-account",
+    "operationId": "notifications_post_email_verify_account",
+    "tag": "Notifications",
+    "tags": [
+      "Notifications"
+    ],
+    "summary": "Enviar correo HTML de verificación con código OTP vía Amazon SES",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "notification-lambda",
+    "source": "Flowex-notification-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/sms/verify-phone",
+    "operationId": "notifications_post_sms_verify_phone",
+    "tag": "Notifications",
+    "tags": [
+      "Notifications"
+    ],
+    "summary": "Enviar SMS de verificación a número telefónico E.164",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "notification-lambda",
+    "source": "Flowex-notification-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/email/welcome",
+    "operationId": "notifications_post_email_welcome",
+    "tag": "Notifications",
+    "tags": [
+      "Notifications"
+    ],
+    "summary": "Enviar correo de bienvenida con enlace de acceso tras activación",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "notification-lambda",
+    "source": "Flowex-notification-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/email/order-created",
+    "operationId": "notifications_post_email_order_created",
+    "tag": "Notifications",
+    "tags": [
+      "Notifications"
+    ],
+    "summary": "Enviar confirmación de despacho con número de tracking y PIN de entrega",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "notification-lambda",
+    "source": "Flowex-notification-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/email/order-status-update",
+    "operationId": "notifications_post_email_order_status_update",
+    "tag": "Notifications",
+    "tags": [
+      "Notifications"
+    ],
+    "summary": "Enviar actualización de estado del envío al cliente destinatario",
+    "roles": [],
+    "security": false
+  }
+]

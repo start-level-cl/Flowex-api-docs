@@ -1,0 +1,54 @@
+name: Deploy static docs to Vercel
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-static-docs-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy docs
+    runs-on: ubuntu-latest
+
+    env:
+      VERCEL_TELEMETRY_DISABLED: 1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate static docs are present
+        run: |
+          test -f docs/index.html
+          test -f generated/openapi.json
+          test -f generated/openapi.yaml
+          test -f generated/api-types.d.ts
+          grep -q '<html' docs/index.html
+          grep -q '"openapi"' generated/openapi.json
+
+      - name: Setup Node.js for Vercel CLI
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate Vercel secrets are present
+        run: |
+          test -n "${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Deploy preview to Vercel
+        if: github.event_name == 'pull_request'
+        run: npx vercel@latest deploy ./docs --yes --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Deploy production to Vercel
+        if: github.event_name == 'push'
+        run: npx vercel@latest deploy ./docs --yes --prod --token="${{ secrets.VERCEL_TOKEN }}"
