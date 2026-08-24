@@ -100,9 +100,6 @@ export type RegistrationClientCreate = {
   comuna?: string
   reference?: string
   agency?: string
-  comprobante?: string
-  comprobanteFileName?: string
-  comprobanteContentType?: string
 }
 
 export type RegistrationInviteCreate = {

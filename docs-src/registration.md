@@ -1,16 +1,15 @@
 # Flujo de Registro y Validación de RUT (Registration)
 
-El proceso de registro en Flowex (`Flowex-registration-public-lambda`) implementa una secuencia de validaciones estrictas, onboarding ligero sin direcciones fijas y carga opcional de documentación en Amazon S3 antes de someter la cuenta al proceso de verificación por OTP o revisión administrativa.
+El proceso de registro en Flowex (`Flowex-registration-public-lambda`) implementa una secuencia de validaciones estrictas, onboarding ligero sin direcciones fijas ni exigencia de comprobantes para clientes, y carga de documentación vehicular/licencia en Amazon S3 para conductores antes de someter la cuenta al proceso de verificación por OTP o revisión administrativa.
 
 ---
 
-## 🏛️ Principio de Diseño: Direcciones Dinámicas por Orden
+## 🏛️ Principio de Diseño: Direcciones Dinámicas y Cero Comprobantes para Clientes
 
 > [!IMPORTANT]
-> **No se requieren direcciones fijas en el registro:**
-> En la arquitectura logística de Flowex, los clientes finales (`client`) **no están obligados a registrar una dirección física fija** (`streetAndNumber`, `housingType`, `region`, `comuna`).
->
-> Dado que los puntos de origen y destino pueden variar en cada transacción comercial (retiros desde bodegas, oficinas, sucursales o domicilios a diferentes destinatarios), las direcciones de recolección (pickup) y de entrega (delivery) se ingresan de forma **100% dinámica e individual en cada pedido mediante el endpoint `POST /orders`**.
+> **No se requieren direcciones fijas ni comprobantes en el registro de clientes:**
+> 1. En la arquitectura logística de Flowex, los clientes finales (`client`) **no están obligados a registrar una dirección física fija** (`streetAndNumber`, `housingType`, `region`, `comuna`). Las direcciones de recolección (pickup) y de entrega (delivery) se ingresan de forma **100% dinámica e individual en cada pedido mediante el endpoint `POST /orders`**.
+> 2. Los clientes finales (`client`) **no requieren adjuntar comprobantes** (`comprobante`, `comprobanteFileName`). El onboarding de clientes es 100% digital y validado automáticamente vía RUT (Módulo 11) y verificación OTP (WhatsApp/SMS).
 
 ---
 
@@ -37,7 +36,9 @@ Si el dígito verificador no coincide, la solicitud es rechazada inmediatamente 
 * Al menos **1 número** (`0-9`).
 * Al menos **1 carácter especial** (`!@#$%^&*()_+-=[]{};':"|,.<>/?`).
 
-### 4. Carga de Comprobantes a Amazon S3
+### 4. Carga de Comprobantes a Amazon S3 (Exclusivo para Choferes)
+* **Aplica a Conductores (`driver`)**: Los choferes deben adjuntar su licencia de conducir o documentación de respaldo vehicular.
+* **Clientes (`client`)**: **No requieren comprobantes**; los campos `comprobante` y `comprobanteFileName` no deben enviarse en el flujo de cliente.
 * Formatos admitidos: `image/jpeg`, `image/png`, `application/pdf`.
 * Tamaño máximo por archivo: **5 MB**.
 * El comprobante se almacena automáticamente en el bucket S3 en la ruta: `comprobantes/{email}/{timestamp}_{fileName}`.
@@ -57,8 +58,8 @@ sequenceDiagram
 
     Solicitante->>WebApp: Completa formulario de registro (datos de identidad)
     WebApp->>RegLambda: POST /registration/client o POST /registration/requests
-    Note over RegLambda: Valida RUT (Módulo 11), Teléfono E.164 y Password (Sin exigir dirección física fija)
-    opt Adjunta comprobante / licencia
+    Note over RegLambda: Valida RUT (Módulo 11), Teléfono E.164 y Password (Sin exigir dirección fija ni comprobante para clientes)
+    opt Chofer adjunta licencia / comprobante
         RegLambda->>S3: PutObjectCommand (archivo en S3)
         S3-->>RegLambda: comprobanteKey generado
     end
@@ -73,10 +74,11 @@ sequenceDiagram
 ## 📡 Endpoints del Módulo de Registro
 
 ### 1. Registro Directo de Cliente (`POST /registration/client`)
-Endpoint optimizado para el onboarding público de clientes finales sin solicitar datos domiciliarios fijos.
+Endpoint optimizado para el onboarding público de clientes finales sin solicitar datos domiciliarios fijos ni comprobantes documentales.
 
 * **Campos Requeridos**: `email`, `name`, `rut`, `phone`, `password`, `consentimiento`.
 * **Campos Opcionales**: `transportType`, `facturaRequired`, `razonSocial`, `rutEmpresa`, `giro`.
+* **Comprobantes**: **No requeridos**. Los clientes no deben ni necesitan enviar `comprobante` ni `comprobanteFileName`.
 
 #### Ejemplo de Solicitud:
 ```json
@@ -115,7 +117,7 @@ Endpoint optimizado para el onboarding público de clientes finales sin solicita
 ---
 
 ### 2. Solicitud General de Registro (`POST /registration/requests`)
-Permite registrar solicitudes de clientes o conductores. Para clientes, no se requiere ningún campo de dirección fija; para choferes se debe proveer el token de invitación y datos vehiculares.
+Permite registrar solicitudes de clientes o conductores. Para clientes, no se requiere ningún campo de dirección fija ni comprobante; para choferes se debe proveer el token de invitación, datos vehiculares y archivo de comprobante/licencia.
 
 #### Ejemplo Solicitud: Cliente (`role: client`)
 ```json
@@ -226,7 +228,7 @@ Permite corregir el número de teléfono o correo en caso de haberlo ingresado c
 ---
 
 ### 6. Re-subir Comprobante (`PUT /registration/requests/{email}/reupload-comprobante`)
-Permite reemplazar un documento rechazado o ilegible.
+Permite reemplazar un documento rechazado o ilegible (aplicable a conductores o perfiles que requieran acreditación documental).
 
 * **Cuerpo de Solicitud:**
 ```json
@@ -239,7 +241,7 @@ Permite reemplazar un documento rechazado o ilegible.
 ```json
 {
   "message": "Comprobante reuploaded successfully",
-  "comprobanteKey": "comprobantes/juan.cliente%40gmail.com/1771344500000_nuevo_comprobante.pdf",
+  "comprobanteKey": "comprobantes/carlos.chofer%40gmail.com/1771344500000_nuevo_comprobante.pdf",
   "status": "PENDING_VERIFICATION"
 }
 ```
