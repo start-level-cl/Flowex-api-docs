@@ -146,6 +146,34 @@
     "service": "registration-public-lambda",
     "source": "Flowex-registration-public-lambda/src/index.ts",
     "method": "post",
+    "path": "/registration/client",
+    "operationId": "registration_post_client",
+    "tag": "Registration",
+    "tags": [
+      "Registration"
+    ],
+    "summary": "Registro público de cliente (sin dirección fija; pickup/delivery se configuran en POST /orders)",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "registration-public-lambda",
+    "source": "Flowex-registration-public-lambda/src/index.ts",
+    "method": "post",
+    "path": "/registration/invite",
+    "operationId": "registration_post_invite",
+    "tag": "Registration",
+    "tags": [
+      "Registration"
+    ],
+    "summary": "Registro mediante token de invitación (Admin / Chofer con datos de vehículo)",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "registration-public-lambda",
+    "source": "Flowex-registration-public-lambda/src/index.ts",
+    "method": "post",
     "path": "/registration/requests",
     "operationId": "registration_post_requests",
     "tag": "Registration",

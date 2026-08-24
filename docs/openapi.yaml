@@ -289,6 +289,92 @@ paths:
       x-roles:
         - root
         - admin
+  /registration/client:
+    post:
+      tags:
+        - Registration
+      summary: "Registro público de cliente (sin dirección fija requerida)"
+      operationId: registration_post_client
+      responses:
+        201:
+          description: "Solicitud de cliente registrada exitosamente. Requiere verificación OTP."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Solicitud de cliente registrada correctamente. Proceda a validar mediante OTP."
+                  request:
+                    $ref: #/components/schemas/RegistrationRequestStatusResponse
+                  requires_otp:
+                    type: boolean
+                    example: true
+        400:
+          description: "Fallo de validación en campos obligatorios, RUT (Módulo 11), teléfono E.164 o contraseña."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Consentimiento no otorgado."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Registra un nuevo cliente validando RUT Módulo 11, teléfono chileno E.164 y contraseña. No requiere direcciones fijas (calle, número, comuna o región) al momento del registro; los domicilios de retiro y entrega se suministran dinámicamente en cada orden mediante POST /orders."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/RegistrationClientCreate
+      x-service: registration-public-lambda
+      x-source: Flowex-registration-public-lambda/src/index.ts
+  /registration/invite:
+    post:
+      tags:
+        - Registration
+      summary: "Registro mediante token de invitación (Admin / Chofer)"
+      operationId: registration_post_invite
+      responses:
+        201:
+          description: "Solicitud por invitación registrada. Pendiente de validación OTP."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Solicitud de driver registrada correctamente mediante invitación. Proceda a validar mediante OTP."
+                  request:
+                    $ref: #/components/schemas/RegistrationRequestStatusResponse
+                  requires_otp:
+                    type: boolean
+                    example: true
+        400:
+          description: "Token de invitación inválido o datos de chofer incompletos."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Consentimiento no otorgado."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Registra usuarios internos (administradores o choferes) mediante validación de tokens de invitación autorizados (INV-ADM-... o INV-DRV-...) y captura de datos vehiculares en el caso de conductores."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/RegistrationInviteCreate
+      x-service: registration-public-lambda
+      x-source: Flowex-registration-public-lambda/src/index.ts
   /registration/requests:
     post:
       tags:
@@ -305,8 +391,12 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "Solicitud registrada correctamente. Proceda a validar mediante OTP."
                   request:
                     $ref: #/components/schemas/RegistrationRequestStatusResponse
+                  requires_otp:
+                    type: boolean
+                    example: true
         400:
           description: "Fallo de validación en RUT (Módulo 11), teléfono E.164 o contraseña."
           content:
@@ -319,6 +409,7 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+      description: "Crea una solicitud de registro general. Para clientes, las direcciones físicas (calle, número, comuna, región) son opcionales y no requeridas, dado que las direcciones de recolección y entrega se configuran dinámicamente por envío en POST /orders."
       requestBody:
         required: true
         content:
@@ -973,6 +1064,170 @@ components:
         createdAt:
           type: string
           format: date-time
+    RegistrationClientCreate:
+      type: object
+      required:
+        - email
+        - name
+        - rut
+        - phone
+        - password
+        - consentimiento
+      description: "Contrato de registro para cliente final. No requiere direcciones fijas (calle, número, comuna o región) al registrarse, ya que los domicilios de retiro y entrega se suministran dinámicamente en cada envío mediante POST /orders."
+      properties:
+        email:
+          type: string
+          format: email
+          example: cliente.nuevo@gmail.com
+        name:
+          type: string
+          example: "Andrea Morales"
+        rut:
+          type: string
+          description: "RUT chileno validado por Módulo 11"
+          example: 19876543-2
+        phone:
+          type: string
+          description: "Teléfono formato E.164 (+569...)"
+          example: "+56991234567"
+        password:
+          type: string
+          format: password
+          description: "Contraseña segura (mínimo 8 caracteres, mayúscula, minúscula, número y símbolo)"
+        consentimiento:
+          type: boolean
+          description: "Consentimiento informado obligatorio"
+          example: true
+        transportType:
+          type: array
+          items:
+            $ref: #/components/schemas/TransporteOption
+          example:
+            - maritimo
+            - aereo
+        facturaRequired:
+          type: boolean
+          example: false
+        razonSocial:
+          type: string
+          example: "Morales Logística SpA"
+        rutEmpresa:
+          type: string
+          example: 76123456-7
+        giro:
+          type: string
+          example: "Servicios de Distribución"
+        housingType:
+          $ref: #/components/schemas/HousingType
+          description: "Campo opcional / obsoleto en registro. Las direcciones fijas no son requeridas ya que origen y destino se configuran dinámicamente en cada orden (POST /orders)."
+        streetAndNumber:
+          type: string
+          description: "Campo opcional / obsoleto en registro. Las direcciones de retiro y despacho se ingresan dinámicamente por orden en POST /orders."
+          example: "Av. Providencia 1234"
+        deptOrOffice:
+          type: string
+          description: "Opcional: Departamento u oficina"
+          example: "Oficina 502"
+        region:
+          type: string
+          description: "Campo opcional / obsoleto en registro. Se especifica en POST /orders por envío."
+          example: "Región Metropolitana"
+        comuna:
+          type: string
+          description: "Campo opcional / obsoleto en registro. Se especifica en POST /orders por envío."
+          example: Providencia
+        reference:
+          type: string
+          description: "Opcional: Referencia"
+          example: "Frente a estación Metro Manuel Montt"
+        agency:
+          type: string
+          description: "Opcional: Sucursal o agencia preferida"
+          example: "Sucursal Central"
+        comprobante:
+          type: string
+          description: "Comprobante opcional en Base64 o Data URL"
+        comprobanteFileName:
+          type: string
+          example: comprobante_residencia.pdf
+        comprobanteContentType:
+          type: string
+          example: application/pdf
+    RegistrationInviteCreate:
+      type: object
+      required:
+        - inviteToken
+        - email
+        - name
+        - rut
+        - phone
+        - password
+        - consentimiento
+      description: "Contrato de registro mediante token de invitación para administradores o conductores."
+      properties:
+        inviteToken:
+          type: string
+          description: "Token de invitación (INV-ADM-... para admin o INV-DRV-... para driver)"
+          example: INV-DRV-2026-XYZ
+        email:
+          type: string
+          format: email
+          example: carlos.chofer@gmail.com
+        name:
+          type: string
+          example: "Carlos Chofer González"
+        rut:
+          type: string
+          description: "RUT chileno validado por Módulo 11"
+          example: 15987654-3
+        phone:
+          type: string
+          description: "Teléfono formato E.164 (+569...)"
+          example: "+56987654321"
+        password:
+          type: string
+          format: password
+          description: "Contraseña segura"
+        role:
+          type: string
+          enum:
+            - admin
+            - driver
+          example: driver
+        consentimiento:
+          type: boolean
+          description: "Consentimiento informado obligatorio"
+          example: true
+        licenseNumber:
+          type: string
+          description: "Requerido para conductores: Número de licencia de conducir"
+          example: LIC-15987654-CL
+        vehicleType:
+          type: string
+          description: "Requerido para conductores: Tipo de vehículo"
+          example: "Furgón"
+        vehiclePlate:
+          type: string
+          description: "Requerido para conductores: Patente del vehículo"
+          example: LJ-89-21
+        vehicleBrand:
+          type: string
+          example: Peugeot
+        vehicleModel:
+          type: string
+          example: Partner
+        vehicleYear:
+          type: integer
+          example: 2023
+        comprobante:
+          type: string
+          description: "Comprobante o licencia de conducir en Base64"
+        comprobanteFileName:
+          type: string
+          example: licencia_conducir.jpg
+        comprobanteContentType:
+          type: string
+          example: image/jpeg
     RegistrationRequestCreate:
       type: object
       required:
@@ -982,6 +1237,7 @@ components:
         - phone
         - password
         - consentimiento
+      description: "Contrato de registro general para clientes o conductores. Las direcciones fijas (streetAndNumber, housingType, region, comuna) no son obligatorias en el registro; los puntos de retiro y entrega se suministran dinámicamente por envío en POST /orders."
       properties:
         email:
           type: string
@@ -1009,25 +1265,36 @@ components:
           type: boolean
           description: "Consentimiento informado obligatorio"
           example: true
+        inviteToken:
+          type: string
+          description: "Token de invitación obligatorio para roles driver o admin"
+          example: INV-DRV-2026-XYZ
         housingType:
           $ref: #/components/schemas/HousingType
+          description: "Campo opcional / no requerido en registro. Las direcciones de origen y destino se configuran dinámicamente en POST /orders."
         streetAndNumber:
           type: string
+          description: "Campo opcional / no requerido en registro. Las direcciones de retiro y entrega se ingresan dinámicamente por orden en POST /orders."
           example: "Av. Providencia 1234"
         deptOrOffice:
           type: string
+          description: "Opcional: Departamento u oficina"
           example: "Oficina 502"
         region:
           type: string
+          description: "Campo opcional / no requerido en registro. Se especifica dinámicamente en POST /orders."
           example: "Región Metropolitana"
         comuna:
           type: string
+          description: "Campo opcional / no requerido en registro. Se especifica dinámicamente en POST /orders."
           example: Providencia
         reference:
           type: string
+          description: "Opcional: Referencia"
           example: "Frente a estación Metro Manuel Montt"
         agency:
           type: string
+          description: "Opcional: Sucursal o agencia preferida"
           example: "Sucursal Central"
         transportType:
           type: array
@@ -1486,6 +1753,105 @@ components:
         details:
           type: string
           example: "El paquete se encuentra en el vehículo de reparto rumbo a su domicilio"
+    OrderCreateRequest:
+      type: object
+      required:
+        - senderName
+        - senderPhone
+        - senderAddress
+        - senderCommune
+        - recipientName
+        - recipientPhone
+        - recipientAddress
+        - recipientCommune
+        - packagesCount
+        - packageType
+        - weightKg
+        - declaredValue
+        - shippingType
+      description: "Contrato para creación dinámica de órdenes y envíos (POST /orders). Las direcciones de recolección/origen y entrega/destino se configuran individualmente por pedido en este endpoint, eliminando la necesidad de direcciones fijas en el registro de cliente."
+      properties:
+        senderName:
+          type: string
+          example: "Juan Pérez Silva"
+        senderPhone:
+          type: string
+          example: "+56991234567"
+        senderEmail:
+          type: string
+          format: email
+          example: juan.cliente@gmail.com
+        senderAddress:
+          type: string
+          description: "Dirección física dinámica de retiro (calle, número)"
+          example: "Av. Providencia 1234"
+        senderDeptOrOffice:
+          type: string
+          example: "Oficina 502"
+        senderCommune:
+          type: string
+          description: "Comuna de recolección"
+          example: Providencia
+        senderRegion:
+          type: string
+          description: "Región de recolección"
+          example: "Región Metropolitana"
+        senderReference:
+          type: string
+          example: "Frente a estación Metro Manuel Montt"
+        recipientName:
+          type: string
+          example: "María López González"
+        recipientPhone:
+          type: string
+          example: "+56987654321"
+        recipientEmail:
+          type: string
+          format: email
+          example: maria.destinatario@gmail.com
+        recipientAddress:
+          type: string
+          description: "Dirección física dinámica de entrega (calle, número)"
+          example: "Av. Las Condes 10200"
+        recipientDeptOrOffice:
+          type: string
+          example: "Depto 401"
+        recipientCommune:
+          type: string
+          description: "Comuna de entrega"
+          example: "Las Condes"
+        recipientRegion:
+          type: string
+          description: "Región de entrega"
+          example: "Región Metropolitana"
+        recipientReference:
+          type: string
+          example: "Condominio Los Alerces, Torre B"
+        packagesCount:
+          type: integer
+          example: 1
+        packageType:
+          type: string
+          example: caja_mediana
+        weightKg:
+          type: number
+          example: 2.5
+        declaredValue:
+          type: number
+          example: 45000
+        shippingType:
+          type: string
+          enum:
+            - normal
+            - express
+            - same_day
+          example: express
+        enteredBy:
+          type: string
+          enum:
+            - cliente
+            - vendedor
+          default: cliente
     StandardSuccessResponse:
       type: object
       properties:

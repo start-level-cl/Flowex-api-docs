@@ -81,6 +81,50 @@ export type InternalUserResponse = {
   createdAt?: string
 }
 
+export type RegistrationClientCreate = {
+  email: string
+  name: string
+  rut: string
+  phone: string
+  password: string
+  consentimiento: boolean
+  transportType?: (TransporteOption)[]
+  facturaRequired?: boolean
+  razonSocial?: string
+  rutEmpresa?: string
+  giro?: string
+  housingType?: HousingType
+  streetAndNumber?: string
+  deptOrOffice?: string
+  region?: string
+  comuna?: string
+  reference?: string
+  agency?: string
+  comprobante?: string
+  comprobanteFileName?: string
+  comprobanteContentType?: string
+}
+
+export type RegistrationInviteCreate = {
+  inviteToken: string
+  email: string
+  name: string
+  rut: string
+  phone: string
+  password: string
+  role?: "admin" | "driver"
+  consentimiento: boolean
+  licenseNumber?: string
+  vehicleType?: string
+  vehiclePlate?: string
+  vehicleBrand?: string
+  vehicleModel?: string
+  vehicleYear?: number
+  comprobante?: string
+  comprobanteFileName?: string
+  comprobanteContentType?: string
+}
+
 export type RegistrationRequestCreate = {
   email: string
   name: string
@@ -89,6 +133,7 @@ export type RegistrationRequestCreate = {
   password: string
   role?: UserRole
   consentimiento: boolean
+  inviteToken?: string
   housingType?: HousingType
   streetAndNumber?: string
   deptOrOffice?: string
@@ -278,6 +323,31 @@ export type EmailOrderStatusUpdateRequest = {
   details?: string
 }
 
+export type OrderCreateRequest = {
+  senderName: string
+  senderPhone: string
+  senderEmail?: string
+  senderAddress: string
+  senderDeptOrOffice?: string
+  senderCommune: string
+  senderRegion?: string
+  senderReference?: string
+  recipientName: string
+  recipientPhone: string
+  recipientEmail?: string
+  recipientAddress: string
+  recipientDeptOrOffice?: string
+  recipientCommune: string
+  recipientRegion?: string
+  recipientReference?: string
+  packagesCount: number
+  packageType: string
+  weightKg: number
+  declaredValue: number
+  shippingType: "normal" | "express" | "same_day"
+  enteredBy?: "cliente" | "vendedor"
+}
+
 export type StandardSuccessResponse = {
   message?: string
 }
@@ -367,6 +437,34 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
+  "registration_post_client": {
+    method: "POST"
+    path: "/registration/client"
+    requestBody: RegistrationClientCreate
+    responses: {
+      "201": {
+        message?: string
+        request?: RegistrationRequestStatusResponse
+        requires_otp?: boolean
+      }
+      "400": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "registration_post_invite": {
+    method: "POST"
+    path: "/registration/invite"
+    requestBody: RegistrationInviteCreate
+    responses: {
+      "201": {
+        message?: string
+        request?: RegistrationRequestStatusResponse
+        requires_otp?: boolean
+      }
+      "400": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
   "registration_post_requests": {
     method: "POST"
     path: "/registration/requests"
@@ -375,6 +473,7 @@ export interface Operations {
       "201": {
         message?: string
         request?: RegistrationRequestStatusResponse
+        requires_otp?: boolean
       }
       "400": StandardErrorResponse
       "403": StandardErrorResponse

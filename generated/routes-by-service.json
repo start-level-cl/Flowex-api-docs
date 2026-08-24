@@ -225,6 +225,98 @@
   ],
   "registration-public-lambda": [
     {
+      "path": "/registration/client",
+      "method": "post",
+      "operationId": "registration_post_client",
+      "summary": "Registro público de cliente (sin dirección fija requerida)",
+      "tags": [
+        "Registration"
+      ],
+      "parameters": [],
+      "responses": {
+        "201": {
+          "description": "Solicitud de cliente registrada exitosamente. Requiere verificación OTP.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "example": "Solicitud de cliente registrada correctamente. Proceda a validar mediante OTP."
+              },
+              "request": {
+                "$ref": "#/components/schemas/RegistrationRequestStatusResponse"
+              },
+              "requires_otp": {
+                "type": "boolean",
+                "example": true
+              }
+            }
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Fallo de validación en campos obligatorios, RUT (Módulo 11), teléfono E.164 o contraseña.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Consentimiento no otorgado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/registration/invite",
+      "method": "post",
+      "operationId": "registration_post_invite",
+      "summary": "Registro mediante token de invitación (Admin / Chofer)",
+      "tags": [
+        "Registration"
+      ],
+      "parameters": [],
+      "responses": {
+        "201": {
+          "description": "Solicitud por invitación registrada. Pendiente de validación OTP.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "example": "Solicitud de driver registrada correctamente mediante invitación. Proceda a validar mediante OTP."
+              },
+              "request": {
+                "$ref": "#/components/schemas/RegistrationRequestStatusResponse"
+              },
+              "requires_otp": {
+                "type": "boolean",
+                "example": true
+              }
+            }
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Token de invitación inválido o datos de chofer incompletos.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Consentimiento no otorgado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
       "path": "/registration/requests",
       "method": "post",
       "operationId": "registration_post_requests",
@@ -240,10 +332,15 @@
             "type": "object",
             "properties": {
               "message": {
-                "type": "string"
+                "type": "string",
+                "example": "Solicitud registrada correctamente. Proceda a validar mediante OTP."
               },
               "request": {
                 "$ref": "#/components/schemas/RegistrationRequestStatusResponse"
+              },
+              "requires_otp": {
+                "type": "boolean",
+                "example": true
               }
             }
           },

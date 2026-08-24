@@ -68,19 +68,21 @@ export interface Order {
   trackingNumber: string;
   enteredBy: 'cliente' | 'vendedor';
   
-  // Remitente
+  // Remitente (Origen Dinámico)
   senderName: string;
   senderPhone: string;
   senderEmail: string;
   senderAddress: string;
   senderCommune: string;
+  senderRegion?: string;
 
-  // Destinatario
+  // Destinatario (Destino Dinámico)
   recipientName: string;
   recipientPhone: string;
   recipientEmail: string;
   recipientAddress: string;
   recipientCommune: string;
+  recipientRegion?: string;
 
   // Paquete
   packagesCount: number;
@@ -116,3 +118,53 @@ export interface Order {
   eventLogs: EventLog[];
 }
 ```
+
+---
+
+## 📡 Creación Dinámica de Envíos (`POST /orders`)
+
+> [!NOTE]
+> **Modelo de Direcciones Dinámicas:**
+> Flowex no exige una dirección domiciliaria fija en el registro de cliente. Cada despacho especifica de manera individual sus direcciones de retiro (origen) y entrega (destino) en el cuerpo de la solicitud de `POST /orders`.
+
+### Ejemplo de Solicitud (`POST /orders`)
+
+```json
+{
+  "enteredBy": "cliente",
+  "senderName": "Juan Pérez Silva",
+  "senderPhone": "+56991234567",
+  "senderEmail": "juan.cliente@gmail.com",
+  "senderAddress": "Av. Providencia 1234, Of. 502",
+  "senderCommune": "Providencia",
+  "senderRegion": "Región Metropolitana",
+  "recipientName": "María López González",
+  "recipientPhone": "+56987654321",
+  "recipientEmail": "maria.destinatario@gmail.com",
+  "recipientAddress": "Av. Las Condes 10200, Depto 401",
+  "recipientCommune": "Las Condes",
+  "recipientRegion": "Región Metropolitana",
+  "packagesCount": 1,
+  "packageType": "caja_mediana",
+  "weightKg": 2.5,
+  "declaredValue": 45000,
+  "shippingType": "express"
+}
+```
+
+### Respuesta Exitosa (`201 Created`)
+
+```json
+{
+  "message": "Orden creada exitosamente. Pendiente de pago.",
+  "order": {
+    "id": "ord_1771344928000",
+    "trackingNumber": "FLX-2026-8492",
+    "status": "pending",
+    "isPaid": false,
+    "totalCost": 8900,
+    "createdAt": "2026-08-24T14:35:00.000Z"
+  }
+}
+```
+

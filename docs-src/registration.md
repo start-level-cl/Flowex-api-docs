@@ -1,6 +1,16 @@
 # Flujo de Registro y Validación de RUT (Registration)
 
-El proceso de registro en Flowex (`Flowex-registration-public-lambda`) implementa una secuencia de validaciones estrictas y carga de documentación en la nube antes de someter la cuenta al proceso de verificación por OTP o revisión administrativa.
+El proceso de registro en Flowex (`Flowex-registration-public-lambda`) implementa una secuencia de validaciones estrictas, onboarding ligero sin direcciones fijas y carga opcional de documentación en Amazon S3 antes de someter la cuenta al proceso de verificación por OTP o revisión administrativa.
+
+---
+
+## 🏛️ Principio de Diseño: Direcciones Dinámicas por Orden
+
+> [!IMPORTANT]
+> **No se requieren direcciones fijas en el registro:**
+> En la arquitectura logística de Flowex, los clientes finales (`client`) **no están obligados a registrar una dirección física fija** (`streetAndNumber`, `housingType`, `region`, `comuna`).
+>
+> Dado que los puntos de origen y destino pueden variar en cada transacción comercial (retiros desde bodegas, oficinas, sucursales o domicilios a diferentes destinatarios), las direcciones de recolección (pickup) y de entrega (delivery) se ingresan de forma **100% dinámica e individual en cada pedido mediante el endpoint `POST /orders`**.
 
 ---
 
@@ -45,12 +55,14 @@ sequenceDiagram
     participant S3 as Amazon S3 Bucket
     participant OTPService as Flowex-otp-service-lambda
 
-    Solicitante->>WebApp: Completa formulario y adjunta comprobante
-    WebApp->>RegLambda: POST /registration/requests
-    Note over RegLambda: Valida RUT (Módulo 11), Teléfono E.164 y Password
-    RegLambda->>S3: PutObjectCommand (comprobante en S3)
-    S3-->>RegLambda: fileKey generado
-    RegLambda-->>WebApp: 201 Created (status: PENDING_VERIFICATION)
+    Solicitante->>WebApp: Completa formulario de registro (datos de identidad)
+    WebApp->>RegLambda: POST /registration/client o POST /registration/requests
+    Note over RegLambda: Valida RUT (Módulo 11), Teléfono E.164 y Password (Sin exigir dirección física fija)
+    opt Adjunta comprobante / licencia
+        RegLambda->>S3: PutObjectCommand (archivo en S3)
+        S3-->>RegLambda: comprobanteKey generado
+    end
+    RegLambda-->>WebApp: 201 Created (status: PENDING_VERIFICATION, requires_otp: true)
     
     WebApp->>OTPService: POST /otp/send { email, phone }
     OTPService-->>Solicitante: Envío de OTP vía WhatsApp / SMS
@@ -60,9 +72,13 @@ sequenceDiagram
 
 ## 📡 Endpoints del Módulo de Registro
 
-### 1. Crear Solicitud de Registro (`POST /registration/requests`)
+### 1. Registro Directo de Cliente (`POST /registration/client`)
+Endpoint optimizado para el onboarding público de clientes finales sin solicitar datos domiciliarios fijos.
 
-#### Ejemplo Solicitud: Cliente Final (`client`)
+* **Campos Requeridos**: `email`, `name`, `rut`, `phone`, `password`, `consentimiento`.
+* **Campos Opcionales**: `transportType`, `facturaRequired`, `razonSocial`, `rutEmpresa`, `giro`.
+
+#### Ejemplo de Solicitud:
 ```json
 {
   "email": "juan.cliente@gmail.com",
@@ -70,44 +86,16 @@ sequenceDiagram
   "rut": "18.345.678-K",
   "phone": "+56991234567",
   "password": "PasswordSegura2026!",
-  "role": "client",
   "consentimiento": true,
-  "housingType": "casa",
-  "streetAndNumber": "Av. Las Condes 10200",
-  "region": "Región Metropolitana",
-  "comuna": "Las Condes",
   "transportType": ["maritimo", "aereo"],
-  "facturaRequired": true,
-  "razonSocial": "Pérez Logística SpA",
-  "rutEmpresa": "76.543.210-9",
-  "giro": "Comercio Minorista",
-  "comprobante": "data:application/pdf;base64,JVBERi0xLjQKJ...",
-  "comprobanteFileName": "comprobante_domicilio.pdf"
+  "facturaRequired": false
 }
 ```
 
-#### Ejemplo Solicitud: Conductor / Repartidor (`driver`)
+#### Respuesta Exitosa (`201 Created`):
 ```json
 {
-  "email": "carlos.chofer@gmail.com",
-  "name": "Carlos Chofer González",
-  "rut": "15.987.654-3",
-  "phone": "+56987654321",
-  "password": "DriverPassword2026!",
-  "role": "driver",
-  "consentimiento": true,
-  "licenseNumber": "LIC-15987654-CL",
-  "vehicleType": "Furgón / Camioneta",
-  "vehiclePlate": "LJ-89-21",
-  "comprobante": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
-  "comprobanteFileName": "licencia_conducir.jpg"
-}
-```
-
-#### Respuesta Exitosa (`201 Created`)
-```json
-{
-  "message": "Solicitud registrada correctamente. Proceda a validar mediante OTP.",
+  "message": "Solicitud de cliente registrada correctamente. Proceda a validar mediante OTP.",
   "request": {
     "email": "juan.cliente@gmail.com",
     "name": "Juan Pérez Silva",
@@ -118,15 +106,85 @@ sequenceDiagram
     "is_verified": false,
     "is_email_verified": false,
     "is_phone_verified": false,
-    "comprobanteKey": "comprobantes/juan.cliente%40gmail.com/1771344000000_comprobante_domicilio.pdf",
-    "createdAt": "2026-08-19T10:00:00.000Z"
-  }
+    "createdAt": "2026-08-24T14:30:00.000Z"
+  },
+  "requires_otp": true
 }
 ```
 
 ---
 
-### 2. Consultar Estado de Solicitud (`GET /registration/requests/{email}/status`)
+### 2. Solicitud General de Registro (`POST /registration/requests`)
+Permite registrar solicitudes de clientes o conductores. Para clientes, no se requiere ningún campo de dirección fija; para choferes se debe proveer el token de invitación y datos vehiculares.
+
+#### Ejemplo Solicitud: Cliente (`role: client`)
+```json
+{
+  "email": "andrea.cliente@gmail.com",
+  "name": "Andrea Morales Silva",
+  "rut": "19.876.543-2",
+  "phone": "+56991234567",
+  "password": "PasswordSegura2026!",
+  "role": "client",
+  "consentimiento": true,
+  "transportType": ["maritimo"],
+  "facturaRequired": true,
+  "razonSocial": "Morales Logística SpA",
+  "rutEmpresa": "76.123.456-7",
+  "giro": "Servicios de Distribución"
+}
+```
+
+> [!NOTE]
+> Si el payload incluye campos heredados (`housingType`, `streetAndNumber`, `region`, `comuna`), estos son tratados como opcionales e informativos. La logística operativa de retiro y entrega se resolverá dinámicamente en `POST /orders`.
+
+#### Ejemplo Solicitud: Conductor / Repartidor (`role: driver`)
+```json
+{
+  "email": "carlos.chofer@gmail.com",
+  "name": "Carlos Chofer González",
+  "rut": "15.987.654-3",
+  "phone": "+56987654321",
+  "password": "DriverPassword2026!",
+  "role": "driver",
+  "inviteToken": "INV-DRV-2026-8921",
+  "consentimiento": true,
+  "licenseNumber": "LIC-15987654-CL",
+  "vehicleType": "Furgón / Camioneta",
+  "vehiclePlate": "LJ-89-21",
+  "comprobante": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+  "comprobanteFileName": "licencia_conducir.jpg"
+}
+```
+
+#### Respuesta Exitosa (`201 Created`):
+```json
+{
+  "message": "Solicitud registrada correctamente. Proceda a validar mediante OTP.",
+  "request": {
+    "email": "andrea.cliente@gmail.com",
+    "name": "Andrea Morales Silva",
+    "rut": "19876543-2",
+    "phone": "+56991234567",
+    "role": "client",
+    "status": "PENDING_VERIFICATION",
+    "is_verified": false,
+    "is_email_verified": false,
+    "is_phone_verified": false,
+    "createdAt": "2026-08-24T14:30:00.000Z"
+  },
+  "requires_otp": true
+}
+```
+
+---
+
+### 3. Registro por Invitación (`POST /registration/invite`)
+Permite a usuarios invitados (administradores o choferes) completar su alta mediante un `inviteToken` validado (`INV-ADM-...` o `INV-DRV-...`).
+
+---
+
+### 4. Consultar Estado de Solicitud (`GET /registration/requests/{email}/status`)
 Retorna el estado de verificación y si la solicitud requiere validación por OTP.
 
 * **Parámetro URL:** `email` (URL Encoded).
@@ -145,7 +203,7 @@ Retorna el estado de verificación y si la solicitud requiere validación por OT
 
 ---
 
-### 3. Actualizar Datos de Contacto (`PUT /registration/requests/{email}/update-contact`)
+### 5. Actualizar Datos de Contacto (`PUT /registration/requests/{email}/update-contact`)
 Permite corregir el número de teléfono o correo en caso de haberlo ingresado con error durante el onboarding inicial.
 
 * **Cuerpo de Solicitud:**
@@ -167,21 +225,22 @@ Permite corregir el número de teléfono o correo en caso de haberlo ingresado c
 
 ---
 
-### 4. Re-subir Comprobante (`PUT /registration/requests/{email}/reupload-comprobante`)
+### 6. Re-subir Comprobante (`PUT /registration/requests/{email}/reupload-comprobante`)
 Permite reemplazar un documento rechazado o ilegible.
 
 * **Cuerpo de Solicitud:**
 ```json
 {
   "comprobante": "data:application/pdf;base64,JVBERi0xLjQK...",
-  "comprobanteFileName": "nuevo_comprobante_residencia.pdf"
+  "comprobanteFileName": "nuevo_comprobante.pdf"
 }
 ```
 * **Respuesta (`200 OK`):**
 ```json
 {
   "message": "Comprobante reuploaded successfully",
-  "comprobanteKey": "comprobantes/juan.cliente%40gmail.com/1771344500000_nuevo_comprobante_residencia.pdf",
+  "comprobanteKey": "comprobantes/juan.cliente%40gmail.com/1771344500000_nuevo_comprobante.pdf",
   "status": "PENDING_VERIFICATION"
 }
 ```
+
