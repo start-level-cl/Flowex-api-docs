@@ -18,6 +18,7 @@ export default withMermaid(
           text: 'Guías',
           items: [
             { text: 'Autenticación (Auth)', link: '/auth' },
+            { text: 'Perfil de Usuario y Libreta', link: '/profile' },
             { text: 'Registro y Validación RUT', link: '/registration' },
             { text: 'Motor OTP y WhatsApp', link: '/otp-whatsapp' },
             { text: 'Pasarelas de Pago (Mercado Pago & Fintoc)', link: '/payments-webhooks' },
@@ -39,9 +40,10 @@ export default withMermaid(
           ],
         },
         {
-          text: 'Autenticación y Onboarding',
+          text: 'Autenticación, Perfil y Onboarding',
           items: [
             { text: 'Autenticación y Sesiones JWT', link: '/auth' },
+            { text: 'Módulo Estandarizado de Perfil', link: '/profile' },
             { text: 'Registro y Validación RUT (Módulo 11)', link: '/registration' },
             { text: 'Motor OTP y Meta WhatsApp API', link: '/otp-whatsapp' },
           ],

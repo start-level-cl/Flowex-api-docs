@@ -35,4 +35,16 @@ features:
   - icon: 🇨🇱
     title: Validaciones Locales para Chile
     details: Validación estricta de RUT mediante algoritmo Módulo 11 y formateo telefónico E.164 (+569).
+  - icon: 👤
+    title: Módulo Estandarizado de Perfil
+    details: Gestión transversal de identidad para todos los roles con libreta de direcciones, facturación DTE y consentimientos.
+  - icon: 📍
+    title: Libreta de Direcciones Frecuentes
+    details: Administración de bodegas y sucursales con selección de dirección principal para autocompletar órdenes de despacho.
+  - icon: 📄
+    title: Facturación Tributaria DTE
+    details: Configuración centralizada de Razón Social, RUT Empresa Módulo 11 y giro comercial para emisión automática de facturas.
+  - icon: ⚖️
+    title: Consentimiento Legal (Ley N° 21.719)
+    details: Cumplimiento estricto de protección de datos personales con trazabilidad de IP, timestamp y control de preferencias multicanal.
 ---

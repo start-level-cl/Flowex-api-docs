@@ -72,9 +72,9 @@ Para que el workflow `.github/workflows/vercel-deploy.yml` despliegue automátic
 
 ---
 
-## 📊 Matriz de Microservicios Documentados
+## 📊 Matriz de Microservicios y Módulos Documentados
 
-| Microservicio | Visibilidad | Dominio / Propósito | Endpoints Clave |
+| Microservicio / Módulo | Visibilidad | Dominio / Propósito | Endpoints / Contratos Clave |
 | :--- | :--- | :--- | :--- |
 | `Flowex-auth-api-lambda` | Pública | Autenticación JWT y Cookies | `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`, `GET /auth/validate`, `POST /auth/change-password` |
 | `Flowex-auth-admin-lambda` | Privada VPC | Administración Interna de Usuarios | `POST /internal/users`, `GET /internal/users/{id}`, `PUT /internal/users/{id}`, `DELETE /internal/users/{id}` |
@@ -84,3 +84,29 @@ Para que el workflow `.github/workflows/vercel-deploy.yml` despliegue automátic
 | `Flowex-notification-lambda` | Pública / SQS | Amazon SES HTML Emails & SMS | `POST /notifications/email/verify-account`, `POST /notifications/sms/verify-phone`, `POST /notifications/email/welcome`, `POST /notifications/email/order-created`, `POST /notifications/email/order-status-update` |
 | `Flowex-registration-admin-lambda` | Admin / Event | Overrides Administrativos | `POST /admin/registration-requests/{email}/override-activate`, Invocaciones IAM (`GET, FORCE_ACTIVATE, REJECT`) |
 | `Flowex-shared-layer` | Layer | Biblioteca Central Compartida | Algoritmo Módulo 11 RUT, Firmas JWT, Tokens HMAC, Respuestas CORS |
+| **Standardized Profile Module** | Transversal | Gestión Integral de Perfil, Direcciones, Facturación y Consentimiento | Esquemas `UserProfile`, `SavedAddress`, `BillingInfo`, `NotificationPreferences`, `LegalConsent` (Ley N° 21.719) |
+
+---
+
+## 👤 Módulo Estandarizado de Perfil (Standardized Profile Module)
+
+El ecosistema Flowex implementa una arquitectura transversal para la gestión del perfil de usuario aplicable a todos los roles (`root`, `admin`, `driver`, `client`, `customer`):
+
+1. **Identidad & Cabecera de Usuario:**
+   * Selector dinámico de avatares predeterminados y estados de actividad.
+   * Renderizado de roles con insignias semánticas (`RoleBadge`) y verificación de cuenta.
+2. **Datos Personales & Validaciones Chilenas:**
+   * Verificación matemática de RUT chileno bajo algoritmo **Módulo 11**.
+   * Normalización telefónica a estándar **E.164** (`+56 9 XXXX XXXX`).
+   * Renovación segura de credenciales y cambio de contraseñas.
+3. **Libreta de Direcciones Frecuentes (Address Book):**
+   * Gestión de bodegas, oficinas y sucursales frecuentes (`SavedAddress`).
+   * Selección de dirección principal (`isDefault`) para autocompletar envíos en `POST /orders`.
+4. **Datos de Facturación Tributaria (DTE):**
+   * Configuración de Razón Social, RUT Empresa (Módulo 11), Giro Comercial, Dirección Tributaria y Correo para emisión de facturas electrónicas del SII.
+5. **Preferencias de Notificaciones Multicanal:**
+   * Activación/desactivación granular de canales: **Amazon SES** (Email), **Meta WhatsApp Business Cloud API** y **Amazon SNS** (SMS).
+6. **Consentimiento Legal & Protección de Datos (Ley N° 21.719 de Chile):**
+   * Registro auditable con versión de política contractual, timestamp ISO y registro de dirección IP.
+   * Suspensión automática de canales de notificación externos al revocar el consentimiento.
+

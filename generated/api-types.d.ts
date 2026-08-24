@@ -11,6 +11,57 @@ export type HousingType = "casa" | "departamento" | "oficina"
 
 export type TransporteOption = "maritimo" | "aereo"
 
+export type SavedAddress = {
+  id: string
+  alias: string
+  calle: string
+  numero: string
+  departamento?: string
+  ciudad: string
+  region: string
+  codigoPostal?: string
+  referencias?: string
+  isDefault: boolean
+}
+
+export type BillingInfo = {
+  razonSocial: string
+  rutEmpresa: string
+  giro: string
+  direccion: string
+  correo: string
+}
+
+export type NotificationPreferences = {
+  emailSes: boolean
+  whatsappMeta: boolean
+  smsSns: boolean
+}
+
+export type LegalConsent = {
+  accepted: boolean
+  policyVersion: string
+  timestamp: string
+  ipAddress?: string
+}
+
+export type UserProfile = {
+  id?: string
+  name?: string
+  email?: string
+  phone?: string
+  role?: UserRole
+  roleTitle?: string
+  avatar?: string
+  department?: string
+  rut?: string
+  isVerified?: boolean
+  addresses?: (SavedAddress)[]
+  billingInfo?: BillingInfo
+  notificationPreferences?: NotificationPreferences
+  legalConsent?: LegalConsent
+}
+
 export type LoginRequest = {
   email: string
   password: string

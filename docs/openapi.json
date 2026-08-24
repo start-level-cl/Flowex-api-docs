@@ -1410,6 +1410,215 @@
         ],
         "description": "Modalidad de transporte"
       },
+      "SavedAddress": {
+        "type": "object",
+        "required": [
+          "id",
+          "alias",
+          "calle",
+          "numero",
+          "ciudad",
+          "region",
+          "isDefault"
+        ],
+        "description": "Estructura de dirección guardada en la libreta de direcciones frecuentes del usuario",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "addr_1771344928000"
+          },
+          "alias": {
+            "type": "string",
+            "example": "Bodega Central Quilicura"
+          },
+          "calle": {
+            "type": "string",
+            "example": "Av. Américo Vespucio"
+          },
+          "numero": {
+            "type": "string",
+            "example": "1500"
+          },
+          "departamento": {
+            "type": "string",
+            "example": "Módulo B-12"
+          },
+          "ciudad": {
+            "type": "string",
+            "example": "Quilicura"
+          },
+          "region": {
+            "type": "string",
+            "example": "Región Metropolitana"
+          },
+          "codigoPostal": {
+            "type": "string",
+            "example": "8700000"
+          },
+          "referencias": {
+            "type": "string",
+            "example": "Portón azul, acceso por calle lateral"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "BillingInfo": {
+        "type": "object",
+        "required": [
+          "razonSocial",
+          "rutEmpresa",
+          "giro",
+          "direccion",
+          "correo"
+        ],
+        "description": "Información tributaria para la emisión automática de Facturas Electrónicas de Transporte (DTE)",
+        "properties": {
+          "razonSocial": {
+            "type": "string",
+            "example": "Logística y Distribución SpA"
+          },
+          "rutEmpresa": {
+            "type": "string",
+            "description": "RUT de empresa validado mediante Módulo 11",
+            "example": "76.123.456-7"
+          },
+          "giro": {
+            "type": "string",
+            "example": "Transporte de Carga por Carretera"
+          },
+          "direccion": {
+            "type": "string",
+            "example": "Av. Providencia 1234, Oficina 502, Providencia"
+          },
+          "correo": {
+            "type": "string",
+            "format": "email",
+            "example": "facturacion@empresa.cl"
+          }
+        }
+      },
+      "NotificationPreferences": {
+        "type": "object",
+        "required": [
+          "emailSes",
+          "whatsappMeta",
+          "smsSns"
+        ],
+        "description": "Preferencias de notificaciones multicanal para seguimiento de envíos y alertas operativas",
+        "properties": {
+          "emailSes": {
+            "type": "boolean",
+            "description": "Correos transaccionales vía Amazon SES (resumen de órdenes, facturas PDF y cambios de estado)",
+            "example": true
+          },
+          "whatsappMeta": {
+            "type": "boolean",
+            "description": "Alertas en tiempo real y códigos OTP vía Meta WhatsApp Business Cloud API",
+            "example": true
+          },
+          "smsSns": {
+            "type": "boolean",
+            "description": "Mensajes de texto SMS vía Amazon SNS para contingencias y fallback",
+            "example": false
+          }
+        }
+      },
+      "LegalConsent": {
+        "type": "object",
+        "required": [
+          "accepted",
+          "policyVersion",
+          "timestamp"
+        ],
+        "description": "Registro de consentimiento informado y tratamiento de datos personales conforme a la Ley N° 21.719 de Chile",
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "description": "Estado de aceptación del tratamiento de datos personales",
+            "example": true
+          },
+          "policyVersion": {
+            "type": "string",
+            "example": "v2.4 (Ley N° 21.719)"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha y hora exacta de aceptación o revocación",
+            "example": "2026-08-24 10:30:00"
+          },
+          "ipAddress": {
+            "type": "string",
+            "description": "Dirección IP registrada al momento del consentimiento",
+            "example": "190.160.45.12"
+          }
+        }
+      },
+      "UserProfile": {
+        "type": "object",
+        "description": "Modelo estandarizado de perfil de usuario en Flowex para todos los roles (root, admin, driver, client, customer)",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "usr_flowex_01"
+          },
+          "name": {
+            "type": "string",
+            "example": "Andrea Morales González"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "andrea.morales@flowex.cl"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+56 9 8765 4321"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "roleTitle": {
+            "type": "string",
+            "example": "Cliente Corporativo"
+          },
+          "avatar": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250"
+          },
+          "department": {
+            "type": "string",
+            "example": "Operaciones Comerciales"
+          },
+          "rut": {
+            "type": "string",
+            "description": "RUT personal verificado con algoritmo Módulo 11",
+            "example": "18.765.432-1"
+          },
+          "isVerified": {
+            "type": "boolean",
+            "example": true
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SavedAddress"
+            }
+          },
+          "billingInfo": {
+            "$ref": "#/components/schemas/BillingInfo"
+          },
+          "notificationPreferences": {
+            "$ref": "#/components/schemas/NotificationPreferences"
+          },
+          "legalConsent": {
+            "$ref": "#/components/schemas/LegalConsent"
+          }
+        }
+      },
       "LoginRequest": {
         "type": "object",
         "required": [
