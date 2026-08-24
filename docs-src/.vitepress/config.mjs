@@ -23,6 +23,7 @@ export default withMermaid(
             { text: 'Motor OTP y WhatsApp', link: '/otp-whatsapp' },
             { text: 'Pasarelas de Pago (Mercado Pago & Fintoc)', link: '/payments-webhooks' },
             { text: 'Notificaciones (Amazon SES / SQS)', link: '/notifications-ses' },
+            { text: 'Consent Worker y Auditoría PII', link: '/consent-worker' },
             { text: 'Gestión de Pedidos, Rutas y POD', link: '/orders-dispatch' },
             { text: 'Capa Compartida (Shared Layer)', link: '/shared-layer' },
             { text: 'Arquitectura Serverless Lambdas', link: '/lambdas' },
@@ -46,6 +47,7 @@ export default withMermaid(
             { text: 'Módulo Estandarizado de Perfil', link: '/profile' },
             { text: 'Registro y Validación RUT (Módulo 11)', link: '/registration' },
             { text: 'Motor OTP y Meta WhatsApp API', link: '/otp-whatsapp' },
+            { text: 'Consent Worker y Auditoría PII', link: '/consent-worker' },
           ],
         },
         {

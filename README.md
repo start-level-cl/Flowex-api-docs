@@ -1,6 +1,6 @@
 # Documentación Técnica y API Reference - Flowex
 
-Este repositorio centraliza y publica la documentación técnica, arquitectura en la nube y especificación OpenAPI 3.1.0 interactiva para el ecosistema de microservicios y funciones serverless de **Flowex** (`Flowex-auth-api-lambda`, `Flowex-auth-admin-lambda`, `Flowex-registration-public-lambda`, `Flowex-otp-service-lambda`, `Flowex-payments-api-lambda`, `Flowex-notification-lambda`, `Flowex-registration-admin-lambda` y `Flowex-shared-layer`).
+Este repositorio centraliza y publica la documentación técnica, arquitectura en la nube y especificación OpenAPI 3.1.0 interactiva para el ecosistema de 8 microservicios y funciones serverless de **Flowex** (`Flowex-auth-api-lambda`, `Flowex-auth-admin-lambda`, `Flowex-registration-public-lambda`, `Flowex-otp-service-lambda`, `Flowex-payments-api-lambda`, `Flowex-notification-lambda`, `Flowex-registration-admin-lambda`, `Flowex-consent-worker-lambda` y `Flowex-shared-layer`).
 
 ---
 
@@ -83,6 +83,7 @@ Para que el workflow `.github/workflows/vercel-deploy.yml` despliegue automátic
 | `Flowex-payments-api-lambda` | Pública | Pasarelas de Pago & Webhooks | `POST /payments/mercadopago/preference`, `POST /payments/fintoc/payment-intent`, `POST /webhooks/mercadopago`, `POST /webhooks/fintoc` |
 | `Flowex-notification-lambda` | Pública / SQS | Amazon SES HTML Emails & SMS | `POST /notifications/email/verify-account`, `POST /notifications/sms/verify-phone`, `POST /notifications/email/welcome`, `POST /notifications/email/order-created`, `POST /notifications/email/order-status-update` |
 | `Flowex-registration-admin-lambda` | Admin / Event | Overrides Administrativos | `POST /admin/registration-requests/{email}/override-activate`, Invocaciones IAM (`GET, FORCE_ACTIVATE, REJECT`) |
+| `Flowex-consent-worker-lambda` | Worker / SQS | Consentimiento y Auditoría PII (Node 24 ARM64) | SQS `FlowexConsentQueue` + DLQ `FlowexConsentDLQ`, Eventos `RECORD_CONSENT`, `REVOKE_CONSENT`, `PII_ACCESS_AUDIT` |
 | `Flowex-shared-layer` | Layer | Biblioteca Central Compartida | Algoritmo Módulo 11 RUT, Firmas JWT, Tokens HMAC, Respuestas CORS |
 | **Standardized Profile Module** | Transversal | Gestión Integral de Perfil, Direcciones, Facturación y Consentimiento | Esquemas `UserProfile`, `SavedAddress`, `BillingInfo`, `NotificationPreferences`, `LegalConsent` (Ley N° 21.719) |
 
@@ -109,4 +110,15 @@ El ecosistema Flowex implementa una arquitectura transversal para la gestión de
 6. **Consentimiento Legal & Protección de Datos (Ley N° 21.719 de Chile):**
    * Registro auditable con versión de política contractual, timestamp ISO y registro de dirección IP.
    * Suspensión automática de canales de notificación externos al revocar el consentimiento.
+
+---
+
+## 🛡️ Arquitectura de Consentimiento y Auditoría PII (Ley N° 21.719)
+
+Para garantizar cumplimiento normativo sin introducir latencia sincrónica en el core transaccional:
+* **Microservicio Worker:** `Flowex-consent-worker-lambda` (Node.js 24, AWS Graviton ARM64) consume por lotes la cola `FlowexConsentQueue` con `reportBatchItemFailures`.
+* **Esquemas Canónicos SQS:** Soporta eventos `RECORD_CONSENT` (aceptación de términos/finalidades), `REVOKE_CONSENT` (revocación de finalidades no esenciales) y `PII_ACCESS_AUDIT` (trazabilidad de consultas administrativas de datos sensibles).
+* **Buffer Local (Fase 1):** Almacena eventos de auditoría en tablas PostgreSQL Aurora (`consent_event_buffer` y `admin_pii_access_logs`).
+* **Especificación de Transición:** La estrategia de migración hacia el microservicio centralizado `consentimiento` (Fase 2 SigV4) se detalla en [`technical-debt-consent-integration.md`](file:///C:/Users/joyta/OneDrive/Desktop/inspytech/flowEx/technical-debt-consent-integration.md).
+
 

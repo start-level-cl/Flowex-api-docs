@@ -1,6 +1,6 @@
 # Matriz y Configuración de AWS Lambdas
 
-El backend de Flowex está compuesto íntegramente por funciones serverless desacopladas en **Node.js 22 LTS**, aprovisionadas con asignaciones de memoria y timeouts ajustados al perfil de carga de cada microservicio.
+El backend de Flowex está compuesto íntegramente por funciones serverless desacopladas en **Node.js 22 LTS** y **Node.js 24 LTS** (para workers de alta concurrencia en arquitectura ARM64 Graviton2), aprovisionadas con asignaciones de memoria y timeouts ajustados al perfil de carga de cada microservicio.
 
 ---
 
@@ -15,6 +15,7 @@ El backend de Flowex está compuesto íntegramente por funciones serverless desa
 | **`Flowex-registration-admin-lambda`** | Admin / Event | `256 MB` | `15 s` | API Gateway Admin / Invocación IAM | `AUTH_JWT_SECRET`, `DYNAMODB_TABLE` |
 | **`Flowex-payments-api-lambda`** | Público | `256 MB` | `10 s` | API Gateway REST (`/payments/*`, `/webhooks/*`) | `MP_ACCESS_TOKEN`, `FINTOC_SECRET_KEY`, `FINTOC_WEBHOOK_SECRET` |
 | **`Flowex-notification-lambda`** | SQS / Directo | `256 MB` | `10 s` | Cola Amazon SQS & API Gateway (`/notifications/*`) | `SES_SENDER_EMAIL`, `AWS_REGION` |
+| **`Flowex-consent-worker-lambda`** | SQS / Worker | `256 MB` (ARM64) | `60 s` | SQS `FlowexConsentQueue` & Direct Health (`/`) | `DATABASE_URL`, `CONSENT_SERVICE_ENABLED`, `CONSENT_SERVICE_URL` |
 
 ---
 
@@ -57,6 +58,18 @@ AWS_REGION=us-east-2
 SES_SENDER_EMAIL=no-reply@flowex.cl
 ```
 
+### `Flowex-consent-worker-lambda`
+```env
+AWS_REGION=us-east-2
+NODE_ENV=production
+DATABASE_URL=postgresql://flowex_user:secret@flowex-aurora-pg.cluster-xxxx.us-east-2.rds.amazonaws.com:5432/flowex_prod
+CONSENT_SERVICE_ENABLED=false
+CONSENT_SERVICE_URL=https://consent-api.flowex.internal/prod
+CONSENT_SERVICE_REGION=us-east-2
+CONSENT_SERVICE_APP_ID=flowex
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/xxxx/yyyy
+```
+
 ---
 
 ## 🛠️ Compilación y Empaquetado
@@ -73,4 +86,6 @@ cd Flowex-otp-service-lambda && npm run build && cd ..
 cd Flowex-registration-admin-lambda && npm run build && cd ..
 cd Flowex-payments-api-lambda && npm run build && cd ..
 cd Flowex-notification-lambda && npm run build && cd ..
+cd Flowex-consent-worker-lambda && npm run build && cd ..
 ```
+
