@@ -45,6 +45,34 @@ export type LegalConsent = {
   ipAddress?: string
 }
 
+export type ConsentPurpose = {
+  purpose: string
+  name?: string
+  description?: string
+  granted: boolean
+  essential: boolean
+}
+
+export type UserConsent = {
+  userId: string
+  appId: string
+  status: "GRANTED" | "REVOKED" | "PARTIALLY_REVOKED"
+  policyVersion: string
+  channel?: string
+  purposes: (ConsentPurpose)[]
+  grantedAt?: string
+  updatedAt?: string
+  legalNotice?: string
+  userIsActive?: boolean
+  notice?: string
+  legalCustody?: boolean
+}
+
+export type RevokeConsentRequest = {
+  purposes: (string)[]
+  reason?: string
+}
+
 export type UserProfile = {
   id?: string
   name?: string
@@ -452,6 +480,25 @@ export interface Operations {
       "401": StandardErrorResponse
     }
   }
+  "auth_get_user_consent": {
+    method: "GET"
+    path: "/users/me/consentimiento"
+    requestBody: undefined
+    responses: {
+      "200": UserConsent
+      "401": StandardErrorResponse
+    }
+  }
+  "auth_post_revoke_consent": {
+    method: "POST"
+    path: "/users/me/revocar-consentimiento"
+    requestBody: RevokeConsentRequest
+    responses: {
+      "200": UserConsent
+      "400": StandardErrorResponse
+      "401": StandardErrorResponse
+    }
+  }
   "internal_post_users": {
     method: "POST"
     path: "/internal/users"
@@ -459,6 +506,16 @@ export interface Operations {
     responses: {
       "201": InternalUserResponse
       "400": StandardErrorResponse
+    }
+  }
+  "internal_get_user_consents": {
+    method: "GET"
+    path: "/internal/users/{userId}/consents"
+    requestBody: undefined
+    responses: {
+      "200": UserConsent
+      "401": StandardErrorResponse
+      "403": StandardErrorResponse
     }
   }
   "internal_get_user_by_id": {

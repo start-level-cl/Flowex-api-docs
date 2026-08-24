@@ -188,8 +188,9 @@ Registra el otorgamiento explícito de finalidades de tratamiento de datos al re
   "userId": "usr_9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
   "purposes": [
     { "purpose": "terms_and_conditions", "granted": true, "policyVersion": "v2.4 (Ley N° 21.719)" },
-    { "purpose": "delivery_tracking", "granted": true, "policyVersion": "v2.4 (Ley N° 21.719)" },
-    { "purpose": "marketing_promo", "granted": false, "policyVersion": "v2.4 (Ley N° 21.719)" }
+    { "purpose": "operational_notifications", "granted": true, "policyVersion": "v2.4 (Ley N° 21.719)" },
+    { "purpose": "sms_whatsapp_alerts", "granted": true, "policyVersion": "v2.4 (Ley N° 21.719)" },
+    { "purpose": "delivery_tracking", "granted": true, "policyVersion": "v2.4 (Ley N° 21.719)" }
   ],
   "channel": "web_registration",
   "acceptedAt": "2026-08-24T12:00:00.000Z"
@@ -201,8 +202,8 @@ Registra la revocación o derecho de oposición del titular a una o varias final
 ```json
 {
   "userId": "usr_9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
-  "purposes": ["marketing_promo"],
-  "reason": "Solicitud expresa de cese de promociones publicitarias",
+  "purposes": ["sms_whatsapp_alerts"],
+  "reason": "Solicitud expresa de cese de notificaciones push y alertas SMS/WhatsApp",
   "revokedAt": "2026-08-24T14:30:00.000Z",
   "channel": "web_settings"
 }
@@ -215,12 +216,56 @@ Registra obligatoriamente cualquier consulta o exportación de datos personales 
   "adminId": "adm_8c2cfb5e-4c8e-5cbe-0cee-3c1e8c4edb7e",
   "adminRole": "admin",
   "targetUserId": "usr_9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
-  "action": "VIEW_USER_PROFILE",
-  "reason": "Verificación manual de RUT y comprobante de domicilio para activación",
-  "accessedFields": ["rut", "email", "phone", "comprobante_s3_url", "home_address"],
+  "action": "INSPECT_USER_CONSENTS",
+  "reason": "Auditoría forense de consentimientos de usuario bajo Ley N° 21.719",
+  "accessedFields": ["purposes", "policyVersion", "channel", "grantedAt", "status", "userIsActive"],
   "timestamp": "2026-08-24T15:00:00.000Z"
 }
 ```
+
+---
+
+### 🌐 Endpoints Sincrónicos de Revisión de Consentimiento & Auditoría
+
+Para el consumo directo desde las aplicaciones clientes (`Flowex-frontend` SPA y consola de administración), se implementan tres endpoints REST en API Gateway:
+
+| Endpoint | Método | Microservicio Emisor | Rol Requerido | Descripción & Evento SQS |
+|---|---|---|---|---|
+| `/users/me/consentimiento` | `GET` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Consulta las finalidades vigentes y estado legal del usuario en sesión. |
+| `/users/me/revocar-consentimiento` | `POST` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Revoca finalidades accesorias (`sms_whatsapp_alerts`, `delivery_tracking`). Encola `REVOKE_CONSENT` a SQS. Rechaza revocación de finalidades esenciales (`400 Bad Request`). |
+| `/internal/users/{userId}/consents` | `GET` | `Flowex-auth-admin-lambda` | `admin`, `root` | Inspección forense de consentimientos de un tercero. Encola obligatoriamente `PII_ACCESS_AUDIT` a SQS. Si la cuenta está suspendida (`userIsActive = false`), añade custodia legal. |
+
+---
+
+### ⚖️ Regla de No-Revocación ante Bloqueo de Usuario (*Non-Revocation on Block*)
+
+Conforme al marco de la **Ley N° 21.719** y el estándar internacional GDPR:
+
+1. **Titularidad Exclusiva:** La revocación del consentimiento es un derecho exclusivo, personalísimo e inalienable del titular de los datos personales (Derecho de Oposición ARCOP).
+2. **Preservación Probatoria:** Cuando un operador administrativo suspende, desactiva o bloquea una cuenta de usuario (`isActive = false`), **el consentimiento otorgado NO se revoca automáticamente**.
+3. **Custodia Legal:** Se mantiene intacta la trazabilidad histórica y el estado del consentimiento aceptado en la base de datos y en el archivo inmutable WORM. Esto salvaguarda a Flowex con valor probatorio ante posibles fraudes, litigios contractuales o auditorías de la Agencia de Protección de Datos.
+4. **Respuesta de Inspección:** Cuando un administrador consulta un usuario inactivo (`/internal/users/{userId}/consents`), la respuesta retorna:
+   ```json
+   {
+     "userIsActive": false,
+     "notice": "El consentimiento se mantiene vigente bajo custodia legal (Ley N° 21.719)",
+     "legalCustody": true
+   }
+   ```
+
+---
+
+### 🛡️ Catálogo de Derechos ARCOP en Flowex
+
+Flowex garantiza el ejercicio pleno de los derechos ARCOP para titulares de datos personales:
+
+* **Acceso (A):** Consulta en tiempo real de los datos y finalidades tratadas (`GET /users/me/consentimiento`).
+* **Rectificación (R):** Actualización de información de contacto y direcciones (`PUT /registration/requests/{email}/update-contact`).
+* **Cancelación / Supresión (C):** Eliminación de datos no esenciales una vez cumplidos los plazos legales de retención tributaria e historial de despachos.
+* **Oposición / Revocación (O):** Revocación selectiva de consentimientos para comunicaciones comerciales y alertas accesorias (`POST /users/me/revocar-consentimiento`).
+* **Portabilidad (P):** Extracción de datos en formatos legibles por máquina (JSON/CSV).
+
+---
 
 ### Deuda Técnica y Plan de Transición (Fase 1 ➔ Fase 2)
 

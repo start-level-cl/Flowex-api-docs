@@ -171,6 +171,53 @@ export const schemas = {
       ipAddress: { type: 'string', description: 'Dirección IP registrada al momento del consentimiento', example: '190.160.45.12' },
     },
   },
+  ConsentPurpose: {
+    type: 'object',
+    required: ['purpose', 'granted', 'essential'],
+    description: 'Finalidad específica de tratamiento de datos personales bajo la Ley N° 21.719',
+    properties: {
+      purpose: { type: 'string', example: 'terms_and_conditions' },
+      name: { type: 'string', example: 'Términos y Condiciones del Servicio' },
+      description: { type: 'string', example: 'Aceptación obligatoria para la prestación del servicio logístico' },
+      granted: { type: 'boolean', example: true },
+      essential: { type: 'boolean', example: true },
+    },
+  },
+  UserConsent: {
+    type: 'object',
+    required: ['userId', 'appId', 'status', 'policyVersion', 'purposes'],
+    description: 'Estructura canónica de consentimiento y finalidades autorizadas para un usuario',
+    properties: {
+      userId: { type: 'string', example: 'usr_client_1771344000' },
+      appId: { type: 'string', example: 'flowex' },
+      status: { type: 'string', enum: ['GRANTED', 'REVOKED', 'PARTIALLY_REVOKED'], example: 'GRANTED' },
+      policyVersion: { type: 'string', example: 'v2.4' },
+      channel: { type: 'string', example: 'web_registration' },
+      purposes: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/ConsentPurpose' },
+      },
+      grantedAt: { type: 'string', format: 'date-time', example: '2026-08-24T10:30:00.000Z' },
+      updatedAt: { type: 'string', format: 'date-time', example: '2026-08-24T10:30:00.000Z' },
+      legalNotice: { type: 'string', example: 'Tratamiento de datos personales conforme a la Ley N° 21.719 sobre Protección de Datos Personales en Chile.' },
+      userIsActive: { type: 'boolean', example: true },
+      notice: { type: 'string', example: 'El consentimiento se mantiene vigente bajo custodia legal (Ley N° 21.719)' },
+      legalCustody: { type: 'boolean', example: true },
+    },
+  },
+  RevokeConsentRequest: {
+    type: 'object',
+    required: ['purposes'],
+    description: 'Solicitud de revocación o derecho de oposición sobre finalidades no esenciales',
+    properties: {
+      purposes: {
+        type: 'array',
+        items: { type: 'string' },
+        example: ['sms_whatsapp_alerts'],
+      },
+      reason: { type: 'string', example: 'El titular solicita cese voluntario de alertas SMS/WhatsApp' },
+    },
+  },
   UserProfile: {
     type: 'object',
     description: 'Modelo estandarizado de perfil de usuario en Flowex para todos los roles (root, admin, driver, client, customer)',
@@ -794,8 +841,75 @@ export const operationOverrides = {
       },
     },
   },
+  auth_get_user_consent: {
+    security: [{ bearerAuth: [] }, { cookieAccessAuth: [] }],
+    responses: {
+      200: {
+        description: 'Estado de consentimiento y finalidades autorizadas del usuario autenticado.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserConsent' } } },
+      },
+      401: {
+        description: 'Token no provisto o inválido.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+    },
+  },
+  auth_post_revoke_consent: {
+    security: [{ bearerAuth: [] }, { cookieAccessAuth: [] }],
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/RevokeConsentRequest' } } },
+    },
+    responses: {
+      200: {
+        description: 'Consentimiento revocado exitosamente para las finalidades seleccionadas.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserConsent' } } },
+      },
+      400: {
+        description: 'Intento de revocación de finalidades esenciales o lista vacía.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+      401: {
+        description: 'Token no provisto o inválido.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+    },
+  },
 
   // ── Auth Admin Lambda
+  internal_get_user_consents: {
+    security: [{ bearerAuth: [] }],
+    parameters: [
+      {
+        name: 'userId',
+        in: 'path',
+        required: true,
+        schema: { type: 'string' },
+        description: 'Identificador del usuario cuyos consentimientos se inspeccionan',
+      },
+      {
+        name: 'x-audit-reason',
+        in: 'header',
+        required: false,
+        schema: { type: 'string' },
+        description: 'Motivo o justificación de la inspección forense de datos PII',
+      },
+    ],
+    responses: {
+      200: {
+        description: 'Registro forense de consentimientos y estado de custodia legal.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserConsent' } } },
+      },
+      401: {
+        description: 'Token no provisto o inválido.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+      403: {
+        description: 'Acceso denegado: Requiere rol admin o root.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+    },
+  },
   internal_post_users: {
     security: [{ bearerAuth: [] }],
     requestBody: {
