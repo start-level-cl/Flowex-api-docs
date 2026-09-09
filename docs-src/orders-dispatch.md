@@ -44,19 +44,58 @@ Para garantizar la trazabilidad legal y operativa de la entrega, se capturan tre
 
 ## 🗺️ Generación de Rutas y Asignación de Choferes
 
-El sistema agrupa automáticamente los pedidos en dos tipos de rutas logísticas:
+El sistema genera cada día **N rutas dinámicas** en torno a los conductores en turno y a la
+capacidad de sus vehículos. El algoritmo completo, el contrato de los endpoints y el modelo
+de flota están en [Planificación de Rutas y Flota](/route-planning).
 
-| Tipo de Ruta | Código | Comunas y Zonas | Objetivo |
-| :--- | :--- | :--- | :--- |
-| `pickup` | `RUT-REC-XXX` | Santiago Centro, Providencia, Las Condes | Recolección de paquetes en domicilios o bodegas de remitentes |
-| `delivery` | `RUT-DES-XXX` | Maipú, Pudahuel, Quilicura, San Bernardo | Distribución y entrega a domicilio a destinatarios finales |
+| Tipo de Ruta | Código | Objetivo |
+| :--- | :--- | :--- |
+| `pickup` | `RUT-REC-YYYYMMDD-NNN` | Recolección en domicilios o bodegas de remitentes |
+| `delivery` | `RUT-ENT-YYYYMMDD-NNN` | Distribución y entrega a destinatarios finales |
+
+Cada ruta es de un solo tipo. Un conductor puede recibir una ruta de recogida encadenada
+detrás de una de entrega en la misma zona si su jornada lo permite.
 
 ### Estados de la Ruta (`RouteStatus`)
-* `draft`: Ruta generada automáticamente por optimizador de zona.
+* `draft`: Borrador.
 * `generated`: Lista para asignación.
+* `planned`: Generada por el corte diario y persistida.
 * `assigned`: Asignada a un conductor y vehículo con patente.
 * `in_transit`: Conductor en recorrido activo.
 * `completed`: Todos los paquetes entregados o procesados con estado final.
+* `cancelled`: Anulada antes de iniciarse.
+
+### `stopSequence`: el orden de las paradas
+
+Cada pedido dentro de una ruta lleva `stopSequence`, la posición de visita que devolvió el
+optimizador, empezando en 1.
+
+**La interfaz debe numerar y ordenar por este campo, nunca por el índice del arreglo.** Los
+kilómetros y el tiempo estimado de la ruta corresponden a esta secuencia; presentar las
+paradas en otro orden describe un viaje distinto del que se midió.
+
+### `estimateSource`: de dónde salen los números
+
+| Valor | Significado |
+| :--- | :--- |
+| `google` | Directions entregó la secuencia y la distancia. Ambas describen el mismo recorrido. |
+| `fallback` | Google no respondió. El orden es una heurística de vecino más cercano y la distancia una estimación propia. |
+
+La lista de paradas solo puede rotularse como "optimizada" cuando vale `google`. Cuando vale
+`fallback` la interfaz lo señala explícitamente en lugar de presentar la estimación como si
+viniera de Google.
+
+### Chunking de waypoints
+
+Directions admite 25 waypoints por llamada. Sobre 23 paradas intermedias la petición se
+parte en tramos encadenados y las distancias se suman, en vez de emitir números inventados
+al recibir `MAX_WAYPOINTS_EXCEEDED`. La optimización queda local a cada tramo.
+
+### Carga por pedido
+
+`estimatedWeightKg` y `estimatedVolumeM3` se derivan del catálogo de tarifas: cada bulto
+aporta el tope de peso de su categoría y el volumen de su caja nominal. Son cotas superiores
+declaradas, no mediciones, y `loadSource` lo deja explícito con el valor `tariff_estimate`.
 
 ---
 
