@@ -424,6 +424,111 @@ export type OrderCreateRequest = {
   enteredBy?: "cliente" | "vendedor"
 }
 
+export type CouponAudience = "first_time_only" | "everyone" | "exclusive"
+
+export type Coupon = {
+  id?: string
+  code?: string
+  description?: string
+  discount_percentage?: number
+  max_discount_amount?: number
+  audience?: CouponAudience
+  usage_limit_total?: number
+  usage_limit_per_user?: number
+  current_uses_count?: number
+  starts_at?: string
+  expires_at?: string
+  is_active?: boolean
+  creator_attribution?: string
+  created_by?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export type CouponValidationRequest = {
+  code: string
+  subtotal: number
+}
+
+export type CouponValidationResponse = {
+  success?: boolean
+  coupon?: {
+    valid?: boolean
+    couponId?: string
+    code?: string
+    discountPercentage?: number
+    maxDiscountAmount?: number
+    originalAmount?: number
+    discountAmount?: number
+    finalAmount?: number
+    audience?: CouponAudience
+  }
+}
+
+export type CouponReleaseRequest = {
+  orderId: string
+  reason?: string
+}
+
+export type CouponCreateRequest = {
+  code: string
+  description?: string
+  discountPercentage: number
+  maxDiscountAmount?: number
+  targetAudience?: CouponAudience
+  validityDays?: number
+  maxTotalUses?: number
+  creatorAttribution?: string
+}
+
+export type CouponBatchCreateRequest = {
+  prefix: string
+  quantity: number
+  discountPercentage: number
+  maxDiscountAmount?: number
+  targetAudience?: CouponAudience
+  validityDays?: number
+  creatorAttribution?: string
+}
+
+export type CouponImportCsvRequest = {
+  coupons: ({
+    code: string
+    creatorAttribution?: string
+    maxTotalUses?: number
+  })[]
+  discountPercentage: number
+  maxDiscountAmount?: number
+  targetAudience?: CouponAudience
+  validityDays?: number
+}
+
+export type CouponUpdateRequest = {
+  isActive?: boolean
+  validityDaysExtension?: number
+  maxTotalUses?: number
+}
+
+export type PaymentSimulateRequest = {
+  orderId: string
+  scenario: "success" | "failure" | "abandon"
+  amount?: number
+  couponId?: string
+  couponCode?: string
+  provider?: "mercadopago" | "fintoc"
+  payerEmail?: string
+}
+
+export type PaymentSimulateResponse = {
+  success?: boolean
+  orderId?: string
+  scenario?: string
+  orderStatus?: string
+  couponReleased?: boolean
+  message?: string
+  details?: Record<string, unknown>
+}
+
 export type StandardSuccessResponse = {
   message?: string
 }
@@ -540,6 +645,99 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+    }
+  }
+  "coupons_post_validate": {
+    method: "POST"
+    path: "/coupons/validate"
+    requestBody: CouponValidationRequest
+    responses: {
+      "200": CouponValidationResponse
+      "400": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "coupons_post_release": {
+    method: "POST"
+    path: "/coupons/release"
+    requestBody: CouponReleaseRequest
+    responses: {
+      "200": StandardSuccessResponse
+      "400": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "root_post_coupons": {
+    method: "POST"
+    path: "/root/coupons"
+    requestBody: CouponCreateRequest
+    responses: {
+      "201": {
+        success?: boolean
+        coupon?: Coupon
+      }
+      "400": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "root_get_coupons": {
+    method: "GET"
+    path: "/root/coupons"
+    requestBody: undefined
+    responses: {
+      "200": {
+        success?: boolean
+        total?: number
+        coupons?: (Coupon)[]
+        metrics?: {
+          totalCoupons?: number
+          activeCoupons?: number
+          totalRedemptions?: number
+          totalDiscountGranted?: number
+        }
+      }
+      "403": StandardErrorResponse
+    }
+  }
+  "root_post_coupons_batch": {
+    method: "POST"
+    path: "/root/coupons/batch"
+    requestBody: CouponBatchCreateRequest
+    responses: {
+      "201": {
+        success?: boolean
+        count?: number
+        coupons?: (Coupon)[]
+      }
+      "400": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "root_post_coupons_import_csv": {
+    method: "POST"
+    path: "/root/coupons/import-csv"
+    requestBody: CouponImportCsvRequest
+    responses: {
+      "201": {
+        success?: boolean
+        importedCount?: number
+        coupons?: (Coupon)[]
+      }
+      "400": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "root_patch_coupon_by_id": {
+    method: "PATCH"
+    path: "/root/coupons/{id}"
+    requestBody: CouponUpdateRequest
+    responses: {
+      "200": {
+        success?: boolean
+        coupon?: Coupon
+      }
+      "400": StandardErrorResponse
+      "403": StandardErrorResponse
     }
   }
   "registration_post_client": {
@@ -682,6 +880,15 @@ export interface Operations {
     requestBody: Record<string, unknown>
     responses: {
       "200": WebhookFintocResponse
+    }
+  }
+  "payments_post_simulate": {
+    method: "POST"
+    path: "/payments/simulate"
+    requestBody: PaymentSimulateRequest
+    responses: {
+      "200": PaymentSimulateResponse
+      "400": StandardErrorResponse
     }
   }
   "notifications_post_email_verify_account": {

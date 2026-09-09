@@ -198,6 +198,118 @@
     "security": "bearerAuth"
   },
   {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/coupons/validate",
+    "operationId": "coupons_post_validate",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Validar y pre-aplicar cupón promocional (Exclusivo para rol client)",
+    "roles": [
+      "client"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/coupons/release",
+    "operationId": "coupons_post_release",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Liberar reserva activa de cupón tras cancelación o abandono (Exclusivo para rol client)",
+    "roles": [
+      "client"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/root/coupons",
+    "operationId": "root_post_coupons",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Crear cupón promocional individual (Exclusivo para rol root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/root/coupons/batch",
+    "operationId": "root_post_coupons_batch",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Generar lote masivo de cupones promocionales con prefijo (Exclusivo para rol root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/root/coupons/import-csv",
+    "operationId": "root_post_coupons_import_csv",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Importar cupones promocionales desde CSV (Exclusivo para rol root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/root/coupons",
+    "operationId": "root_get_coupons",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Listar cupones y métricas globales de canjes/ahorros (Exclusivo para rol root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/root/coupons/{id}",
+    "operationId": "root_patch_coupon_by_id",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Actualizar estado o vencimiento de cupón (Exclusivo para rol root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
     "service": "registration-public-lambda",
     "source": "Flowex-registration-public-lambda/src/index.ts",
     "method": "post",
@@ -414,6 +526,24 @@
     ],
     "summary": "Webhook receptor de eventos de Fintoc con firma x-fintoc-signature",
     "roles": [],
+    "security": false
+  },
+  {
+    "service": "payments-api-lambda",
+    "source": "Flowex-payments-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/payments/simulate",
+    "operationId": "payments_post_simulate",
+    "tag": "Payments",
+    "tags": [
+      "Payments"
+    ],
+    "summary": "Simular procesamiento de pago y liberación de cupones en caso de fallo (Motor de simulación)",
+    "roles": [
+      "client",
+      "admin",
+      "root"
+    ],
     "security": false
   },
   {

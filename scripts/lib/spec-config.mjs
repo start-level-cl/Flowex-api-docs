@@ -57,6 +57,10 @@ export const tags = [
     name: 'Admin Overrides',
     description: 'Endpoints y eventos administrativos para activación forzada o resolución manual de registros',
   },
+  {
+    name: 'Coupons',
+    description: 'Sistema de cupones promocionales, validación exclusiva para clientes y administración exclusiva para rol root',
+  },
 ]
 
 export const securitySchemes = {
@@ -745,6 +749,150 @@ export const schemas = {
       enteredBy: { type: 'string', enum: ['cliente', 'vendedor'], default: 'cliente' },
     },
   },
+  CouponAudience: {
+    type: 'string',
+    enum: ['first_time_only', 'everyone', 'exclusive'],
+    description: 'Audiencia objetivo para aplicación del cupón (first_time_only: solo primera compra, everyone: público general, exclusive: creadores/campañas especiales)',
+  },
+  Coupon: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid', example: 'd3b07384-d113-4f9c-8a21-9988aa11bb22' },
+      code: { type: 'string', example: 'INSPY15' },
+      description: { type: 'string', nullable: true, example: 'Descuento lanzamiento campaña INSPY TECH' },
+      discount_percentage: { type: 'number', minimum: 0.01, maximum: 15.00, example: 15.00 },
+      max_discount_amount: { type: 'number', minimum: 0, maximum: 30000.00, example: 30000.00 },
+      audience: { $ref: '#/components/schemas/CouponAudience' },
+      usage_limit_total: { type: 'integer', nullable: true, example: 100 },
+      usage_limit_per_user: { type: 'integer', example: 1 },
+      current_uses_count: { type: 'integer', example: 12 },
+      starts_at: { type: 'string', format: 'date-time', nullable: true },
+      expires_at: { type: 'string', format: 'date-time', nullable: true },
+      is_active: { type: 'boolean', example: true },
+      creator_attribution: { type: 'string', nullable: true, example: 'Eduardo Dassori' },
+      created_by: { type: 'string', nullable: true },
+      created_at: { type: 'string', format: 'date-time' },
+      updated_at: { type: 'string', format: 'date-time' },
+    },
+  },
+  CouponValidationRequest: {
+    type: 'object',
+    required: ['code', 'subtotal'],
+    properties: {
+      code: { type: 'string', example: 'INSPY15' },
+      subtotal: { type: 'number', minimum: 0, example: 25000 },
+    },
+  },
+  CouponValidationResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      coupon: {
+        type: 'object',
+        properties: {
+          valid: { type: 'boolean', example: true },
+          couponId: { type: 'string', format: 'uuid' },
+          code: { type: 'string', example: 'INSPY15' },
+          discountPercentage: { type: 'number', example: 15.00 },
+          maxDiscountAmount: { type: 'number', example: 30000.00 },
+          originalAmount: { type: 'number', example: 25000 },
+          discountAmount: { type: 'number', example: 3750 },
+          finalAmount: { type: 'number', example: 21250 },
+          audience: { $ref: '#/components/schemas/CouponAudience' },
+        },
+      },
+    },
+  },
+  CouponReleaseRequest: {
+    type: 'object',
+    required: ['orderId'],
+    properties: {
+      orderId: { type: 'string', example: 'ord_123456789' },
+      reason: { type: 'string', example: 'USER_CANCELLED_CHECKOUT' },
+    },
+  },
+  CouponCreateRequest: {
+    type: 'object',
+    required: ['code', 'discountPercentage'],
+    properties: {
+      code: { type: 'string', example: 'PROMO15' },
+      description: { type: 'string', example: 'Cupón especial de bienvenida' },
+      discountPercentage: { type: 'number', minimum: 0.01, maximum: 15.00, example: 15.00 },
+      maxDiscountAmount: { type: 'number', minimum: 0, maximum: 30000.00, example: 30000.00 },
+      targetAudience: { $ref: '#/components/schemas/CouponAudience' },
+      validityDays: { type: 'integer', minimum: 1, example: 30 },
+      maxTotalUses: { type: 'integer', minimum: 1, example: 50 },
+      creatorAttribution: { type: 'string', example: 'Eduardo Dassori' },
+    },
+  },
+  CouponBatchCreateRequest: {
+    type: 'object',
+    required: ['prefix', 'quantity', 'discountPercentage'],
+    properties: {
+      prefix: { type: 'string', example: 'INSPY' },
+      quantity: { type: 'integer', minimum: 1, maximum: 500, example: 50 },
+      discountPercentage: { type: 'number', minimum: 0.01, maximum: 15.00, example: 15.00 },
+      maxDiscountAmount: { type: 'number', minimum: 0, maximum: 30000.00, example: 30000.00 },
+      targetAudience: { $ref: '#/components/schemas/CouponAudience' },
+      validityDays: { type: 'integer', minimum: 1, example: 30 },
+      creatorAttribution: { type: 'string', example: 'INSPY TECH SpA' },
+    },
+  },
+  CouponImportCsvRequest: {
+    type: 'object',
+    required: ['coupons', 'discountPercentage'],
+    properties: {
+      coupons: {
+        type: 'array',
+        items: {
+          type: 'object',
+          required: ['code'],
+          properties: {
+            code: { type: 'string', example: 'CREATOR001' },
+            creatorAttribution: { type: 'string', example: 'Creador Influencer' },
+            maxTotalUses: { type: 'integer', example: 100 },
+          },
+        },
+      },
+      discountPercentage: { type: 'number', minimum: 0.01, maximum: 15.00, example: 15.00 },
+      maxDiscountAmount: { type: 'number', minimum: 0, maximum: 30000.00, example: 30000.00 },
+      targetAudience: { $ref: '#/components/schemas/CouponAudience' },
+      validityDays: { type: 'integer', minimum: 1, example: 30 },
+    },
+  },
+  CouponUpdateRequest: {
+    type: 'object',
+    properties: {
+      isActive: { type: 'boolean', example: false },
+      validityDaysExtension: { type: 'integer', minimum: 1, example: 15 },
+      maxTotalUses: { type: 'integer', minimum: 1, example: 200 },
+    },
+  },
+  PaymentSimulateRequest: {
+    type: 'object',
+    required: ['orderId', 'scenario'],
+    properties: {
+      orderId: { type: 'string', example: 'ord_123456789' },
+      scenario: { type: 'string', enum: ['success', 'failure', 'abandon'], example: 'failure' },
+      amount: { type: 'number', example: 21250 },
+      couponId: { type: 'string', format: 'uuid', nullable: true },
+      couponCode: { type: 'string', nullable: true, example: 'INSPY15' },
+      provider: { type: 'string', enum: ['mercadopago', 'fintoc'], example: 'mercadopago' },
+      payerEmail: { type: 'string', format: 'email', example: 'cliente@flowex.cl' },
+    },
+  },
+  PaymentSimulateResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      orderId: { type: 'string', example: 'ord_123456789' },
+      scenario: { type: 'string', example: 'failure' },
+      orderStatus: { type: 'string', example: 'payment_failed' },
+      couponReleased: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Simulación de fallo completada. Reserva de cupón liberada.' },
+      details: { type: 'object' },
+    },
+  },
   StandardSuccessResponse: {
     type: 'object',
     properties: {
@@ -1339,6 +1487,287 @@ export const operationOverrides = {
       200: {
         description: 'Actualización de tracking despachada al cliente.',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardSuccessResponse' } } },
+      },
+    },
+  },
+
+  // ── Coupons (Auth Admin Lambda)
+  coupons_post_validate: {
+    summary: 'Validar y pre-aplicar cupón promocional en checkout (Exclusivo rol client)',
+    description: 'Valida la aplicabilidad de un cupón según vigencia, límite de uso, tope de $30.000 CLP y 15% de descuento máximo. Exclusivo para clientes.',
+    security: [{ bearerAuth: [] }],
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/CouponValidationRequest' } } },
+    },
+    responses: {
+      200: {
+        description: 'Cupón válido y descuento calculado.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/CouponValidationResponse' } } },
+      },
+      400: {
+        description: 'Cupón no válido, expirado o agotado.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+      403: {
+        description: 'Acceso denegado: Exclusivo para rol client.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+    },
+  },
+  coupons_post_release: {
+    summary: 'Liberar cupón reservado por cancelación o abandono (Exclusivo rol client)',
+    description: 'Libera la reserva temporal de un cupón para que el cliente pueda volver a utilizarlo si el pago no se completó.',
+    security: [{ bearerAuth: [] }],
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/CouponReleaseRequest' } } },
+    },
+    responses: {
+      200: {
+        description: 'Reserva de cupón liberada exitosamente.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardSuccessResponse' } } },
+      },
+      400: {
+        description: 'Falta orderId u orden no posee reserva.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+      403: {
+        description: 'Acceso denegado: Exclusivo para rol client.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+    },
+  },
+  root_post_coupons: {
+    summary: 'Crear cupón promocional individual (Exclusivo rol root)',
+    description: 'Crea un cupón único con restricciones financieras de máx 15% y $30.000 CLP. Exclusivo para el rol root.',
+    security: [{ bearerAuth: [] }],
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/CouponCreateRequest' } } },
+    },
+    responses: {
+      201: {
+        description: 'Cupón creado exitosamente.',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean', example: true },
+                coupon: { $ref: '#/components/schemas/Coupon' },
+              },
+            },
+          },
+        },
+      },
+      400: {
+        description: 'Parámetros inválidos o superación de topes (máx 15%, máx $30.000 CLP).',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+      403: {
+        description: 'Acceso denegado: Exclusivo para rol root.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+    },
+  },
+  root_post_coupons_batch: {
+    summary: 'Generación masiva de cupones con prefijo (Exclusivo rol root)',
+    description: 'Genera un lote de cupones con prefijo unificado (hasta 500 unidades) para activaciones o convenios de creadores. Exclusivo para root.',
+    security: [{ bearerAuth: [] }],
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/CouponBatchCreateRequest' } } },
+    },
+    responses: {
+      201: {
+        description: 'Lote de cupones generado exitosamente.',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean', example: true },
+                count: { type: 'integer', example: 50 },
+                coupons: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Coupon' },
+                },
+              },
+            },
+          },
+        },
+      },
+      400: {
+        description: 'Parámetros de lote inválidos.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+      403: {
+        description: 'Acceso denegado: Exclusivo para rol root.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+    },
+  },
+  root_post_coupons_import_csv: {
+    summary: 'Importar cupones de creadores vía CSV (Exclusivo rol root)',
+    description: 'Permite la carga de listas masivas de códigos personalizados de influencers/creadores respetando topes comerciales.',
+    security: [{ bearerAuth: [] }],
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/CouponImportCsvRequest' } } },
+    },
+    responses: {
+      201: {
+        description: 'Importación de cupones completada.',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean', example: true },
+                importedCount: { type: 'integer', example: 25 },
+                coupons: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Coupon' },
+                },
+              },
+            },
+          },
+        },
+      },
+      400: {
+        description: 'Formato CSV o datos de cupones inválidos.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+      403: {
+        description: 'Acceso denegado: Exclusivo para rol root.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+    },
+  },
+  root_get_coupons: {
+    summary: 'Listar cupones y KPIs de rendimiento (Exclusivo rol root)',
+    description: 'Devuelve la lista paginada de cupones con métricas consolidadas de canjes, descuentos acumulados y creadores asociados.',
+    security: [{ bearerAuth: [] }],
+    parameters: [
+      {
+        name: 'isActive',
+        in: 'query',
+        required: false,
+        schema: { type: 'boolean' },
+        description: 'Filtrar por estado activo/inactivo',
+      },
+      {
+        name: 'creator',
+        in: 'query',
+        required: false,
+        schema: { type: 'string' },
+        description: 'Filtrar por nombre o atribución de creador',
+      },
+      {
+        name: 'limit',
+        in: 'query',
+        required: false,
+        schema: { type: 'integer', default: 50 },
+      },
+      {
+        name: 'offset',
+        in: 'query',
+        required: false,
+        schema: { type: 'integer', default: 0 },
+      },
+    ],
+    responses: {
+      200: {
+        description: 'Listado de cupones y métricas de campaña.',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean', example: true },
+                total: { type: 'integer', example: 120 },
+                coupons: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Coupon' },
+                },
+                metrics: {
+                  type: 'object',
+                  properties: {
+                    totalCoupons: { type: 'integer', example: 120 },
+                    activeCoupons: { type: 'integer', example: 110 },
+                    totalRedemptions: { type: 'integer', example: 840 },
+                    totalDiscountGranted: { type: 'number', example: 2520000 },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      403: {
+        description: 'Acceso denegado: Exclusivo para rol root.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+    },
+  },
+  root_patch_coupon_by_id: {
+    summary: 'Actualizar cupón o prorrogar vigencia (Exclusivo rol root)',
+    description: 'Permite pausar/desactivar un cupón, extender su vigencia o aumentar el límite de usos.',
+    security: [{ bearerAuth: [] }],
+    parameters: [
+      {
+        name: 'id',
+        in: 'path',
+        required: true,
+        schema: { type: 'string', format: 'uuid' },
+        description: 'ID único del cupón a actualizar',
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/CouponUpdateRequest' } } },
+    },
+    responses: {
+      200: {
+        description: 'Cupón actualizado exitosamente.',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean', example: true },
+                coupon: { $ref: '#/components/schemas/Coupon' },
+              },
+            },
+          },
+        },
+      },
+      400: {
+        description: 'Datos de actualización inválidos.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+      403: {
+        description: 'Acceso denegado: Exclusivo para rol root.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
+      },
+    },
+  },
+  payments_post_simulate: {
+    summary: 'Simular procesamiento de pago y liberación de cupones (Motor de pruebas)',
+    description: 'Permite emular pasarelas de pago (Mercado Pago / Fintoc) con escenarios success, failure o abandon, garantizando la liberación inmediata del cupón ante fallos.',
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentSimulateRequest' } } },
+    },
+    responses: {
+      200: {
+        description: 'Simulación ejecutada con actualización de orden y cupón.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentSimulateResponse' } } },
+      },
+      400: {
+        description: 'Parámetros obligatorios ausentes o escenario inválido.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
       },
     },
   },
