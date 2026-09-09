@@ -308,7 +308,27 @@ Parámetros opcionales: `type` (`pickup` | `delivery`) y `driverId`.
 
 ## `POST /internal/routes/{id}/orders`
 
-Agrega pedidos a una ruta ya generada. Valida la capacidad restante del vehículo.
+Agrega pedidos a una ruta ya generada. El `{id}` acepta el código de la ruta, su `app_id`
+o su UUID.
+
+El servidor inserta las paradas al final, recalcula el recorrido con Directions y reescribe
+la secuencia con el orden que devuelve Google, de modo que los kilómetros que se muestran y
+el orden que sigue el conductor describan el mismo viaje.
+
+**409 `ROUTE_NOT_OPEN`**
+
+Una ruta cerrada o anulada no admite paradas nuevas. El conductor ya entregó la hoja del
+día, así que un pedido agregado ahí no lo recogería nadie: entra en la planificación
+siguiente.
+
+```jsonc
+{
+  "success": false,
+  "error": "ROUTE_NOT_OPEN",
+  "message": "La ruta RUT-REC-20260909-001 está cerrada y ya no admite paradas. Los pedidos entrarán en la próxima planificación.",
+  "status": "completed"
+}
+```
 
 **409 `ROUTE_CAPACITY_EXCEEDED`**
 
@@ -323,6 +343,16 @@ Agrega pedidos a una ruta ya generada. Valida la capacidad restante del vehícul
 ```
 
 Es la única validación dura de capacidad que ve una persona, y esa persona es el operador.
+La creación de un pedido nunca se bloquea por capacidad (D4).
+
+La capacidad solo se puede exigir cuando la patente de la ruta corresponde a un vehículo de
+la flota. Si no lo resuelve, los pedidos se agregan y la respuesta lo informa en vez de
+inventar un límite.
+
+**En la consola.** El panel de pedidos pendientes del tablero de administración ofrece un
+selector con las rutas de recogida abiertas del día, con su conductor y su número de
+paradas. Sin ninguna ruta abierta los botones quedan deshabilitados: primero hay que generar
+la planificación.
 
 ---
 
