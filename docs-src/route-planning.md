@@ -19,6 +19,128 @@ Este documento describe el algoritmo, el contrato de los endpoints y los código
 
 ---
 
+## Cobertura y días de servicio
+
+Flowex opera en **45 comunas de la Región Metropolitana**. La plataforma rechaza pedidos con
+retiro o entrega fuera de ese límite.
+
+| Comunas | Frecuencia | Días |
+|---|---|---|
+| 1 a 34 | Mismo día | Lunes a sábado |
+| 35 a 45 | Programada | Martes y sábado |
+
+Los precios no discriminan comuna.
+
+### Comunas programadas
+
+| # | Comuna | # | Comuna |
+|---|---|---|---|
+| 35 | Padre Hurtado | 41 | Talagante |
+| 36 | Calera de Tango | 42 | Pirque |
+| 37 | Lampa | 43 | Paine |
+| 38 | Peñaflor | 44 | El Monte |
+| 39 | Buin | 45 | Isla de Maipo |
+| 40 | Colina | | |
+
+### Cómo se aplica la regla
+
+`communes.service_days` guarda los días en formato ISO, donde 1 es lunes y 7 es domingo.
+Martes y sábado son `{2,6}`. La descripción en texto (`schedule_description`) es solo para
+mostrar: el planificador lee el arreglo.
+
+El filtro corre **antes de elegir el motor de optimización**, porque es una regla de la
+operación y no del solucionador. Un pedido cuya comuna no tiene servicio ese día no se
+rechaza: entra en la cola `unassigned` con motivo `outside_service_day` y el detalle indica
+su próxima fecha.
+
+```jsonc
+{
+  "trackingNumber": "FLX-2026-2461",
+  "kind": "pickup",
+  "reason": "outside_service_day",
+  "detail": "Talagante no tiene servicio los miércoles. Próxima fecha: 2026-09-12."
+}
+```
+
+Cuando una de las dos puntas del pedido está en comuna programada, manda la programada: la
+ruta no puede salir un día en que una de las dos no tiene servicio.
+
+### Rechazo por cobertura
+
+`POST /orders` responde **400 `COMMUNE_OUT_OF_COVERAGE`** cuando el retiro o la entrega
+caen fuera de las 45 comunas.
+
+```jsonc
+{
+  "success": false,
+  "error": "COMMUNE_OUT_OF_COVERAGE",
+  "message": "Fuera de la zona de cobertura: Concepción (entrega)",
+  "communes": ["Concepción (entrega)"]
+}
+```
+
+Esto es distinto del cupo diario, que **nunca** bloquea un pedido y solo mueve su fecha
+comprometida. La cobertura sí bloquea, porque aceptar un destino donde la operación no llega
+sería prometer un servicio que no existe.
+
+---
+
+## Panel de configuración de comunas
+
+Reservado al rol **root**. Cambiar una comuna decide qué pedidos acepta la plataforma y qué
+día sale un conductor, así que la escritura exige **doble confirmación** y queda registrada.
+
+### `GET /internal/communes`
+
+Lista las comunas con su frecuencia y sus días. Acepta `?covered=true`.
+
+### `POST /internal/communes/{id}/change-request`
+
+Primer paso. Devuelve el diff calculado en el servidor y un token firmado para **ese** cambio.
+
+```jsonc
+{
+  "requiresConfirmation": true,
+  "commune": { "id": 41, "name": "Talagante", "officialNumber": 41 },
+  "changes": [
+    { "campo": "Días de servicio", "antes": "martes y sábado", "despues": "martes" }
+  ],
+  "confirmationToken": "1788965197732.c26751e6…",
+  "expiresAt": "2026-09-09T14:46:37.732Z"
+}
+```
+
+### `PUT /internal/communes/{id}`
+
+Segundo paso. Aplica el cambio solo si el token corresponde exactamente a él.
+
+**409 `CONFIRMATION_REQUIRED`** cuando falta el token, cuando venció, o cuando se intenta
+reutilizar en un cambio distinto del que se revisó.
+
+**Por qué un token firmado y no una sesión.** Un Lambda no comparte memoria entre
+contenedores, así que un token guardado en RAM se aceptaría o rechazaría según qué
+contenedor respondiera. El token es un HMAC sobre el cambio concreto, el usuario y la
+expiración: es sin estado, no se puede falsificar desde el cliente, y no sirve para aplicar
+un cambio distinto al revisado. Vence a los 5 minutos.
+
+En la interfaz hay además una segunda barrera humana: el operador debe escribir el nombre de
+la comuna para habilitar el botón.
+
+### `GET /internal/communes/{id}/history`
+
+Bitácora de cambios con quién los hizo y qué se movió. Visible para `root` y `admin`.
+
+### Validaciones
+
+- `serviceDays` solo admite enteros de 1 a 7.
+- Una comuna **con cobertura no puede quedar sin días**: sus pedidos no entrarían nunca en una ruta. Para dejarla sin días hay que retirarle la cobertura en el mismo cambio.
+- `zoneType` solo admite `same_day` o `scheduled`.
+
+> Los seeds no otorgan cobertura. Corren en cada despliegue, así que hacerlo revertiría en
+> silencio cualquier ajuste hecho desde el panel.
+
+---
+
 ## Carga por pedido
 
 No hay balanza ni campo de peso real: la carga se deriva del catálogo de tarifas. Cada bulto
