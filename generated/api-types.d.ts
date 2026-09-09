@@ -649,7 +649,7 @@ export interface Operations {
   }
   "coupons_post_validate": {
     method: "POST"
-    path: "/coupons/validate"
+    path: "/internal/coupons/validate"
     requestBody: CouponValidationRequest
     responses: {
       "200": CouponValidationResponse
@@ -659,7 +659,7 @@ export interface Operations {
   }
   "coupons_post_release": {
     method: "POST"
-    path: "/coupons/release"
+    path: "/internal/coupons/release"
     requestBody: CouponReleaseRequest
     responses: {
       "200": StandardSuccessResponse
@@ -669,7 +669,7 @@ export interface Operations {
   }
   "root_post_coupons": {
     method: "POST"
-    path: "/root/coupons"
+    path: "/internal/root/coupons"
     requestBody: CouponCreateRequest
     responses: {
       "201": {
@@ -682,7 +682,7 @@ export interface Operations {
   }
   "root_get_coupons": {
     method: "GET"
-    path: "/root/coupons"
+    path: "/internal/root/coupons"
     requestBody: undefined
     responses: {
       "200": {
@@ -701,7 +701,7 @@ export interface Operations {
   }
   "root_post_coupons_batch": {
     method: "POST"
-    path: "/root/coupons/batch"
+    path: "/internal/root/coupons/batch"
     requestBody: CouponBatchCreateRequest
     responses: {
       "201": {
@@ -715,7 +715,7 @@ export interface Operations {
   }
   "root_post_coupons_import_csv": {
     method: "POST"
-    path: "/root/coupons/import-csv"
+    path: "/internal/root/coupons/import-csv"
     requestBody: CouponImportCsvRequest
     responses: {
       "201": {
@@ -729,7 +729,7 @@ export interface Operations {
   }
   "root_patch_coupon_by_id": {
     method: "PATCH"
-    path: "/root/coupons/{id}"
+    path: "/internal/root/coupons/{id}"
     requestBody: CouponUpdateRequest
     responses: {
       "200": {

@@ -406,7 +406,7 @@ paths:
       x-roles:
         - root
         - admin
-  /coupons/validate:
+  /internal/coupons/validate:
     post:
       tags:
         - Coupons
@@ -444,7 +444,7 @@ paths:
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - client
-  /coupons/release:
+  /internal/coupons/release:
     post:
       tags:
         - Coupons
@@ -482,7 +482,7 @@ paths:
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - client
-  /root/coupons:
+  /internal/root/coupons:
     post:
       tags:
         - Coupons
@@ -602,7 +602,7 @@ paths:
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - root
-  /root/coupons/batch:
+  /internal/root/coupons/batch:
     post:
       tags:
         - Coupons
@@ -651,7 +651,7 @@ paths:
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - root
-  /root/coupons/import-csv:
+  /internal/root/coupons/import-csv:
     post:
       tags:
         - Coupons
@@ -700,7 +700,7 @@ paths:
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - root
-  /root/coupons/{id}:
+  /internal/root/coupons/{id}:
     patch:
       tags:
         - Coupons

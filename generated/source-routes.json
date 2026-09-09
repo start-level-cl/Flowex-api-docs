@@ -201,7 +201,7 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "post",
-    "path": "/coupons/validate",
+    "path": "/internal/coupons/validate",
     "operationId": "coupons_post_validate",
     "tag": "Coupons",
     "tags": [
@@ -217,7 +217,7 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "post",
-    "path": "/coupons/release",
+    "path": "/internal/coupons/release",
     "operationId": "coupons_post_release",
     "tag": "Coupons",
     "tags": [
@@ -233,7 +233,7 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "post",
-    "path": "/root/coupons",
+    "path": "/internal/root/coupons",
     "operationId": "root_post_coupons",
     "tag": "Coupons",
     "tags": [
@@ -249,7 +249,7 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "post",
-    "path": "/root/coupons/batch",
+    "path": "/internal/root/coupons/batch",
     "operationId": "root_post_coupons_batch",
     "tag": "Coupons",
     "tags": [
@@ -265,7 +265,7 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "post",
-    "path": "/root/coupons/import-csv",
+    "path": "/internal/root/coupons/import-csv",
     "operationId": "root_post_coupons_import_csv",
     "tag": "Coupons",
     "tags": [
@@ -281,7 +281,7 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
-    "path": "/root/coupons",
+    "path": "/internal/root/coupons",
     "operationId": "root_get_coupons",
     "tag": "Coupons",
     "tags": [
@@ -297,7 +297,7 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "patch",
-    "path": "/root/coupons/{id}",
+    "path": "/internal/root/coupons/{id}",
     "operationId": "root_patch_coupon_by_id",
     "tag": "Coupons",
     "tags": [

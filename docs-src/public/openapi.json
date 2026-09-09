@@ -665,7 +665,7 @@
         ]
       }
     },
-    "/coupons/validate": {
+    "/internal/coupons/validate": {
       "post": {
         "tags": [
           "Coupons"
@@ -727,7 +727,7 @@
         ]
       }
     },
-    "/coupons/release": {
+    "/internal/coupons/release": {
       "post": {
         "tags": [
           "Coupons"
@@ -789,7 +789,7 @@
         ]
       }
     },
-    "/root/coupons": {
+    "/internal/root/coupons": {
       "post": {
         "tags": [
           "Coupons"
@@ -975,7 +975,7 @@
         ]
       }
     },
-    "/root/coupons/batch": {
+    "/internal/root/coupons/batch": {
       "post": {
         "tags": [
           "Coupons"
@@ -1053,7 +1053,7 @@
         ]
       }
     },
-    "/root/coupons/import-csv": {
+    "/internal/root/coupons/import-csv": {
       "post": {
         "tags": [
           "Coupons"
@@ -1131,7 +1131,7 @@
         ]
       }
     },
-    "/root/coupons/{id}": {
+    "/internal/root/coupons/{id}": {
       "patch": {
         "tags": [
           "Coupons"
