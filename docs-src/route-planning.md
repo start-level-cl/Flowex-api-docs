@@ -229,6 +229,42 @@ Genera la planificación del día.
 `trigger: "manual"` es el botón de re-generación y **exige rol `root`**. La validación vive
 en el endpoint, no en la interfaz.
 
+### Tope diario de corridas
+
+Cada corrida se paga a la API de Route Optimization. En un ambiente de pruebas el mismo día
+se replanifica una y otra vez, y eso es dinero gastado en un despliegue que no despacha
+nada, así que **develop tiene un tope diario y producción no**.
+
+| Ambiente | `ROUTE_PLANNING_DAILY_LIMIT` | Efecto |
+|---|---|---|
+| dev | `2` | Dos corridas por fecha, la programada del corte incluida |
+| prod | `0` | Sin tope |
+
+El tope es un número en el entorno, no una comprobación del nombre del ambiente: producción
+no puede heredarlo por accidente y se cambia sin desplegar código.
+
+**Una simulación cuenta.** `dryRun` no escribe nada, pero llama a Google igual que una
+corrida real y cuesta lo mismo. Dejarla fuera del contador volvía el tope burlable.
+
+El límite se comprueba antes de leer la base y antes de llamar al optimizador, así que una
+corrida rechazada no gasta ninguna petición.
+
+Una corrida que termina en excepción no queda registrada y por lo tanto no descuenta cupo.
+
+**429 `PLANNING_DAILY_LIMIT_REACHED`**
+
+```jsonc
+{
+  "success": false,
+  "error": "PLANNING_DAILY_LIMIT_REACHED",
+  "message": "Se alcanzó el límite de 2 generación(es) de rutas por día en este ambiente. Hoy se ejecutaron 2. El contador se reinicia mañana.",
+  "quota": { "used": 2, "limit": 2, "remaining": 0, "exhausted": true, "date": "2026-09-09" }
+}
+```
+
+Si el contador no se puede leer, la corrida se deja pasar. Quedarse sin poder planificar
+porque falló un `SELECT` es peor que una corrida sin contar.
+
 **Respuesta**
 
 ```jsonc
@@ -270,9 +306,12 @@ en el endpoint, no en la interfaz.
     { "plate": "KJL-942", "driver": "Roberto Gómez", "weightPct": 26, "volumePct": 38, "packagesPct": 65, "timePct": 45 }
   ],
   "metrics": { "routesCreated": 3, "totalUnassigned": 4, "fallbackUsed": false },
+  "quota": { "used": 1, "limit": 2, "remaining": 1, "exhausted": false, "date": "2026-09-09" },
   "warnings": []
 }
 ```
+
+`quota` viene con la corrida ya descontada. `limit: 0` significa sin tope.
 
 ### `estimateSource`
 
@@ -294,6 +333,27 @@ La interfaz solo puede rotular la lista como "optimizada" cuando vale `google`.
 | `missing_coordinates` | El pedido no tiene coordenadas válidas |
 
 Ningún pedido de esta lista fue rechazado. Todos entran al corte siguiente.
+
+---
+
+## `GET /internal/routes/planning-quota`
+
+Cuántas generaciones quedan hoy, sin gastar ninguna. La consola lo consulta al entrar y al
+cambiar de fecha, para avisar antes de gastar la última en vez de que el tope aparezca como
+un rechazo.
+
+Parámetro opcional: `date` (`YYYY-MM-DD`, por defecto hoy). El contador se lleva por fecha,
+así que se reinicia solo.
+
+```jsonc
+{
+  "success": true,
+  "unlimited": false,
+  "quota": { "used": 1, "limit": 2, "remaining": 1, "exhausted": false, "date": "2026-09-09" }
+}
+```
+
+En producción responde `unlimited: true` con `remaining: null`.
 
 ---
 
