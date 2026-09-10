@@ -92,7 +92,48 @@ día sale un conductor, así que la escritura exige **doble confirmación** y qu
 
 ### `GET /internal/communes`
 
-Lista las comunas con su frecuencia y sus días. Acepta `?covered=true`.
+Lista las comunas con su frecuencia, sus días y su centro (`latitude`, `longitude`). Las
+coordenadas son lo que permite dibujarlas en el mapa del selector, así el operador ve qué
+ya está cubierto antes de agregar nada. Acepta `?covered=true`.
+
+### `GET /internal/geo/commune-at`
+
+Qué comuna hay bajo un punto del mapa. Es lo que convierte un clic del selector en un
+nombre y una región, en vez de depender de que se escriban bien.
+
+Parámetros obligatorios: `lat` y `lng`.
+
+En Chile la región es `administrative_area_level_1` y la comuna
+`administrative_area_level_3`. Los puntos rurales que solo traen `locality` caen a ese, en
+lugar de responder vacío y hacer ver el mapa como roto.
+
+```jsonc
+{
+  "success": true,
+  "commune": "Til Til",
+  "region": "Región Metropolitana de Santiago",
+  "latitude": -33.0839,
+  "longitude": -70.9294,
+  "placeId": "ChIJ…",
+  "existing": null
+}
+```
+
+`existing` viene con la comuna ya registrada cuando el punto cae sobre una. El selector lo
+muestra y bloquea el alta, en vez de dejar que falle por duplicado.
+
+Un punto fuera de Chile o en el mar responde `200` con `success: false` y
+`NO_COMMUNE_AT_POINT`: no es un error de la petición, es que ahí no hay nada que agregar.
+Una caída de Google responde `502 GEOCODING_FAILED`.
+
+Google puede resolver la comuna sin la región. La respuesta lo refleja con `region: null` y
+el alta queda bloqueada, porque necesita las dos.
+
+### Alta de una comuna
+
+`POST /internal/communes` acepta `latitude`, `longitude` y `placeId`. Con ellos el servidor
+no geocodifica el nombre, que es donde se colaban los errores de escritura. Sin ellos sigue
+resolviendo por nombre y región.
 
 ### `POST /internal/communes/{id}/change-request`
 
