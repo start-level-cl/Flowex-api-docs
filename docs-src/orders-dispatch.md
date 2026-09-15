@@ -207,3 +207,31 @@ export interface Order {
 }
 ```
 
+---
+
+## 🏷️ Sistema de Etiquetas de Despacho y Bultos Multi-Paquete (Shipping Labels)
+
+Flowex provee generación e impresión directa de etiquetas logísticas estándar optimizadas para impresoras térmicas adhesivas (**100 mm x 150 mm / 4" x 6"**) o papel común A4/Carta.
+
+### 1. Fraccionamiento Multi-Bulto (`1/N`)
+Cuando un pedido se ingresa con múltiples bultos (`packagesCount > 1`), el motor emite una etiqueta única por cada bulto con la numeración secuencial explícita:
+* **`1/3`**: Bulto 1 de 3.
+* **`2/3`**: Bulto 2 de 3.
+* **`3/3`**: Bulto 3 de 3.
+* **`1/1`**: Bulto unitario único.
+
+Esto permite a conductores en ruta y operadores en el **Hub Central Quilicura** verificar que el lote viaje íntegro antes de la carga en vehículo o entrega final.
+
+### 2. Estructura de la Etiqueta
+Cada etiqueta incluye:
+* **Cabecera**: Logotipo Flowex y contador de bulto (`X/N`).
+* **Código de Barras Code-128 (SVG)**: Renderizado vectorial sin dependencias externas para escaneo nítido con pistolas láser o cámaras móviles.
+* **Datos del Destinatario**: Nombre completo de quien recibe (`recipientName`), dirección de entrega y comuna destacada en caja de alto contraste.
+* **Remitente**: Nombre y dirección de origen para devoluciones o trazabilidad.
+* **Trazabilidad Operacional**: Hub responsable (`Hub Central Quilicura`), PIN de validación (`deliveryCode`), peso en kg y tipo de servicio.
+
+### 3. Acceso Permanente desde Tablas
+* **Mis Envíos (Cliente)**: Botón con icono `Printer` en la columna *Acciones* de `CustomerOrdersPage`.
+* **Gestión Central & Bodega (Admin)**: Botón `Etiqueta` disponible en la tabla general de pedidos y en la bandeja de pedidos pendientes de recogida de `AdminDashboardPage`.
+
+
