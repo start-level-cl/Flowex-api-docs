@@ -90,6 +90,27 @@ Valida las credenciales del usuario y emite los tokens de acceso y renovación.
 }
 ```
 
+* **Cuenta bloqueada (`403 Forbidden`):** las credenciales correctas no bastan; el estado
+  de la cuenta se lee de `users.is_active`.
+```json
+{
+  "message": "Tu cuenta se encuentra bloqueada. Motivo: Fraude documentado en 3 envíos",
+  "code": "BLOCKED",
+  "reason": "Fraude documentado en 3 envíos",
+  "blockedAt": "2026-09-15T12:00:00.000Z"
+}
+```
+
+> **Alcance del bloqueo.** Además del login, se comprueba en `POST /auth/refresh`,
+> `GET /auth/validate`, `POST /auth/change-password` y en los dos endpoints de
+> consentimiento de autoservicio. Un token emitido antes de `users.sessions_revoked_at`
+> se rechaza con `code: "SESSION_REVOKED"`, de modo que bloquear a alguien alcanza a la
+> sesión que ya tenía abierta sin esperar a que expire el access token.
+>
+> Si la base de datos no está configurada o no responde, la comprobación se omite y se
+> registra un aviso: una caída de base no debe convertirse en una denegación masiva de
+> acceso.
+
 ---
 
 ### 2. Cerrar Sesión (`POST /auth/logout`)

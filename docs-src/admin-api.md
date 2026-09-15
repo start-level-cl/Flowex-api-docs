@@ -129,11 +129,20 @@ Retorna todas las encomiendas vinculadas al usuario (como conductor asignado o c
 ---
 
 ### 5. Suspender o Reactivar Cuenta (`PATCH /internal/users/{userId}/status`)
-* **Cuerpo de Solicitud:**
+* **Rol requerido: `root` únicamente.** Es la única acción del portal vedada al rol `admin`.
+  A cambio, `root` puede aplicarla sobre cualquier otra cuenta, incluidos otros `admin`.
+* **Errores:**
+  * `400` si falta `isActive`, si se bloquea sin `reason`, o si `reason` supera 500 caracteres.
+  * `401` sin token válido.
+  * `403` si el solicitante no es `root`.
+  * `404` si el usuario no existe en `users`.
+  * `409` si `root` intenta bloquear su propia cuenta.
+  * `502` si la escritura en base de datos falla (no se reporta un éxito falso).
+* **Cuerpo de Solicitud:** `reason` es obligatorio al bloquear y opcional al reactivar.
 ```json
 {
   "isActive": false,
-  "reason": "Suspensión preventiva administrativa"
+  "reason": "Fraude documentado en 3 envíos"
 }
 ```
 * **Respuesta (`200 OK`):**
@@ -141,9 +150,18 @@ Retorna todas las encomiendas vinculadas al usuario (como conductor asignado o c
 {
   "message": "Estado de usuario actualizado correctamente",
   "userId": "usr_drv_201",
-  "isActive": false
+  "isActive": false,
+  "reason": "Fraude documentado en 3 envíos",
+  "blockedAt": "2026-09-15T12:00:00.000Z",
+  "sessionsRevokedAt": "2026-09-15T12:00:00.000Z",
+  "persisted": true
 }
 ```
+
+El cambio se escribe en `users` (`is_active`, `blocked_origin`, `blocked_reason`,
+`blocked_by_id`, `blocked_at`) y estampa `sessions_revoked_at`, que es lo que invalida los
+tokens ya emitidos. `persisted: false` indica que no había base configurada y el cambio
+solo vive en memoria (modo demostración). Ver migración `028_user_blocking.sql`.
 
 ---
 
