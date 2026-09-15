@@ -139,8 +139,9 @@ Genera el `widgetToken` y la URL para inicializar el widget de Open Banking.
 ---
 
 ### 3. Webhook de Notificación Mercado Pago (`POST /webhooks/mercadopago`)
-Receptor de notificaciones IPN enviado por los servidores de Mercado Pago tras procesar una transacción.
+Receptor de notificaciones IPN enviado por los servidores de Mercado Pago tras procesar una transacción. Valida la firma criptográfica HMAC-SHA256 del encabezado `x-signature`.
 
+* **Encabezados Requeridos:** `x-signature`, `x-request-id`
 * **Cuerpo de Solicitud Recibido (`JSON`):**
 ```json
 {
@@ -171,9 +172,9 @@ Receptor de notificaciones IPN enviado por los servidores de Mercado Pago tras p
 ---
 
 ### 4. Webhook de Notificación Fintoc (`POST /webhooks/fintoc`)
-Receptor de eventos emitidos por Fintoc tras el éxito o rechazo de una transferencia bancaria A2A.
+Receptor de eventos emitidos por Fintoc tras el éxito, rechazo o requerimiento de acción en una transferencia bancaria A2A. Valida la firma HMAC-SHA256 del encabezado `Fintoc-Signature` sobre el cuerpo crudo de la solicitud antes del parseo JSON.
 
-* **Encabezado Obligatorio:** `x-fintoc-signature: t=...,v1=...`
+* **Encabezado Obligatorio:** `Fintoc-Signature: t=...,v1=...`
 * **Cuerpo de Solicitud (`payment_intent.succeeded`):**
 ```json
 {
@@ -203,3 +204,104 @@ Receptor de eventos emitidos por Fintoc tras el éxito o rechazo de una transfer
   "transactionId": "TX-FINTOC-pi_fintoc_1771344928000"
 }
 ```
+
+---
+
+### 5. Simulador Interno de Pagos (`POST /payments/simulate`)
+Endpoint utilitario de Flowex para pruebas automatizadas (CI/CD, tests de UI y desarrollo local) que simula el procesamiento completo de cobro y conciliación sin requerir interacción con pasarelas externas.
+
+* **Cuerpo de Solicitud:**
+```json
+{
+  "orderId": "ord_1771344928",
+  "scenario": "success",
+  "amount": 14500,
+  "couponId": "coup_desc_10pct",
+  "provider": "mercadopago"
+}
+```
+
+* **Valores de `scenario`:**
+  * `"success"`: Marca la orden como pagada (`status: 'paid'`), genera ID de transacción ficticio y consolida los cupones (`applied`).
+  * `"failure"`: Marca la orden como pago fallido (`status: 'payment_failed'`) y libera inmediatamente los cupones (`cancelled`) para reintento.
+  * `"abandon"`: Devuelve la orden a estado creado (`status: 'created'`) y cancela la reserva de cupones.
+
+* **Respuesta Exitosa (`200 OK`):**
+```json
+{
+  "success": true,
+  "scenario": "success",
+  "status": "approved",
+  "orderId": "ord_1771344928",
+  "orderStatus": "paid",
+  "transactionId": "TX-MERCADOPAGO-A1B2C3D4E5F6",
+  "couponReleased": false,
+  "couponStatus": "applied",
+  "message": "Pago simulado con éxito. El cupón ha sido aplicado definitivamente a la orden.",
+  "timestamp": "2026-09-15T12:00:00.000Z"
+}
+```
+
+---
+
+## 🧪 Guía de Pruebas y Credenciales de Sandbox (Testing & QA)
+
+Para ejecutar pruebas funcionales de extremo a extremo sin comprometer fondos reales, Flowex soporta el modo de prueba nativo de ambas pasarelas.
+
+### 1. Mercado Pago (Checkout Pro - Modo Sandbox)
+
+> [!IMPORTANT]
+> **Mecanismo de Sandbox en Mercado Pago:** Mercado Pago eliminó los dominios de sandbox independientes (`sandbox.mercadopago.cl`). La pasarela se ejecuta sobre la URL productiva estándar y **el modo de prueba se activa exclusivamente cuando las credenciales configuradas en el servidor comienzan con el prefijo `TEST-`** (`MP_ACCESS_TOKEN=TEST-...`).
+
+#### Tarjetas de Crédito de Prueba (Chile)
+Al ser redirigido a la interfaz de Checkout Pro de Mercado Pago, utiliza cualquiera de las siguientes combinaciones de tarjetas de prueba:
+
+| Escenario de Prueba | Número de Tarjeta | Nombre del Titular | Vencimiento | Código (CVV) | Cuotas | Resultado Esperado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Pago Aprobado (Éxito)** | `2341 2341 2341 2341` | `APRO` | Fecha futura (ej. `12/28`) | `123` | 1 cuota | Orden pasa a `paid`, webhook recibe `approved`. |
+| **Fondos Insuficientes** | `2341 2341 2341 2341` | `CALL` | Fecha futura (ej. `12/28`) | `123` | 1 cuota | Rechazo por falta de fondos. |
+| **Rechazo General** | `2341 2341 2341 2341` | `CONT` | Fecha futura (ej. `12/28`) | `123` | 1 cuota | Rechazo general por pasarela. |
+| **Tarjeta Inválida** | `2341 2341 2341 2341` | `OTHE` | Fecha futura (ej. `12/28`) | `123` | 1 cuota | Rechazo por datos inválidos. |
+| **Mastercard Aprobada** | `5500 0000 0000 0001` | `APRO` | Fecha futura (ej. `12/28`) | `123` | 1 cuota | Pago aprobado exitosamente. |
+| **Visa Aprobada** | `4012 0010 3714 1112` | `APRO` | Fecha futura (ej. `12/28`) | `123` | 1 cuota | Pago aprobado exitosamente. |
+
+#### Reglas Clave para Pruebas en Mercado Pago:
+1. **No usar la cuenta del vendedor:** Si intentas pagar estando logueado en Mercado Pago con la misma cuenta de desarrollador dueña del `MP_ACCESS_TOKEN`, Mercado Pago bloqueará la transacción con el error *"No puedes pagarte a ti mismo"*.
+2. **Ventana de incógnito:** Se recomienda realizar las pruebas en una ventana de incógnito del navegador y pagar como **"Invitado"** o con un usuario de prueba (*Test User*) creado en el panel de Mercado Pago Developers.
+
+---
+
+### 2. Fintoc (Open Banking A2A - Modo Sandbox)
+
+Fintoc opera en modo de pruebas cuando se inicializa con llaves que contienen el prefijo `_test_` (`FINTOC_SECRET_KEY=sk_test_...` y `FINTOC_PUBLIC_KEY=pk_test_...`). El backend responde con `"mode": "test"`, permitiendo que el widget montado en el navegador interactúe con un simulador bancario chileno completo.
+
+#### Credenciales Bancarias de Prueba (Cualquier Banco Chileno)
+En el modal de Fintoc puedes seleccionar cualquier entidad bancaria compatible (**Banco de Chile, Santander, BCI, BancoEstado, Banco Falabella, Itaú, Scotiabank**) y usar los siguientes datos:
+
+| Campo del Simulador Bancario | Valor de Prueba | Notas |
+| :--- | :--- | :--- |
+| **RUT del Titular** | `11.111.111-1` | Se acepta cualquier RUT chileno con dígito verificador válido. |
+| **Clave Internet Bancaria** | `test` | Se admite cualquier contraseña alfanumérica de 4 a 8 caracteres. |
+| **Segunda Clave / SMS / Digipass** | `123456` | Código universal de prueba para autorizar la transferencia. |
+
+* **Comportamiento:** Tras ingresar la clave de autorización, Fintoc procesa la transferencia virtualmente en menos de 3 segundos y emite el webhook firmado `payment_intent.succeeded` al endpoint `/webhooks/fintoc`.
+
+---
+
+### 3. Matriz de Variables de Entorno de Pruebas
+
+Para configurar el entorno de pruebas local o staging en AWS Secrets Manager / `.env`:
+
+| Variable de Entorno | Tipo | Ejemplo de Prueba / Sandbox | Descripción |
+| :--- | :--- | :--- | :--- |
+| `MP_SECRET_NAME` | AWS Secret | `flowex/dev/mercadopago/checkout-pro` | Nombre del secreto en AWS Secrets Manager |
+| `MP_ACCESS_TOKEN` | String | `TEST-1234567890123456-abcdef-...` | Token privado de prueba de Mercado Pago Chile |
+| `MP_WEBHOOK_SECRET` | String | `whsec_test_mp_...` | Secreto HMAC para validar header `x-signature` |
+| `MP_NOTIFICATION_URL` | URL | `https://api.flowex.cl/webhooks/mercadopago` | URL pública donde Mercado Pago envía las notificaciones |
+| `FINTOC_SECRET_NAME` | AWS Secret | `flowex/dev/fintoc/payments` | Nombre del secreto en AWS Secrets Manager |
+| `FINTOC_SECRET_KEY` | String | `sk_test_123456789abcdef` | Llave privada de API Fintoc (servidor) |
+| `FINTOC_PUBLIC_KEY` | String | `pk_test_123456789abcdef` | Llave pública de Fintoc (enviada al cliente SPA) |
+| `FINTOC_WEBHOOK_SECRET`| String | `whsec_123456789abcdef` | Secreto HMAC para validar header `Fintoc-Signature` |
+| `FINTOC_SESSION_TTL_MINUTES` | Number | `30` | Tiempo de vida de la sesión (mínimo 10 minutos) |
+| `APP_URL` | URL | `https://app.flowex.cl` | Origen público para redirección en `back_urls` |
+
