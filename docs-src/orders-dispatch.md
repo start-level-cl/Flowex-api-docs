@@ -234,4 +234,53 @@ Cada etiqueta incluye:
 * **Mis Envíos (Cliente)**: Botón con icono `Printer` en la columna *Acciones* de `CustomerOrdersPage`.
 * **Gestión Central & Bodega (Admin)**: Botón `Etiqueta` disponible en la tabla general de pedidos y en la bandeja de pedidos pendientes de recogida de `AdminDashboardPage`.
 
+---
+
+## 🧾 Solicitud y Gestión de Facturación Electrónica (DTE)
+
+Flowex incorpora un flujo operacional para la gestión de documentos tributarios electrónicos (DTE - Factura Afecta con 19% IVA), permitiendo a empresas solicitar factura al momento de registrar despachos y a los administradores (**`root`**) tramitar y registrar el **Folio oficial del SII**.
+
+### 1. Solicitud por el Cliente (Tarjeta Final)
+En la sección final de confirmación de envíos (`CreateOrderPage`), el remitente puede marcar la casilla **"Solicitar Factura Electrónica (DTE)"**:
+* **Desglose Tributario Automático**:
+  $$\text{Neto} = \text{round}\left(\frac{\text{Total}}{1.19}\right)$$
+  $$\text{IVA (19\%)} = \text{Total} - \text{Neto}$$
+* **Datos Fiscales Requeridos**:
+  * **RUT Empresa**: Validación estricta con algoritmo chileno Módulo 11 (formato `XX.XXX.XXX-K`).
+  * **Razón Social**: Nombre legal de la empresa.
+  * **Giro Comercial**: Actividad económica registrada en el SII.
+  * **Correo DTE**: Casilla electrónica habilitada para recepción de XML/PDF del SII.
+  * **Dirección Tributaria**: Domicilio fiscal registrado.
+* **Autocompletado desde Perfil**: Si la cuenta cuenta con datos en `user.billingInfo`, el formulario precarga la información con opción de restauración en un clic.
+
+### 2. Estados de Facturación (`InvoiceStatus`)
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> none: Sin Solicitud
+    [*] --> requested: Cliente marca Solicitud de Factura
+    requested --> emitted: Root registra Folio SII en Consola
+    emitted --> [*]
+```
+
+* **`none`**: Pedido estándar sin requerimiento de factura empresarial.
+* **`requested`**: Solicitud registrada; pedido marcado con insignia amarilla 🟡 `🧾 Factura Solicitada`.
+* **`emitted`**: Documento emitido en SII; pedido marcado con insignia verde 🟢 `🧾 Factura #FOLIO`.
+
+### 3. Consola Operativa para Superusuario (`root`)
+En la Consola de Operaciones (`AdminDashboardPage`):
+* **Filtros Dedicados**: En el selector de estados se incluyen los filtros `🧾 Facturas Pendientes (Solicitadas)` y `🧾 Facturas Emitidas (Folio SII)`.
+* **Búsqueda Integrada**: La barra de búsqueda filtra instantáneamente por RUT de empresa, Razón Social o Folio SII.
+* **Modal de Gestión DTE (`InvoiceManagementModal`)**:
+  * Visualización de montos (Neto, IVA 19%, Total).
+  * Botones de copiado rápido (`Copy`) de RUT, Razón Social, Giro y Correo para agilizar el ingreso en el portal de facturación del SII o ERP.
+  * Campo para registrar el **Folio SII** oficial otorgado por la autoridad tributaria.
+  * Trazabilidad en la bitácora de auditoría (`eventLogs`) con marca de tiempo y rol del operador.
+
+### 4. Transparencia para el Cliente
+* **Mis Envíos (`CustomerOrdersPage`)**: La columna de costo muestra la etiqueta de estado de la factura. Al abrir el modal de detalles, se expone el desglose de Neto + IVA y el número de Folio oficial registrado.
+* **Pasarela de Checkout (`CheckoutPage`)**: El resumen lateral detalla la solicitud de factura electrónica DTE adjunta al despacho.
+
+
 
