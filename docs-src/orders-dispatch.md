@@ -282,5 +282,28 @@ En la Consola de Operaciones (`AdminDashboardPage`):
 * **Mis Envíos (`CustomerOrdersPage`)**: La columna de costo muestra la etiqueta de estado de la factura. Al abrir el modal de detalles, se expone el desglose de Neto + IVA y el número de Folio oficial registrado.
 * **Pasarela de Checkout (`CheckoutPage`)**: El resumen lateral detalla la solicitud de factura electrónica DTE adjunta al despacho.
 
+---
 
+## ✏️ Modificación de Pedidos por el Cliente (`client-modifications`)
 
+Flowex permite al remitente o cliente autenticado modificar campos críticos del destinatario antes del despacho final mediante el endpoint `PATCH /internal/orders/{id}/client-modifications` (o `/orders/{id}/client-modifications`).
+
+### 1. Reglas de Negocio Operacionales
+
+| Campo Modificado | Restricción Operativa | Impacto en Rutas y Logística |
+| :--- | :--- | :--- |
+| **Nombre Destinatario** (`recipientName`) | Mínimo 2 caracteres, máx 150. | **Ninguno**. No altera rutas ni compromisos de fecha. |
+| **Teléfono Contacto** (`recipientPhone`) | **Máximo 1 modificación por pedido** para rol `client`. Valida móvil chileno (`+56 9 XXXX XXXX` o 9 dígitos iniciando en 9). Si el número es idéntico al actual, se rechaza sin consumir el intento. | Se actualiza en la ficha y en la bitácora de contacto para el chofer. |
+| **Dirección / Comuna** (`recipientAddress`, `recipientCommune`) | Mínimo 5 caracteres de dirección. Comuna dentro de la cobertura RM. | **Desasignación de Ruta Inmediata**: Si el pedido estaba en una ruta activa, se elimina de `route_orders`, se descuentan los bultos y peso de la ruta, y se marca con `needs_rescheduling = TRUE` para la siguiente ronda de planificación. |
+
+### 2. Estados Permitidos y Restricciones de Seguridad
+
+* **Permitido**: Estados previos al despacho (`created`, `pending`, `in_hub`, `pickup_failed`, `delivery_failed`).
+* **Bloqueado (409 Conflict)**: Estados en tránsito final (`out_for_delivery` - chofer ya en camino) y órdenes cerradas (`delivered`).
+* **Autorización**: Solo el cliente propietario de la orden (`customer_id` o `sender_email` coincidentes con el token JWT) o usuarios privilegiados (`root`, `admin`) tienen permiso (403 Forbidden para terceros).
+
+### 3. Trazabilidad y Auditoría
+
+Cada modificación genera:
+1. Un registro estructurado en la tabla `order_status_history` con `action = 'client_order_modification'` y detalle de los campos alterados.
+2. Una entrada en el historial de eventos (`eventLogs`) visible en la auditoría del despacho.
