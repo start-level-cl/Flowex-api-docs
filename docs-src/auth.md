@@ -193,3 +193,122 @@ Permite actualizar la contraseña de una cuenta autenticada.
   "message": "Clave actualizada exitosamente"
 }
 ```
+
+---
+
+## 🔐 Segundo Factor de Autenticación (2FA / MFA)
+
+Para mitigar riesgos de robo de credenciales en cuentas con acceso a infraestructura o rutas de reparto en vivo, Flowex implementa un segundo factor de autenticación de dos pasos.
+
+### Políticas de Aplicación por Rol
+* **Mandatorio (`root`, `admin`, `driver`):** Todo inicio de sesión requiere un desafío 2FA de 6 dígitos. No puede ser desactivado por el usuario.
+* **Opcional (`client`):** El cliente puede activar o desactivar 2FA desde su perfil de usuario (`PATCH /users/me/security`). Por defecto se mantiene desactivado para agilizar el checkout.
+* **Canales:**
+  * **Email (Principal):** Despachado vía SQS a `Flowex-notification-lambda` con plantilla SES y código con TTL de 5 minutos.
+  * **SMS (Respaldo):** Despachado a través de Amazon SNS hacia el teléfono móvil chileno registrado en formato E.164.
+* **Modo Sandbox / Develop:** En entornos de desarrollo (`STAGE === 'dev'`, `NODE_ENV === 'development'` o sandbox), la API devuelve `sandboxCode: "123456"` en la respuesta JSON para permitir testing automatizado e interactivo sin consultar buzones reales.
+
+---
+
+### 6. Desafío de Segundo Paso (`POST /auth/login` con 2FA)
+Cuando el usuario tiene 2FA requerido o habilitado, `POST /auth/login` no emite tokens definitivos, sino un `mfaToken` temporal firmado (TTL 5 minutos):
+
+* **Respuesta (`200 OK` con desafío 2FA):**
+```json
+{
+  "mfaRequired": true,
+  "mfaToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "channel": "email",
+  "destination": "r***t@flowex.cl",
+  "maskedEmail": "r***t@flowex.cl",
+  "maskedPhone": "+56 9 **** 7217",
+  "supportedChannels": ["email", "sms"],
+  "expiresInSeconds": 300,
+  "resendCooldownSeconds": 60,
+  "sandboxCode": "123456",
+  "isSandbox": true,
+  "message": "Segundo paso de autenticación requerido. Código enviado por correo electrónico."
+}
+```
+
+---
+
+### 7. Verificación de Código 2FA (`POST /auth/login/verify-2fa`)
+Valida el código de 6 dígitos ingresado por el usuario junto con el `mfaToken`.
+
+* **Cuerpo de Solicitud:**
+```json
+{
+  "mfaToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "code": "123456"
+}
+```
+* **Respuesta Exitosa (`200 OK`):**
+Retorna los tokens definitivos (`accessToken`, `refreshToken`), establece las cookies `HttpOnly` y retorna el perfil de usuario autenticado.
+```json
+{
+  "message": "Segundo factor verificado exitosamente",
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "sub": "usr_flowex_root",
+    "email": "root@flowex.cl",
+    "name": "Super Admin",
+    "role": "root",
+    "mfaEnabled": true
+  }
+}
+```
+* **Errores (`400 / 429`):**
+  * `400 Bad Request`: Código inválido o expirado. Retorna `remainingAttempts`.
+  * `429 Too Many Requests`: Se excedió el límite de 5 intentos fallidos. El `mfaToken` queda invalidado.
+
+---
+
+### 8. Reenvío o Cambio de Canal 2FA (`POST /auth/login/resend-2fa`)
+Permite reenviar el código al correo electrónico o alternar al canal de SMS.
+
+* **Cuerpo de Solicitud:**
+```json
+{
+  "mfaToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "channel": "sms"
+}
+```
+* **Respuesta Exitosa (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Código de verificación reenviado exitosamente.",
+  "mfaToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "channel": "sms",
+  "maskedDestination": "+56 9 **** 7217",
+  "expiresInSeconds": 300,
+  "sandboxCode": "123456",
+  "isSandbox": true
+}
+```
+* **Errores (`429 Too Many Requests`):** Si se solicita un reenvío antes de cumplir el cooldown de 60 segundos.
+
+---
+
+### 9. Configuración de Seguridad de Cuenta (`PATCH /users/me/security`)
+Permite al usuario autenticado (rol `client`) activar o desactivar la exigencia de 2FA en sus inicios de sesión.
+
+* **Encabezados:** `Authorization: Bearer <access_token>`
+* **Cuerpo de Solicitud:**
+```json
+{
+  "mfaEnabled": true
+}
+```
+* **Respuesta Exitosa (`200 OK`):**
+```json
+{
+  "success": true,
+  "mfaEnabled": true,
+  "message": "Configuración de autenticación de dos pasos actualizada exitosamente."
+}
+```
+* **Error (`403 Forbidden`):** Para roles `root`, `admin` y `driver`, retornando: `"El segundo factor de autenticación es obligatorio para su rol por política de seguridad y no puede ser deshabilitado."`
+
