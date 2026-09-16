@@ -3,7 +3,7 @@
 El motor de ruteo de Flowex arma cada día las rutas de recogida y de reparto en torno a los
 conductores realmente en turno y a la capacidad de sus vehículos.
 
-Este documento describe el algoritmo, el contrato de los endpoints y los códigos de error.
+Este documento describe el algoritmo, el contrato de los endpoints y los códigos de error. Para consultar la matriz completa de variables de entorno, credenciales de Google Cloud y configuración de AWS Secrets Manager, consulta la guía de [Integración con Google Route Optimization API](/google-route-optimization).
 
 ---
 

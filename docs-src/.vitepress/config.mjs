@@ -26,6 +26,7 @@ export default withMermaid(
             { text: 'Consent Worker y Auditoría PII', link: '/consent-worker' },
             { text: 'Gestión de Pedidos, Rutas y POD', link: '/orders-dispatch' },
             { text: 'Planificación de Rutas y Flota', link: '/route-planning' },
+            { text: 'Google Route Optimization API', link: '/google-route-optimization' },
             { text: 'Capa Compartida (Shared Layer)', link: '/shared-layer' },
             { text: 'Arquitectura Serverless Lambdas', link: '/lambdas' },
             { text: 'Administración y Overrides', link: '/admin-api' },
