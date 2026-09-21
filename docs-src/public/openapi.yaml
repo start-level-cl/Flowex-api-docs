@@ -33,6 +33,10 @@ tags:
     description: "Endpoints y eventos administrativos para activación forzada o resolución manual de registros"
   - name: Coupons
     description: "Sistema de cupones promocionales, validación exclusiva para clientes y administración exclusiva para rol root"
+  - name: "Orders & Dispatch"
+    description: "Gestión y consulta de órdenes de despacho con estándar unificado de paginación y filtrado por rol"
+  - name: "Route Planning"
+    description: "Planificación, optimización y consulta operativa de rutas y paradas con paginación Importal"
 paths:
   /auth/login:
     post:
@@ -278,6 +282,428 @@ paths:
       x-roles:
         - root
         - admin
+    get:
+      tags:
+        - "Users Administration"
+      summary: "Listar usuarios internos del sistema con paginación Importal y filtros"
+      operationId: internal_get_users
+      responses:
+        200:
+          description: "Lista paginada de usuarios internos con compatibilidad dual data/users."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/InternalUserSummary
+                  users:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/InternalUserSummary
+                  total:
+                    type: integer
+                    example: 45
+                  limit:
+                    type: integer
+                    example: 50
+                  offset:
+                    type: integer
+                    example: 0
+                  meta:
+                    $ref: #/components/schemas/PaginationMeta
+        401:
+          description: "No autenticado o token ausente/expirado."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Requiere privilegios de rol root o admin."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Consulta el listado administrativo de usuarios en VPC con soporte de búsqueda por texto libre y filtros por rol y estado. Retorna el formato estándar de paginación Importal con el objeto dual data/users y metadatos calculados."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: "Número de página actual (1-indexed)"
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+          description: "Cantidad máxima de registros por página (máximo 100)"
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: "Desplazamiento alternativo para compatibilidad hacia atrás"
+        - name: role
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - all
+              - root
+              - admin
+              - driver
+              - client
+            default: all
+          description: "Filtrar por rol de usuario dentro de la plataforma"
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - all
+              - active
+              - blocked
+            default: all
+          description: "Filtrar por estado activo o inactivo/bloqueado"
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Término de búsqueda libre por nombre, correo electrónico, teléfono o RUT"
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+  /orders:
+    get:
+      tags:
+        - "Orders & Dispatch"
+      summary: "Listar órdenes de despacho con paginación Importal y filtrado por rol"
+      operationId: orders_get_orders
+      responses:
+        200:
+          description: "Listado de órdenes paginado y redactado conforme al rol del usuario."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/OrderSummary
+                  orders:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/OrderSummary
+                  total:
+                    type: integer
+                    example: 120
+                  meta:
+                    $ref: #/components/schemas/PaginationMeta
+        401:
+          description: "No autenticado o token ausente/inválido."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Obtiene las órdenes de despacho registradas con alcance acotado según el rol del solicitante (los clientes ven únicamente sus pedidos, conductores sus órdenes de ruta y administradores todas). Retorna respuesta dual data/orders con metadatos de paginación."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: "Número de página actual (1-indexed)"
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: "Cantidad de órdenes por página (máximo 100)"
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por estado del ciclo de vida del pedido"
+        - name: driverId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por conductor asignado (reservado a roles operativos)"
+        - name: customerId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por identificador de cliente"
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Búsqueda por número de tracking, remitente, destinatario o comuna"
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - client
+        - admin
+        - root
+  /internal/orders:
+    get:
+      tags:
+        - "Orders & Dispatch"
+      summary: "Listar todas las órdenes operativas con paginación Importal"
+      operationId: internal_get_orders
+      responses:
+        200:
+          description: "Listado completo de órdenes paginadas para operaciones internas."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/OrderSummary
+                  orders:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/OrderSummary
+                  total:
+                    type: integer
+                    example: 340
+                  meta:
+                    $ref: #/components/schemas/PaginationMeta
+        401:
+          description: "No autenticado o token ausente/inválido."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Requiere rol admin o root."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Endpoint administrativo y de despacho para supervisión global de pedidos en VPC, con filtros combinados por estado, conductor o cliente y metadatos estándar de paginación."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: "Número de página actual (1-indexed)"
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: "Cantidad máxima de órdenes por página (máximo 100)"
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por estado del pedido"
+        - name: driverId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por ID de conductor asignado"
+        - name: customerId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por ID o RUT de cliente"
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Búsqueda por tracking, remitente, destinatario o comuna"
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - admin
+        - root
+  /routes:
+    get:
+      tags:
+        - "Route Planning"
+      summary: "Listar rutas planificadas con paginación Importal"
+      operationId: routes_get_routes
+      responses:
+        200:
+          description: "Listado de rutas planificadas con pedidos y paradas ordenadas."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/RouteSummary
+                  routes:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/RouteSummary
+                  total:
+                    type: integer
+                    example: 8
+                  meta:
+                    $ref: #/components/schemas/PaginationMeta
+        401:
+          description: "No autenticado o token ausente/inválido."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Consulta las rutas planificadas de recolección y distribución. Los conductores sólo reciben las rutas asignadas a su vehículo, mientras que administradores pueden listar todas las rutas operativas."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: "Número de página actual (1-indexed)"
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: "Cantidad máxima de rutas por página (máximo 100)"
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - pickup
+              - delivery
+              - transfer
+          description: "Filtrar por tipo de ruta logística"
+        - name: driverId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por conductor asignado (exclusivo para administradores)"
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - driver
+        - admin
+        - root
+  /internal/routes:
+    get:
+      tags:
+        - "Route Planning"
+      summary: "Listar rutas operativas con paradas ordenadas y paginación Importal"
+      operationId: internal_get_routes
+      responses:
+        200:
+          description: "Listado operativo de rutas con paradas y métricas de optimización."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/RouteSummary
+                  routes:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/RouteSummary
+                  total:
+                    type: integer
+                    example: 15
+                  meta:
+                    $ref: #/components/schemas/PaginationMeta
+        401:
+          description: "No autenticado o token ausente/inválido."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Requiere rol admin o root."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Consulta interna en VPC de rutas planificadas con paradas ordenadas secuencialmente por stopSequence, cálculo de distancias y paginación estándar Importal."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: "Número de página actual (1-indexed)"
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: "Cantidad máxima de rutas por página (máximo 100)"
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - pickup
+              - delivery
+              - transfer
+          description: "Filtrar por tipo de ruta"
+        - name: driverId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por conductor asignado"
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - admin
+        - root
   /internal/users/{userId}/consents:
     get:
       tags:
@@ -542,6 +968,10 @@ paths:
                   success:
                     type: boolean
                     example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/Coupon
                   total:
                     type: integer
                     example: 120
@@ -549,6 +979,8 @@ paths:
                     type: array
                     items:
                       $ref: #/components/schemas/Coupon
+                  meta:
+                    $ref: #/components/schemas/PaginationMeta
                   metrics:
                     type: object
                     properties:
@@ -574,6 +1006,13 @@ paths:
       security:
         - bearerAuth: []
       parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: "Número de página actual (1-indexed)"
         - name: isActive
           in: query
           required: false
@@ -1029,6 +1468,89 @@ paths:
               $ref: #/components/schemas/VerifyOtpRequest
       x-service: otp-service-lambda
       x-source: Flowex-otp-service-lambda/src/index.ts
+  /otp/deliveries:
+    get:
+      tags:
+        - "OTP & WhatsApp"
+      summary: "Listar entregas y envíos OTP con paginación Importal y enmascaramiento PII"
+      operationId: otp_get_deliveries
+      responses:
+        200:
+          description: "Historial de entregas OTP con métricas de fallos y paginación Importal."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/OtpDeliveryItem
+                  deliveries:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/OtpDeliveryItem
+                  total:
+                    type: integer
+                    example: 88
+                  meta:
+                    $ref: #/components/schemas/PaginationMeta
+                  fallidos:
+                    type: integer
+                    example: 2
+                    description: "Cantidad de envíos en estado fallido en la página actual"
+                  ttlMinutos:
+                    type: integer
+                    example: 10
+                    description: "Vigencia de los códigos OTP en minutos"
+                  intentosMaximos:
+                    type: integer
+                    example: 5
+                    description: "Máximo de intentos de verificación permitidos"
+        401:
+          description: "No autenticado o token ausente/inválido."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Reservado a operaciones (roles root o admin)."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Consulta el registro de emisiones y entregas de códigos OTP vía Meta WhatsApp Cloud API y canales de respaldo, aplicando enmascaramiento estricto de datos de contacto (Ley N° 21.719) y formato de paginación estándar Importal."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: "Número de página actual (1-indexed)"
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: "Cantidad máxima de entregas por página (máximo 100)"
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Búsqueda por identificador, correo o dígitos telefónicos"
+      x-service: otp-service-lambda
+      x-source: Flowex-otp-service-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
   /notifications/whatsapp:
     post:
       tags:
@@ -1351,6 +1873,260 @@ components:
       name: X-Status-Token
       description: "Token firmado HMAC-SHA256 para consultar estados de onboarding en proceso"
   schemas:
+    PaginationMeta:
+      type: object
+      required:
+        - total
+        - page
+        - limit
+        - last_page
+      description: "Metadatos estándar de paginación Importal"
+      properties:
+        total:
+          type: integer
+          example: 120
+          description: "Total general de registros disponibles"
+        page:
+          type: integer
+          example: 1
+          description: "Número de página actual (1-indexed)"
+        limit:
+          type: integer
+          example: 20
+          description: "Cantidad máxima de registros por página"
+        last_page:
+          type: integer
+          example: 6
+          description: "Última página disponible calculada como ceil(total / limit)"
+    InternalUserSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: usr_1771344000000
+        userId:
+          type: string
+          example: usr_1771344000000
+        name:
+          type: string
+          example: "Carlos Chofer"
+        email:
+          type: string
+          example: carlos.chofer@flowex.cl
+        phone:
+          type: string
+          example: "+56987654321"
+        role:
+          $ref: #/components/schemas/UserRole
+        rut:
+          type: string
+          example: 12.345.678-5
+        isActive:
+          type: boolean
+          example: true
+        isVerified:
+          type: boolean
+          example: true
+        totalOrdersCount:
+          type: integer
+          example: 12
+        deliveredOrdersCount:
+          type: integer
+          example: 10
+        createdAt:
+          type: string
+          format: date-time
+    OrderSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: ord_1771344928000
+        trackingNumber:
+          type: string
+          example: FLX-2026-8492
+        senderName:
+          type: string
+          example: "Juan Pérez Silva"
+        senderPhone:
+          type: string
+          example: "+56991234567"
+        senderEmail:
+          type: string
+          example: juan.cliente@gmail.com
+        senderAddress:
+          type: string
+          example: "Av. Providencia 1234"
+        senderCommune:
+          type: string
+          example: Providencia
+        recipientName:
+          type: string
+          example: "María López González"
+        recipientPhone:
+          type: string
+          example: "+56987654321"
+        recipientEmail:
+          type: string
+          example: maria.destinatario@gmail.com
+        recipientAddress:
+          type: string
+          example: "Av. Las Condes 10200"
+        recipientCommune:
+          type: string
+          example: "Las Condes"
+        status:
+          $ref: #/components/schemas/OrderStatus
+        isPaid:
+          type: boolean
+          example: true
+        packagesCount:
+          type: integer
+          example: 1
+        packageType:
+          type: string
+          example: caja_mediana
+        weightKg:
+          type: number
+          example: 2.5
+        totalCost:
+          type: number
+          example: 8900
+        deliveryCode:
+          type: string
+          description: "PIN confidencial (redactado para clientes no propietarios)"
+          example: 4920
+        assignedDriverId:
+          type: string
+          example: usr_drv_201
+        createdAt:
+          type: string
+          format: date-time
+    RouteSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: rot_1771344928000
+        code:
+          type: string
+          example: RUT-ENT-20260921-001
+        type:
+          type: string
+          enum:
+            - pickup
+            - delivery
+            - transfer
+          example: delivery
+        status:
+          type: string
+          example: planned
+        assignedDriverId:
+          type: string
+          example: usr_drv_201
+        driverName:
+          type: string
+          example: "Juan Pérez"
+        vehiclePlate:
+          type: string
+          example: KJL-942
+        totalOrders:
+          type: integer
+          example: 18
+        totalPackages:
+          type: integer
+          example: 22
+        totalWeightKg:
+          type: number
+          example: 45.5
+        estimatedDistanceKm:
+          type: number
+          example: 34.2
+        estimatedDuration:
+          type: string
+          example: "2h 15m"
+        estimateSource:
+          type: string
+          enum:
+            - google
+            - fallback
+          example: google
+        orders:
+          type: array
+          items:
+            $ref: #/components/schemas/OrderSummary
+        createdAt:
+          type: string
+          format: date-time
+    OtpDeliveryItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: del_1771344928000
+        identifier:
+          type: string
+          description: "Identificador o contacto con enmascaramiento PII (Ley N° 21.719)"
+          example: "j***@flowex.cl"
+        email:
+          type: string
+          description: "Correo electrónico enmascarado"
+          example: "j***@flowex.cl"
+        phone:
+          type: string
+          description: "Teléfono móvil enmascarado"
+          example: "+569****4321"
+        channel:
+          type: string
+          enum:
+            - whatsapp
+            - sms
+            - email
+          example: whatsapp
+        status:
+          type: string
+          enum:
+            - pendiente
+            - entregado
+            - fallido
+            - usado
+            - expirado
+          example: entregado
+        statusLabel:
+          type: string
+          example: "Entregado vía WhatsApp Cloud API"
+        providerMessageId:
+          type: string
+          example: wamid.HBgLMNTY5ODc2NTQzMjEVAgARGBIwRjN...
+        lastError:
+          type: string
+          nullable: true
+          example: null
+        sendCount:
+          type: integer
+          example: 1
+        verifyAttempts:
+          type: integer
+          example: 0
+        expiresAt:
+          type: string
+          format: date-time
+        lastSentAt:
+          type: string
+          format: date-time
+        consumedAt:
+          type: string
+          format: date-time
+          nullable: true
+        resentBy:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        vigente:
+          type: boolean
+          example: true
     UserRole:
       type: string
       enum:

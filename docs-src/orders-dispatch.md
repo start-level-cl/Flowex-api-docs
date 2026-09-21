@@ -209,6 +209,98 @@ export interface Order {
 
 ---
 
+## 📡 Consulta Paginada de Pedidos (`GET /orders` y `GET /internal/orders`)
+
+Flowex provee endpoints de consulta con el estándar unificado de paginación Importal (`data` + `meta`), compatibilidad dual (`orders`) y control de acceso acotado por rol directamente a nivel de base de datos (`WHERE` clause con `LIMIT`/`OFFSET`).
+
+### Control de Acceso por Rol
+* **`client` / `customer`**: Visualiza únicamente los pedidos asociados a sus identificadores de cuenta (`customer_id` o `customer_app_id`). El PIN confidencial de entrega (`deliveryCode`) es redactado para proteger la recepción en destino.
+* **`driver`**: Visualiza exclusivamente los pedidos asignados a sus rutas de despacho (`assigned_driver_app_id`), protegiendo los datos confidenciales de terceras rutas.
+* **`admin` / `root`**: Acceso completo a todos los pedidos operativos de la plataforma, tanto en `/orders` como en el endpoint interno de VPC `/internal/orders`.
+
+### Parámetros de Consulta (Query String)
+
+| Parámetro | Tipo | Requerido | Descripción |
+| :--- | :--- | :--- | :--- |
+| `page` | `integer` | No | Número de página a consultar (1-indexed). Por defecto `1`. |
+| `limit` | `integer` | No | Cantidad máxima de órdenes por página (mínimo `1`, máximo `100`, por defecto `20`). |
+| `status` | `string` | No | Filtrar por estado del ciclo de vida (`pending`, `paid`, `in_hub`, `transit`, `delivered`, etc.). |
+| `driverId` | `string` | No | Filtrar por identificador o UUID de chofer asignado (exclusivo para roles operativos). |
+| `customerId` | `string` | No | Filtrar por ID de cliente (exclusivo para roles administrativos). |
+| `search` | `string` | No | Búsqueda por coincidencia en número de tracking, remitente, destinatario o comuna. |
+
+### Respuesta Dual y Metadatos de Paginación (`200 OK`)
+
+El contrato de respuesta incluye el arreglo principal en `data`, el alias de compatibilidad en `orders`, el total general en `total`, y el bloque canónico `meta`:
+
+```json
+{
+  "data": [
+    {
+      "id": "ord_1771344928000",
+      "trackingNumber": "FLX-2026-8492",
+      "senderName": "Juan Pérez Silva",
+      "senderPhone": "+56991234567",
+      "senderEmail": "juan.cliente@gmail.com",
+      "senderAddress": "Av. Providencia 1234, Of. 502",
+      "senderCommune": "Providencia",
+      "recipientName": "María López González",
+      "recipientPhone": "+56987654321",
+      "recipientEmail": "maria.destinatario@gmail.com",
+      "recipientAddress": "Av. Las Condes 10200, Depto 401",
+      "recipientCommune": "Las Condes",
+      "status": "transit",
+      "isPaid": true,
+      "packagesCount": 1,
+      "packageType": "caja_mediana",
+      "weightKg": 2.5,
+      "totalCost": 8900,
+      "deliveryCode": "4920",
+      "assignedDriverId": "usr_drv_201",
+      "createdAt": "2026-08-24T14:35:00.000Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord_1771344928000",
+      "trackingNumber": "FLX-2026-8492",
+      "senderName": "Juan Pérez Silva",
+      "senderPhone": "+56991234567",
+      "senderEmail": "juan.cliente@gmail.com",
+      "senderAddress": "Av. Providencia 1234, Of. 502",
+      "senderCommune": "Providencia",
+      "recipientName": "María López González",
+      "recipientPhone": "+56987654321",
+      "recipientEmail": "maria.destinatario@gmail.com",
+      "recipientAddress": "Av. Las Condes 10200, Depto 401",
+      "recipientCommune": "Las Condes",
+      "status": "transit",
+      "isPaid": true,
+      "packagesCount": 1,
+      "packageType": "caja_mediana",
+      "weightKg": 2.5,
+      "totalCost": 8900,
+      "deliveryCode": "4920",
+      "assignedDriverId": "usr_drv_201",
+      "createdAt": "2026-08-24T14:35:00.000Z"
+    }
+  ],
+  "total": 120,
+  "meta": {
+    "total": 120,
+    "page": 1,
+    "limit": 20,
+    "last_page": 6
+  }
+}
+```
+
+> [!TIP]
+> **Tolerancia a Fallos y Modo Demostración:**
+> En caso de indisponibilidad temporal de la base de datos PostgreSQL, el servicio activa automáticamente degradación limpia al almacén en memoria del contenedor Lambda (`ordersStore`), preservando los mismos filtros por rol, búsqueda y estructura canónica `{ data, orders, total, meta }`.
+
+---
+
 ## 🏷️ Sistema de Etiquetas de Despacho y Bultos Multi-Paquete (Shipping Labels)
 
 Flowex provee generación e impresión directa de etiquetas logísticas estándar optimizadas para impresoras térmicas adhesivas (**100 mm x 150 mm / 4" x 6"**) o papel común A4/Carta.
