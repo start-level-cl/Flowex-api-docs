@@ -15,7 +15,16 @@ import { generateTypeDeclarations } from './lib/typegen.mjs'
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url))
 const docsRoot = path.resolve(currentDir, '..')
-const repoRoot = path.resolve(docsRoot, '..')
+
+function getRepoRoot(docsRoot) {
+  if (process.env.REPO_ROOT) return path.resolve(process.env.REPO_ROOT)
+  const c1 = path.resolve(docsRoot, '..')
+  if (fs.existsSync(path.join(c1, 'Flowex-auth-api-lambda'))) return c1
+  const c2 = path.resolve(docsRoot, '../..')
+  if (fs.existsSync(path.join(c2, 'Flowex-auth-api-lambda'))) return c2
+  return c1
+}
+const repoRoot = getRepoRoot(docsRoot)
 const generatedDir = path.join(docsRoot, 'generated')
 const docsSrcPublicDir = path.join(docsRoot, 'docs-src', 'public')
 const sourceRoutesPath = path.join(generatedDir, 'source-routes.json')

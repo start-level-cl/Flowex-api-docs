@@ -168,3 +168,77 @@ Permite enviar notificaciones logísticas personalizadas a los clientes destinat
   }
 }
 ```
+
+---
+
+### 5. Historial de Entregas y Envíos OTP (`GET /otp/deliveries`)
+Permite a roles de operaciones (`root` y `admin`) auditar el ciclo de vida de los códigos de verificación emitidos y despachados (SMS, WhatsApp, Email). Facilita la resolución de incidencias ("no me llegó el código") con trazabilidad técnica real en lugar de suposiciones.
+
+> [!IMPORTANT]
+> **Enmascaramiento de Datos Personales (Ley N° 21.719):**
+> En cumplimiento estricto del principio de minimización de datos personales, los campos de contacto (`identifier`, `email`, `phone`) se entregan enmascarados (ej: `c***@flowex.cl`, `+569****4321`) directamente desde la capa del servicio. El código numérico OTP nunca se almacena en texto plano (se resguarda exclusivamente su hash criptográfico SHA-256).
+
+* **Requisitos de Seguridad:** Autenticación `Bearer <token>` con rol `root` o `admin`.
+* **Parámetros Query:**
+  - `page`: (Opcional, default `1`, 1-indexed) Número de página actual solicitada.
+  - `limit`: (Opcional, default `20`, máx `100`) Límite de entregas por página.
+  - `q`: (Opcional) Filtro de búsqueda por identificador de cuenta, correo electrónico o dígitos telefónicos.
+
+* **Respuesta Exitosa (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "del_1771344928000",
+      "identifier": "c***@flowex.cl",
+      "email": "c***@flowex.cl",
+      "phone": "+569****4321",
+      "channel": "whatsapp",
+      "status": "entregado",
+      "statusLabel": "Entregado vía Meta WhatsApp Cloud API",
+      "providerMessageId": "wamid.HBgLMNTY5ODc2NTQzMjEVAgARGBIwRjN...",
+      "lastError": null,
+      "sendCount": 1,
+      "verifyAttempts": 1,
+      "expiresAt": "2026-09-21T10:40:00.000Z",
+      "lastSentAt": "2026-09-21T10:30:00.000Z",
+      "consumedAt": "2026-09-21T10:32:15.000Z",
+      "resentBy": null,
+      "createdAt": "2026-09-21T10:30:00.000Z",
+      "vigente": false
+    }
+  ],
+  "deliveries": [
+    {
+      "id": "del_1771344928000",
+      "identifier": "c***@flowex.cl",
+      "email": "c***@flowex.cl",
+      "phone": "+569****4321",
+      "channel": "whatsapp",
+      "status": "entregado",
+      "statusLabel": "Entregado vía Meta WhatsApp Cloud API",
+      "providerMessageId": "wamid.HBgLMNTY5ODc2NTQzMjEVAgARGBIwRjN...",
+      "lastError": null,
+      "sendCount": 1,
+      "verifyAttempts": 1,
+      "expiresAt": "2026-09-21T10:40:00.000Z",
+      "lastSentAt": "2026-09-21T10:30:00.000Z",
+      "consumedAt": "2026-09-21T10:32:15.000Z",
+      "resentBy": null,
+      "createdAt": "2026-09-21T10:30:00.000Z",
+      "vigente": false
+    }
+  ],
+  "total": 88,
+  "meta": {
+    "total": 88,
+    "page": 1,
+    "limit": 20,
+    "last_page": 5
+  },
+  "fallidos": 0,
+  "ttlMinutos": 10,
+  "intentosMaximos": 5
+}
+```

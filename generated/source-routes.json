@@ -133,6 +133,93 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
+    "path": "/internal/users",
+    "operationId": "internal_get_users",
+    "tag": "Users Administration",
+    "tags": [
+      "Users Administration"
+    ],
+    "summary": "Listar usuarios internos del sistema con paginación Importal y filtros",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/orders",
+    "operationId": "orders_get_orders",
+    "tag": "Orders & Dispatch",
+    "tags": [
+      "Orders & Dispatch"
+    ],
+    "summary": "Listar órdenes de despacho con paginación Importal y filtrado por rol",
+    "roles": [
+      "client",
+      "admin",
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/orders",
+    "operationId": "internal_get_orders",
+    "tag": "Orders & Dispatch",
+    "tags": [
+      "Orders & Dispatch"
+    ],
+    "summary": "Listar todas las órdenes operativas con paginación Importal",
+    "roles": [
+      "admin",
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/routes",
+    "operationId": "routes_get_routes",
+    "tag": "Route Planning",
+    "tags": [
+      "Route Planning"
+    ],
+    "summary": "Listar rutas planificadas con paginación Importal",
+    "roles": [
+      "driver",
+      "admin",
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/routes",
+    "operationId": "internal_get_routes",
+    "tag": "Route Planning",
+    "tags": [
+      "Route Planning"
+    ],
+    "summary": "Listar rutas operativas con paradas ordenadas y paginación Importal",
+    "roles": [
+      "admin",
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
     "path": "/internal/users/{userId}/consents",
     "operationId": "internal_get_user_consents",
     "tag": "Users Administration",
@@ -434,6 +521,23 @@
     "summary": "Verificar código OTP, auto-activar registro y generar Status Token HMAC",
     "roles": [],
     "security": false
+  },
+  {
+    "service": "otp-service-lambda",
+    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "method": "get",
+    "path": "/otp/deliveries",
+    "operationId": "otp_get_deliveries",
+    "tag": "OTP & WhatsApp",
+    "tags": [
+      "OTP & WhatsApp"
+    ],
+    "summary": "Listar entregas y envíos OTP con paginación Importal y enmascaramiento PII",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
   },
   {
     "service": "otp-service-lambda",

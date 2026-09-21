@@ -13,20 +13,34 @@ Flowex provee endpoints protegidos para la administración central de usuarios d
 ## 📡 Endpoints de Administración de Usuarios (VPC)
 
 ### 1. Listar Usuarios del Sistema (`GET /internal/users`)
-Permite a la consola administrativa consultar todos los usuarios registrados con soporte de búsqueda y filtros.
+Permite a la consola administrativa consultar todos los usuarios registrados con soporte de búsqueda y filtros, implementando el estándar unificado de paginación Importal con el objeto dual `data`/`users` y metadatos calculados `meta`.
 
 * **Parámetros Query:**
+  - `page`: (Opcional, default `1`, 1-indexed) Número de página actual a consultar.
+  - `limit`: (Opcional, default `50`, máx `100`) Cantidad máxima de registros por página.
+  - `offset`: (Opcional, default `0`) Desplazamiento alternativo para compatibilidad hacia atrás. Si se suministra `page`, se calcula `offset = (page - 1) * limit`.
   - `role`: (Opcional) `'all' | 'root' | 'admin' | 'driver' | 'client'`
   - `status`: (Opcional) `'all' | 'active' | 'blocked'`
-  - `search`: (Opcional) Filtro de coincidencia por nombre, email, rut o teléfono.
-  - `limit`: (Opcional, default 50)
-  - `offset`: (Opcional, default 0)
+  - `search`: (Opcional) Búsqueda libre insensible a mayúsculas/minúsculas sobre nombre, email, RUT o teléfono.
 * **Respuesta Exitosa (`200 OK`):**
 ```json
 {
-  "total": 4,
-  "limit": 50,
-  "offset": 0,
+  "data": [
+    {
+      "id": "usr_drv_201",
+      "userId": "usr_drv_201",
+      "name": "Juan Pérez",
+      "email": "juan.perez@flowex.cl",
+      "phone": "+56 9 9123 4567",
+      "role": "driver",
+      "rut": "15.432.109-8",
+      "isActive": true,
+      "isVerified": true,
+      "totalOrdersCount": 3,
+      "deliveredOrdersCount": 1,
+      "createdAt": "2026-08-19T10:30:00.000Z"
+    }
+  ],
   "users": [
     {
       "id": "usr_drv_201",
@@ -37,10 +51,21 @@ Permite a la consola administrativa consultar todos los usuarios registrados con
       "role": "driver",
       "rut": "15.432.109-8",
       "isActive": true,
+      "isVerified": true,
       "totalOrdersCount": 3,
-      "deliveredOrdersCount": 1
+      "deliveredOrdersCount": 1,
+      "createdAt": "2026-08-19T10:30:00.000Z"
     }
-  ]
+  ],
+  "total": 45,
+  "limit": 50,
+  "offset": 0,
+  "meta": {
+    "total": 45,
+    "page": 1,
+    "limit": 50,
+    "last_page": 1
+  }
 }
 ```
 
@@ -101,11 +126,27 @@ Emite automáticamente el evento de auditoría `PII_ACCESS_AUDIT` a la cola SQS 
 ---
 
 ### 4. Consultar Historial de Pedidos del Usuario (`GET /internal/users/{userId}/orders`)
-Retorna todas las encomiendas vinculadas al usuario (como conductor asignado o como remitente/destinatario).
+Retorna todas las encomiendas vinculadas al usuario (como conductor asignado o como remitente/destinatario) implementando paginación unificada Importal y redacción de datos sensibles por rol (el código de entrega PIN se excluye para remitentes y conductores).
 
+* **Parámetros Query:**
+  - `page`: (Opcional, default `1`, 1-indexed) Página actual a consultar.
+  - `limit`: (Opcional, default `20`, máx `100`) Límite de pedidos por página.
 * **Respuesta (`200 OK`):**
 ```json
 {
+  "data": [
+    {
+      "id": "ord_drv_1",
+      "trackingNumber": "FLX-2026-8812",
+      "recipientName": "Carlos Mendoza",
+      "recipientCommune": "Las Condes",
+      "status": "delivered",
+      "isPaid": true,
+      "totalCost": 5500,
+      "packagesCount": 1,
+      "createdAt": "2026-08-20T10:30:00.000Z"
+    }
+  ],
   "userId": "usr_drv_201",
   "userEmail": "juan.perez@flowex.cl",
   "role": "driver",
@@ -122,7 +163,13 @@ Retorna todas las encomiendas vinculadas al usuario (como conductor asignado o c
       "packagesCount": 1,
       "createdAt": "2026-08-20T10:30:00.000Z"
     }
-  ]
+  ],
+  "meta": {
+    "total": 3,
+    "page": 1,
+    "limit": 20,
+    "last_page": 1
+  }
 }
 ```
 
@@ -194,6 +241,135 @@ solo vive en memoria (modo demostración). Ver migración `028_user_blocking.sql
 ```json
 {
   "message": "Usuario usr_1771345600000 eliminado correctamente"
+}
+```
+
+---
+
+### 8. Libreta de Contactos Frecuentes (`GET /contacts` o `GET /internal/contacts`)
+Permite a clientes y administradores consultar la agenda de contactos frecuentes para despacho con base legal registrada conforme a la Ley N° 21.719 de Protección de Datos Personales.
+
+* **Parámetros Query:**
+  - `page`: (Opcional, default `1`, 1-indexed) Página actual solicitada.
+  - `limit`: (Opcional, default `50`, máx `100`) Cantidad de registros por página.
+  - `q`: (Opcional) Término de búsqueda por nombre completo, comuna, dirección o teléfono.
+* **Respuesta (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "cnt_1771344928000",
+      "ownerId": "usr_client_101",
+      "fullName": "Beatriz Morales",
+      "phone": "+56 9 8765 4321",
+      "commune": "Providencia",
+      "streetAddress": "Av. Providencia 1234, Of. 502",
+      "createdAt": "2026-08-20T10:30:00.000Z"
+    }
+  ],
+  "contacts": [
+    {
+      "id": "cnt_1771344928000",
+      "ownerId": "usr_client_101",
+      "fullName": "Beatriz Morales",
+      "phone": "+56 9 8765 4321",
+      "commune": "Providencia",
+      "streetAddress": "Av. Providencia 1234, Of. 502",
+      "createdAt": "2026-08-20T10:30:00.000Z"
+    }
+  ],
+  "total": 14,
+  "meta": {
+    "total": 14,
+    "page": 1,
+    "limit": 50,
+    "last_page": 1
+  },
+  "lawfulBasis": {
+    "version": "1.0",
+    "text": "Tratamiento fundado en la ejecución de la relación contractual y el consentimiento del titular (Ley N° 21.719)"
+  }
+}
+```
+
+---
+
+### 9. Solicitudes de Supresión de Datos Personales (`GET /contacts/erasure-requests` o `GET /internal/contacts/erasure-requests`)
+Bandeja de solicitudes de ejercicio de derechos ARCO (supresión / derecho al olvido) bajo la Ley N° 21.719 para supervisión de oficiales de protección de datos y administradores.
+
+* **Parámetros Query:**
+  - `page`: (Opcional, default `1`, 1-indexed) Página actual.
+  - `limit`: (Opcional, default `20`, máx `100`) Límite de solicitudes por página.
+* **Respuesta (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "era_1771344928000",
+      "requesterName": "Carolina Soto",
+      "contactIdentifier": "c***@gmail.com",
+      "status": "pendiente",
+      "requestedAt": "2026-09-18T14:20:00.000Z"
+    }
+  ],
+  "requests": [
+    {
+      "id": "era_1771344928000",
+      "requesterName": "Carolina Soto",
+      "contactIdentifier": "c***@gmail.com",
+      "status": "pendiente",
+      "requestedAt": "2026-09-18T14:20:00.000Z"
+    }
+  ],
+  "total": 5,
+  "pending": 2,
+  "meta": {
+    "total": 5,
+    "page": 1,
+    "limit": 20,
+    "last_page": 1
+  }
+}
+```
+
+---
+
+### 10. Gestión de Invitaciones de Acceso (`GET /internal/invites`)
+Permite a roles `root` y `admin` listar las invitaciones de onboarding emitidas para usuarios con roles `admin` y `driver`, con enlace temporal y control de expiración.
+
+* **Parámetros Query:**
+  - `page`: (Opcional, default `1`, 1-indexed) Página actual solicitada.
+  - `limit`: (Opcional, default `20`, máx `100`) Límite de invitaciones por página.
+* **Respuesta (`200 OK`):**
+```json
+{
+  "data": [
+    {
+      "id": "inv_1771344928000",
+      "token": "a8f3b2c1...",
+      "role": "driver",
+      "targetEmail": "nuevo.conductor@flowex.cl",
+      "expiresAt": "2026-09-28T23:59:59.000Z"
+    }
+  ],
+  "invites": [
+    {
+      "id": "inv_1771344928000",
+      "token": "a8f3b2c1...",
+      "role": "driver",
+      "targetEmail": "nuevo.conductor@flowex.cl",
+      "expiresAt": "2026-09-28T23:59:59.000Z"
+    }
+  ],
+  "total": 12,
+  "meta": {
+    "total": 12,
+    "page": 1,
+    "limit": 20,
+    "last_page": 1
+  }
 }
 ```
 

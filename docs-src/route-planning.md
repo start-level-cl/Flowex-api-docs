@@ -398,12 +398,100 @@ En producción responde `unlimited: true` con `remaining: null`.
 
 ---
 
-## `GET /internal/routes` · `GET /internal/routes/{id}`
+## `GET /routes` · `GET /internal/routes` · `GET /routes/{id}`
 
-Leen desde `delivery_routes` y `route_orders`, unidas con la memoria del Lambda como
-respaldo. Las paradas vienen ordenadas por `stop_sequence`.
+Consulta el listado de rutas planificadas y operativas con el estándar unificado de paginación Importal (`data` + `meta`), compatibilidad retroactiva dual (`routes`), paradas ordenadas estrictamente por `stopSequence` y redacción de datos sensibles por rol.
 
-Parámetros opcionales: `type` (`pickup` | `delivery`) y `driverId`.
+### Control de Acceso y Redacción por Rol
+* **`driver`**: El servidor ignora el parámetro `driverId` y restringe la consulta estrictamente a las rutas asignadas al conductor autenticado (`assignedDriverId`). Además, los pedidos contenidos en cada ruta son procesados mediante `redactOrdersForRole`, suprimiendo los códigos confidenciales de entrega PIN para que no lleguen a la pantalla del chofer antes de la recepción física.
+* **`admin` / `root`**: Acceso completo a la flota y rutas operativas de toda la Región Metropolitana, con capacidad de filtrado por conductor o modalidad.
+
+### Parámetros de Consulta (Query String)
+
+| Parámetro | Tipo | Requerido | Descripción |
+| :--- | :--- | :--- | :--- |
+| `page` | `integer` | No | Número de página actual (1-indexed). Por defecto `1`. |
+| `limit` | `integer` | No | Cantidad de rutas por página (mínimo `1`, máximo `100`, por defecto `20`). |
+| `type` | `string` | No | Filtrar por modalidad logística (`pickup` \| `delivery` \| `transfer`). |
+| `driverId` | `string` | No | Filtrar por UUID del chofer asignado (reservado a roles operativos). |
+
+### Respuesta Dual y Metadatos de Paginación (`200 OK`)
+
+```json
+{
+  "data": [
+    {
+      "id": "rot_1771344928000",
+      "code": "RUT-ENT-20260921-001",
+      "type": "delivery",
+      "status": "planned",
+      "assignedDriverId": "usr_drv_201",
+      "driverName": "Juan Pérez",
+      "vehiclePlate": "KJL-942",
+      "totalOrders": 18,
+      "totalPackages": 22,
+      "totalWeightKg": 45.5,
+      "estimatedDistanceKm": 34.2,
+      "estimatedDuration": "2h 15m",
+      "estimateSource": "google",
+      "orders": [
+        {
+          "id": "ord_101",
+          "trackingNumber": "FLX-2026-8812",
+          "stopSequence": 1,
+          "recipientName": "Carlos Mendoza",
+          "recipientAddress": "Av. Las Condes 10200",
+          "recipientCommune": "Las Condes",
+          "status": "transit",
+          "weightKg": 2.5
+        }
+      ],
+      "createdAt": "2026-09-21T08:00:00.000Z"
+    }
+  ],
+  "routes": [
+    {
+      "id": "rot_1771344928000",
+      "code": "RUT-ENT-20260921-001",
+      "type": "delivery",
+      "status": "planned",
+      "assignedDriverId": "usr_drv_201",
+      "driverName": "Juan Pérez",
+      "vehiclePlate": "KJL-942",
+      "totalOrders": 18,
+      "totalPackages": 22,
+      "totalWeightKg": 45.5,
+      "estimatedDistanceKm": 34.2,
+      "estimatedDuration": "2h 15m",
+      "estimateSource": "google",
+      "orders": [
+        {
+          "id": "ord_101",
+          "trackingNumber": "FLX-2026-8812",
+          "stopSequence": 1,
+          "recipientName": "Carlos Mendoza",
+          "recipientAddress": "Av. Las Condes 10200",
+          "recipientCommune": "Las Condes",
+          "status": "transit",
+          "weightKg": 2.5
+        }
+      ],
+      "createdAt": "2026-09-21T08:00:00.000Z"
+    }
+  ],
+  "total": 12,
+  "meta": {
+    "total": 12,
+    "page": 1,
+    "limit": 20,
+    "last_page": 1
+  }
+}
+```
+
+> [!IMPORTANT]
+> **Secuencia de Paradas (`stopSequence`):**
+> Cada pedido dentro de `orders` incluye el campo `stopSequence`. Las aplicaciones cliente y conductores deben iterar y presentar las entregas en el orden indicado por este entero, garantizando que el kilometraje y duración proyectados correspondan a la ruta efectiva calculada.
 
 ---
 
