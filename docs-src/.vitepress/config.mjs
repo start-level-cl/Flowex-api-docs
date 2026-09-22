@@ -22,7 +22,7 @@ export default withMermaid(
             { text: 'Registro y Validación RUT', link: '/registration' },
             { text: 'Motor OTP y WhatsApp', link: '/otp-whatsapp' },
             { text: 'Pasarelas de Pago (Mercado Pago & Fintoc)', link: '/payments-webhooks' },
-            { text: 'Notificaciones (Amazon SES / SQS)', link: '/notifications-ses' },
+            { text: 'Sistema Integral de Notificaciones (Email, WhatsApp, SMS, SQS)', link: '/notifications-ses' },
             { text: 'Consent Worker y Auditoría PII', link: '/consent-worker' },
             { text: 'Gestión de Pedidos, Rutas y POD', link: '/orders-dispatch' },
             { text: 'Planificación de Rutas y Flota', link: '/route-planning' },
@@ -56,7 +56,7 @@ export default withMermaid(
           text: 'Transacciones y Operaciones',
           items: [
             { text: 'Pasarelas de Pago y Webhooks', link: '/payments-webhooks' },
-            { text: 'Notificaciones SES y Workers SQS', link: '/notifications-ses' },
+            { text: 'Sistema Integral de Notificaciones Multicanal', link: '/notifications-ses' },
             { text: 'Pedidos, Rutas y Proof of Delivery', link: '/orders-dispatch' },
             { text: 'Planificación de Rutas, Flota y Capacidad', link: '/route-planning' },
             { text: 'Google Route Optimization API', link: '/google-route-optimization' },
