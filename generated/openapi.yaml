@@ -26,7 +26,7 @@ tags:
   - name: Payments
     description: "Integración transaccional con pasarelas de pago (Mercado Pago Checkout Pro / WebPay y Fintoc A2A)"
   - name: Notifications
-    description: "Servicio de notificaciones transaccionales vía Amazon SES (HTML emails) y SMS"
+    description: "Notificaciones transaccionales: correo vía Amazon SES y avisos de pedido por Meta WhatsApp. Flowex no envía SMS."
   - name: "Users Administration"
     description: "Gestión CRUD interna de usuarios en VPC (Roles: root, admin, driver, client)"
   - name: "Admin Overrides"
@@ -38,6 +38,230 @@ tags:
   - name: "Route Planning"
     description: "Planificación, optimización y consulta operativa de rutas y paradas con paginación Importal"
 paths:
+  /admin/registration-requests/{email}/override-activate:
+    post:
+      tags:
+        - "Admin Overrides"
+      summary: "Aprobación manual y activación forzada de solicitud por administrador"
+      operationId: admin_post_override_activate_registration
+      responses:
+        200:
+          description: "Cuenta activada manualmente por administrador."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/AdminOverrideActivateResponse
+        403:
+          description: "Acceso denegado: Requiere rol admin o root."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+            format: email
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/AdminOverrideActivateRequest
+      x-service: registration-admin-lambda
+      x-source: Flowex-registration-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      x-aliases:
+        - "/admin/registration/requests/{requestId}/override-activate"
+  /admin/registration/requests/{requestId}/approve:
+    post:
+      tags:
+        - "Registration Admin"
+      summary: "Aprobar una solicitud de registro pendiente"
+      operationId: admin_post_registration_requests_requestId_approve
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: registration-admin-lambda
+      x-source: Flowex-registration-admin-lambda/src/index.ts
+      x-aliases:
+        - "/admin/registration-requests/{registrationRequestId}/approve"
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+  /admin/tariffs:
+    get:
+      tags:
+        - "Registration Admin"
+      summary: "Listar tarifas por tamaño de bulto (panel de administración)"
+      operationId: admin_get_tariffs
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: registration-admin-lambda
+      x-source: Flowex-registration-admin-lambda/src/index.ts
+      x-roles:
+        - root
+  /admin/tariffs/{tariffId}:
+    put:
+      tags:
+        - "Registration Admin"
+      summary: "Actualizar una tarifa por tamaño de bulto, con auditoría"
+      operationId: admin_put_tariffs_tariffId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: registration-admin-lambda
+      x-source: Flowex-registration-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: tariffId
+          in: path
+          required: true
+          schema:
+            type: string
+  /auth/change-password:
+    post:
+      tags:
+        - Auth
+      summary: "Cambio y actualización de contraseña de usuario"
+      operationId: auth_post_change_password
+      responses:
+        200:
+          description: "Contraseña actualizada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+        400:
+          description: "Campos requeridos faltantes."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        401:
+          description: "Token inválido o expirado."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/ChangePasswordRequest
+      x-service: auth-api-lambda
+      x-source: Flowex-auth-api-lambda/src/index.ts
+  /auth/consent:
+    get:
+      tags:
+        - Auth
+      summary: "Consultar estado vigente de consentimiento informado y finalidades del usuario"
+      operationId: auth_get_user_consent
+      responses:
+        200:
+          description: "Estado de consentimiento y finalidades autorizadas del usuario autenticado."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/UserConsent
+        401:
+          description: "Token no provisto o inválido."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      security:
+        - bearerAuth: []
+        - cookieAccessAuth: []
+      x-service: auth-api-lambda
+      x-source: Flowex-auth-api-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+        - client
+  /auth/consent/grant:
+    post:
+      tags:
+        - Auth
+      summary: "Otorgar finalidades accesorias de consentimiento (Ley N° 21.719)"
+      operationId: auth_post_consent_grant
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-api-lambda
+      x-source: Flowex-auth-api-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /auth/consent/revoke:
+    post:
+      tags:
+        - Auth
+      summary: "Revocar consentimiento sobre finalidades accesorias (Ley N° 21.719)"
+      operationId: auth_post_revoke_consent
+      responses:
+        200:
+          description: "Consentimiento revocado exitosamente para las finalidades seleccionadas."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/UserConsent
+        400:
+          description: "Intento de revocación de finalidades esenciales o lista vacía."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        401:
+          description: "Token no provisto o inválido."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      security:
+        - bearerAuth: []
+        - cookieAccessAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/RevokeConsentRequest
+      x-service: auth-api-lambda
+      x-source: Flowex-auth-api-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+        - client
   /auth/login:
     post:
       tags:
@@ -70,6 +294,36 @@ paths:
         - admin
         - driver
         - client
+  /auth/login/resend-2fa:
+    post:
+      tags:
+        - Auth
+      summary: "Reenviar el código del segundo factor al correo"
+      operationId: auth_post_login_resend_2fa
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-api-lambda
+      x-source: Flowex-auth-api-lambda/src/index.ts
+  /auth/login/verify-2fa:
+    post:
+      tags:
+        - Auth
+      summary: "Verificar el código del segundo factor y emitir la sesión"
+      operationId: auth_post_login_verify_2fa
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-api-lambda
+      x-source: Flowex-auth-api-lambda/src/index.ts
   /auth/logout:
     post:
       tags:
@@ -123,6 +377,27 @@ paths:
         - cookieRefreshAuth: []
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
+  /auth/security:
+    patch:
+      tags:
+        - Auth
+      summary: "Activar o desactivar el segundo factor de la cuenta"
+      operationId: auth_patch_security
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-api-lambda
+      x-source: Flowex-auth-api-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+      security:
+        - bearerAuth: []
   /auth/validate:
     get:
       tags:
@@ -147,141 +422,2064 @@ paths:
         - cookieAccessAuth: []
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
-  /auth/change-password:
-    post:
+  /internal/capacity/availability:
+    get:
       tags:
-        - Auth
-      summary: "Cambio y actualización de contraseña de usuario"
-      operationId: auth_post_change_password
+        - Fleet
+      summary: "Capacidad disponible de la flota para el día"
+      operationId: internal_get_capacity_availability
       responses:
         200:
-          description: "Contraseña actualizada exitosamente."
+          description: "Operación ejecutada exitosamente."
           content:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
-        400:
-          description: "Campos requeridos faltantes."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-        401:
-          description: "Token inválido o expirado."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/ChangePasswordRequest
-      x-service: auth-api-lambda
-      x-source: Flowex-auth-api-lambda/src/index.ts
-  /users/me/consentimiento:
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      security:
+        - bearerAuth: []
+  /internal/communes:
     get:
       tags:
-        - Auth
-      summary: "Consultar estado vigente de consentimiento informado y finalidades del usuario"
-      operationId: auth_get_user_consent
+        - Communes
+      summary: "Listar comunas con cobertura, zona y días de servicio"
+      operationId: internal_get_communes
       responses:
         200:
-          description: "Estado de consentimiento y finalidades autorizadas del usuario autenticado."
+          description: "Operación ejecutada exitosamente."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/UserConsent
-        401:
-          description: "Token no provisto o inválido."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      security:
-        - bearerAuth: []
-        - cookieAccessAuth: []
-      x-service: auth-api-lambda
-      x-source: Flowex-auth-api-lambda/src/index.ts
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - root
-        - admin
-        - driver
-        - client
-  /users/me/revocar-consentimiento:
+      security:
+        - bearerAuth: []
     post:
       tags:
-        - Auth
-      summary: "Revocar consentimiento sobre finalidades accesorias (Ley N° 21.719)"
-      operationId: auth_post_revoke_consent
+        - Communes
+      summary: "Crear una comuna con evaluación de factibilidad desde el hub más cercano"
+      operationId: internal_post_communes
       responses:
         200:
-          description: "Consentimiento revocado exitosamente para las finalidades seleccionadas."
+          description: "Operación ejecutada exitosamente."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/UserConsent
-        400:
-          description: "Intento de revocación de finalidades esenciales o lista vacía."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-        401:
-          description: "Token no provisto o inválido."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      security:
-        - bearerAuth: []
-        - cookieAccessAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/RevokeConsentRequest
-      x-service: auth-api-lambda
-      x-source: Flowex-auth-api-lambda/src/index.ts
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - root
-        - admin
-        - driver
-        - client
-  /internal/users:
-    post:
-      tags:
-        - "Users Administration"
-      summary: "Crear usuario interno en VPC (Roles: root, admin, driver, client)"
-      operationId: internal_post_users
-      responses:
-        201:
-          description: "Usuario interno creado exitosamente en VPC."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/InternalUserResponse
-        400:
-          description: "Error de validación en los campos o rol desconocido."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/InternalUserCreateRequest
+  /internal/communes/{communeId}:
+    patch:
+      tags:
+        - Communes
+      summary: "Actualizar cobertura o días de servicio de una comuna"
+      operationId: internal_patch_communes_communeId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: communeId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Communes
+      summary: "Actualizar cobertura o días de servicio de una comuna"
+      operationId: internal_put_communes_communeId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: communeId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/communes/{communeId}/change-request:
+    post:
+      tags:
+        - Communes
+      summary: "Solicitar confirmación para un cambio de cobertura con impacto"
+      operationId: internal_post_communes_communeId_change_request
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: communeId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/communes/{communeId}/feasibility:
+    get:
+      tags:
+        - Communes
+      summary: "Evaluar si la flota alcanza la comuna desde un hub"
+      operationId: internal_get_communes_communeId_feasibility
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      parameters:
+        - name: communeId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/communes/{communeId}/history:
+    get:
+      tags:
+        - Communes
+      summary: "Bitácora de cambios de una comuna (acepta id o nombre)"
+      operationId: internal_get_communes_communeId_history
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - root
         - admin
+      parameters:
+        - name: communeId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/contacts:
+    get:
+      tags:
+        - Contacts
+      summary: "Listar la libreta de contactos del remitente"
+      operationId: internal_get_contacts
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Contacts
+      summary: "Guardar un contacto con declaración de licitud (Ley N° 21.719)"
+      operationId: internal_post_contacts
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /internal/contacts/{contactId}:
+    delete:
+      tags:
+        - Contacts
+      summary: "Suprimir un contacto de la libreta"
+      operationId: internal_delete_contacts_contactId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Contacts
+      summary: "Editar un contacto de la libreta"
+      operationId: internal_put_contacts_contactId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/contacts/erasure-requests:
+    get:
+      tags:
+        - Contacts
+      summary: "Listar solicitudes de supresión de titulares sin cuenta"
+      operationId: internal_get_contacts_erasure_requests
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Contacts
+      summary: "Registrar la solicitud de supresión de un titular sin cuenta"
+      operationId: internal_post_contacts_erasure_requests
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /internal/contacts/erasure-requests/{erasureRequestId}/identify:
+    post:
+      tags:
+        - Contacts
+      summary: "Identificar los contactos afectados por una solicitud de supresión"
+      operationId: internal_post_contacts_erasure_requests_erasureRequestId_identify
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: erasureRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/contacts/erasure-requests/{erasureRequestId}/notify:
+    post:
+      tags:
+        - Contacts
+      summary: "Avisar a los remitentes afectados por una supresión"
+      operationId: internal_post_contacts_erasure_requests_erasureRequestId_notify
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: erasureRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/contacts/erasure-requests/{erasureRequestId}/purge:
+    post:
+      tags:
+        - Contacts
+      summary: "Ejecutar la supresión de los contactos del titular"
+      operationId: internal_post_contacts_erasure_requests_erasureRequestId_purge
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: erasureRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/contacts/erasure-requests/{erasureRequestId}/reject:
+    post:
+      tags:
+        - Contacts
+      summary: "Rechazar una solicitud de supresión con motivo"
+      operationId: internal_post_contacts_erasure_requests_erasureRequestId_reject
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: erasureRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/contacts/lawful-basis:
+    get:
+      tags:
+        - Contacts
+      summary: "Texto y versión vigentes de la declaración de licitud"
+      operationId: internal_get_contacts_lawful_basis
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /internal/coupons/release:
+    post:
+      tags:
+        - Coupons
+      summary: "Liberar cupón reservado por cancelación o abandono (Exclusivo rol client)"
+      operationId: coupons_post_release
+      responses:
+        200:
+          description: "Reserva de cupón liberada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+        400:
+          description: "Falta orderId u orden no posee reserva."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Exclusivo para rol client."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Libera la reserva temporal de un cupón para que el cliente pueda volver a utilizarlo si el pago no se completó."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/CouponReleaseRequest
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - client
+      x-aliases:
+        - /coupons/release
+  /internal/coupons/validate:
+    post:
+      tags:
+        - Coupons
+      summary: "Validar y pre-aplicar cupón promocional en checkout (Exclusivo rol client)"
+      operationId: coupons_post_validate
+      responses:
+        200:
+          description: "Cupón válido y descuento calculado."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/CouponValidationResponse
+        400:
+          description: "Cupón no válido, expirado o agotado."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Exclusivo para rol client."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Valida la aplicabilidad de un cupón según vigencia, límite de uso, tope de $30.000 CLP y 15% de descuento máximo. Exclusivo para clientes."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/CouponValidationRequest
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - client
+      x-aliases:
+        - /coupons/validate
+  /internal/drivers/{driverId}/shift:
+    patch:
+      tags:
+        - Fleet
+      summary: "Actualizar la jornada de un conductor"
+      operationId: internal_patch_drivers_driverId_shift
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      parameters:
+        - name: driverId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Fleet
+      summary: "Actualizar la jornada de un conductor"
+      operationId: internal_put_drivers_driverId_shift
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      parameters:
+        - name: driverId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/drivers/shifts:
+    get:
+      tags:
+        - Fleet
+      summary: "Jornadas configuradas de los conductores"
+      operationId: internal_get_drivers_shifts
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      security:
+        - bearerAuth: []
+  /internal/geo/commune-at:
+    get:
+      tags:
+        - General
+      summary: "Comuna que contiene un punto (latitud y longitud)"
+      operationId: internal_get_geo_commune_at
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /internal/hubs:
+    get:
+      tags:
+        - Hubs
+      summary: "Listar hubs (incluye inactivos con ?includeInactive=true)"
+      operationId: internal_get_hubs
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Hubs
+      summary: "Crear un hub; la dirección se geocodifica en el servidor (root)"
+      operationId: internal_post_hubs
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      security:
+        - bearerAuth: []
+  /internal/hubs/{hubId}:
+    delete:
+      tags:
+        - Hubs
+      summary: "Dar de baja un hub sin vehículos activos (root)"
+      operationId: internal_delete_hubs_hubId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: hubId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    patch:
+      tags:
+        - Hubs
+      summary: "Actualizar un hub; un nombre nuevo se propaga a pedidos y rutas (root)"
+      operationId: internal_patch_hubs_hubId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: hubId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Hubs
+      summary: "Actualizar un hub; un nombre nuevo se propaga a pedidos y rutas (root)"
+      operationId: internal_put_hubs_hubId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: hubId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/invites:
+    get:
+      tags:
+        - Invitations
+      summary: "Listar invitaciones emitidas"
+      operationId: internal_get_invites
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Invitations
+      summary: "Invitar a un administrador o conductor (root)"
+      operationId: internal_post_invites
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /internal/invites/{inviteId}:
+    delete:
+      tags:
+        - Invitations
+      summary: "Revocar una invitación"
+      operationId: internal_delete_invites_inviteId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: inviteId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/invites/{inviteId}/verify:
+    get:
+      tags:
+        - Invitations
+      summary: "Verificar una invitación antes del registro"
+      operationId: internal_get_invites_inviteId_verify
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      parameters:
+        - name: inviteId
+          in: path
+          required: true
+          schema:
+            type: string
+  /internal/orders:
+    get:
+      tags:
+        - "Orders & Dispatch"
+      summary: "Listar todas las órdenes operativas con paginación Importal"
+      operationId: internal_get_orders
+      responses:
+        200:
+          description: "Listado completo de órdenes paginadas para operaciones internas."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/OrderSummary
+                  orders:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/OrderSummary
+                  total:
+                    type: integer
+                    example: 340
+                  meta:
+                    $ref: #/components/schemas/PaginationMeta
+        401:
+          description: "No autenticado o token ausente/inválido."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Requiere rol admin o root."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Endpoint administrativo y de despacho para supervisión global de pedidos en VPC, con filtros combinados por estado, conductor o cliente y metadatos estándar de paginación."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: "Número de página actual (1-indexed)"
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: "Cantidad máxima de órdenes por página (máximo 100)"
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por estado del pedido"
+        - name: driverId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por ID de conductor asignado"
+        - name: customerId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por ID o RUT de cliente"
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Búsqueda por tracking, remitente, destinatario o comuna"
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - admin
+        - root
+      x-aliases:
+        - /orders
+    post:
+      tags:
+        - Orders
+      summary: "Crear un pedido"
+      operationId: internal_post_orders
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - /orders
+      security:
+        - bearerAuth: []
+  /internal/orders/{orderId}:
+    get:
+      tags:
+        - Orders
+      summary: "Detalle de un pedido; sin sesión devuelve solo la vista pública de rastreo"
+      operationId: internal_get_orders_orderId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/orders/{orderId}/client-modifications:
+    patch:
+      tags:
+        - Orders
+      summary: "Modificaciones del cliente antes del retiro"
+      operationId: internal_patch_orders_orderId_client_modifications
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}/client-modifications"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/orders/{orderId}/coupon:
+    delete:
+      tags:
+        - Orders
+      summary: "Quitar el cupón de un pedido"
+      operationId: internal_delete_orders_orderId_coupon
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}/coupon"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Orders
+      summary: "Aplicar un cupón a un pedido"
+      operationId: internal_post_orders_orderId_coupon
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}/coupon"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/orders/{orderId}/coupon/remove:
+    delete:
+      tags:
+        - Orders
+      summary: "Quitar el cupón de un pedido"
+      operationId: internal_delete_orders_orderId_coupon_remove
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}/coupon/remove"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Orders
+      summary: "Quitar el cupón de un pedido"
+      operationId: internal_post_orders_orderId_coupon_remove
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}/coupon/remove"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/orders/{orderId}/delivery-code/regenerate:
+    post:
+      tags:
+        - Orders
+      summary: "Regenerar el código de entrega (root)"
+      operationId: internal_post_orders_orderId_delivery_code_regenerate
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - "/orders/{orderId}/delivery-code/regenerate"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/orders/{orderId}/discrepancy:
+    post:
+      tags:
+        - Orders
+      summary: "Registrar diferencia de bulto detectada en bodega"
+      operationId: internal_post_orders_orderId_discrepancy
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}/discrepancy"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/orders/{orderId}/discrepancy/settle:
+    post:
+      tags:
+        - Orders
+      summary: "Liberar un pedido retenido tras pagar la diferencia"
+      operationId: internal_post_orders_orderId_discrepancy_settle
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}/discrepancy/settle"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/orders/{orderId}/evidence:
+    get:
+      tags:
+        - Orders
+      summary: "Fotografías de retiro y entrega con URL firmada"
+      operationId: internal_get_orders_orderId_evidence
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}/evidence"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Orders
+      summary: "Subir las dos fotografías de un hito (retiro o entrega)"
+      operationId: internal_post_orders_orderId_evidence
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+      x-aliases:
+        - "/orders/{orderId}/evidence"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/orders/{orderId}/invoice:
+    patch:
+      tags:
+        - Orders
+      summary: "Registrar el folio SII de la factura (root)"
+      operationId: internal_patch_orders_orderId_invoice
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - "/orders/{orderId}/invoice"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/orders/{orderId}/status:
+    patch:
+      tags:
+        - Orders
+      summary: "Cambiar el estado de un pedido; al pasar a in_hub fija el hub donde se recibe"
+      operationId: internal_patch_orders_orderId_status
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+      x-aliases:
+        - "/orders/{orderId}/status"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/orders/batch:
+    post:
+      tags:
+        - Orders
+      summary: "Crear pedidos en lote"
+      operationId: internal_post_orders_batch
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - /orders/batch
+      security:
+        - bearerAuth: []
+  /internal/planner-settings:
+    get:
+      tags:
+        - "Planner Settings"
+      summary: "Parámetros vigentes del planificador"
+      operationId: internal_get_planner_settings
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      security:
+        - bearerAuth: []
+  /internal/planner-settings/{plannerSettingId}:
+    patch:
+      tags:
+        - "Planner Settings"
+      summary: "Cambiar un parámetro del planificador con confirmación"
+      operationId: internal_patch_planner_settings_plannerSettingId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: plannerSettingId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - "Planner Settings"
+      summary: "Cambiar un parámetro del planificador con confirmación"
+      operationId: internal_put_planner_settings_plannerSettingId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: plannerSettingId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/planner-settings/{plannerSettingId}/change-request:
+    post:
+      tags:
+        - "Planner Settings"
+      summary: "Solicitar el token de confirmación y el impacto de un cambio"
+      operationId: internal_post_planner_settings_plannerSettingId_change_request
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      parameters:
+        - name: plannerSettingId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/planner-settings/{plannerSettingId}/history:
+    get:
+      tags:
+        - "Planner Settings"
+      summary: "Bitácora de cambios de un parámetro"
+      operationId: internal_get_planner_settings_plannerSettingId_history
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      parameters:
+        - name: plannerSettingId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/root/coupons:
+    get:
+      tags:
+        - Coupons
+      summary: "Listar cupones y KPIs de rendimiento (Exclusivo rol root)"
+      operationId: root_get_coupons
+      responses:
+        200:
+          description: "Listado de cupones y métricas de campaña."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/Coupon
+                  total:
+                    type: integer
+                    example: 120
+                  coupons:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/Coupon
+                  meta:
+                    $ref: #/components/schemas/PaginationMeta
+                  metrics:
+                    type: object
+                    properties:
+                      totalCoupons:
+                        type: integer
+                        example: 120
+                      activeCoupons:
+                        type: integer
+                        example: 110
+                      totalRedemptions:
+                        type: integer
+                        example: 840
+                      totalDiscountGranted:
+                        type: number
+                        example: 2520000
+        403:
+          description: "Acceso denegado: Exclusivo para rol root."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Devuelve la lista paginada de cupones con métricas consolidadas de canjes, descuentos acumulados y creadores asociados."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: "Número de página actual (1-indexed)"
+        - name: isActive
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: "Filtrar por estado activo/inactivo"
+        - name: creator
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por nombre o atribución de creador"
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - /root/coupons
+    post:
+      tags:
+        - Coupons
+      summary: "Crear cupón promocional individual (Exclusivo rol root)"
+      operationId: root_post_coupons
+      responses:
+        201:
+          description: "Cupón creado exitosamente."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  coupon:
+                    $ref: #/components/schemas/Coupon
+        400:
+          description: "Parámetros inválidos o superación de topes (máx 15%, máx $30.000 CLP)."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Exclusivo para rol root."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Crea un cupón único con restricciones financieras de máx 15% y $30.000 CLP. Exclusivo para el rol root."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/CouponCreateRequest
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - /root/coupons
+  /internal/root/coupons/{id}:
+    patch:
+      tags:
+        - Coupons
+      summary: "Actualizar cupón o prorrogar vigencia (Exclusivo rol root)"
+      operationId: root_patch_coupon_by_id
+      responses:
+        200:
+          description: "Cupón actualizado exitosamente."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  coupon:
+                    $ref: #/components/schemas/Coupon
+        400:
+          description: "Datos de actualización inválidos."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Exclusivo para rol root."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Permite pausar/desactivar un cupón, extender su vigencia o aumentar el límite de usos."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "ID único del cupón a actualizar"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/CouponUpdateRequest
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - "/root/coupons/{couponId}"
+  /internal/root/coupons/batch:
+    post:
+      tags:
+        - Coupons
+      summary: "Generación masiva de cupones con prefijo (Exclusivo rol root)"
+      operationId: root_post_coupons_batch
+      responses:
+        201:
+          description: "Lote de cupones generado exitosamente."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  count:
+                    type: integer
+                    example: 50
+                  coupons:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/Coupon
+        400:
+          description: "Parámetros de lote inválidos."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Exclusivo para rol root."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Genera un lote de cupones con prefijo unificado (hasta 500 unidades) para activaciones o convenios de creadores. Exclusivo para root."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/CouponBatchCreateRequest
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - /root/coupons/batch
+  /internal/root/coupons/import-csv:
+    post:
+      tags:
+        - Coupons
+      summary: "Importar cupones de creadores vía CSV (Exclusivo rol root)"
+      operationId: root_post_coupons_import_csv
+      responses:
+        201:
+          description: "Importación de cupones completada."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  importedCount:
+                    type: integer
+                    example: 25
+                  coupons:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/Coupon
+        400:
+          description: "Formato CSV o datos de cupones inválidos."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Exclusivo para rol root."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Permite la carga de listas masivas de códigos personalizados de influencers/creadores respetando topes comerciales."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/CouponImportCsvRequest
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - /root/coupons/import-csv
+  /internal/route-assignments:
+    get:
+      tags:
+        - General
+      summary: "Asignaciones de ruta, conductor y vehículo"
+      operationId: internal_get_route_assignments
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+      security:
+        - bearerAuth: []
+  /internal/routes:
+    get:
+      tags:
+        - "Route Planning"
+      summary: "Listar rutas operativas con paradas ordenadas y paginación Importal"
+      operationId: internal_get_routes
+      responses:
+        200:
+          description: "Listado operativo de rutas con paradas y métricas de optimización."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/RouteSummary
+                  routes:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/RouteSummary
+                  total:
+                    type: integer
+                    example: 15
+                  meta:
+                    $ref: #/components/schemas/PaginationMeta
+        401:
+          description: "No autenticado o token ausente/inválido."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+        403:
+          description: "Acceso denegado: Requiere rol admin o root."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Consulta interna en VPC de rutas planificadas con paradas ordenadas secuencialmente por stopSequence, cálculo de distancias y paginación estándar Importal."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: "Número de página actual (1-indexed)"
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: "Cantidad máxima de rutas por página (máximo 100)"
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - pickup
+              - delivery
+              - transfer
+          description: "Filtrar por tipo de ruta"
+        - name: driverId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filtrar por conductor asignado"
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - admin
+        - root
+      x-aliases:
+        - /routes
+  /internal/routes/{routeId}:
+    get:
+      tags:
+        - Routes
+      summary: "Detalle de una ruta con sus paradas"
+      operationId: internal_get_routes_routeId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+      x-aliases:
+        - "/routes/{routeId}"
+      parameters:
+        - name: routeId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/routes/{routeId}/close:
+    post:
+      tags:
+        - Routes
+      summary: "Cerrar una ruta y registrar distancia y duración reales"
+      operationId: internal_post_routes_routeId_close
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/routes/{routeId}/close"
+      parameters:
+        - name: routeId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/routes/{routeId}/directions:
+    get:
+      tags:
+        - Routes
+      summary: "Google Maps Routes via AWS Secrets Manager"
+      operationId: internal_get_routes_routeId_directions
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/routes/{routeId}/directions"
+      parameters:
+        - name: routeId
+          in: path
+          required: true
+          schema:
+            type: string
+    post:
+      tags:
+        - Routes
+      summary: "Google Maps Routes via AWS Secrets Manager"
+      operationId: internal_post_routes_routeId_directions
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/routes/{routeId}/directions"
+      parameters:
+        - name: routeId
+          in: path
+          required: true
+          schema:
+            type: string
+  /internal/routes/{routeId}/orders:
+    post:
+      tags:
+        - Routes
+      summary: "Agregar pedidos a una ruta existente"
+      operationId: internal_post_routes_routeId_orders
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - "/routes/{routeId}/orders"
+      parameters:
+        - name: routeId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/routes/directions:
+    post:
+      tags:
+        - Routes
+      summary: "Generic Route Directions from coordinates"
+      operationId: internal_post_routes_directions
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - /routes/directions
+      security:
+        - bearerAuth: []
+  /internal/routes/insertion-candidates:
+    get:
+      tags:
+        - Routes
+      summary: "Rutas candidatas para insertar un pedido"
+      operationId: internal_get_routes_insertion_candidates
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - /routes/insertion-candidates
+      security:
+        - bearerAuth: []
+  /internal/routes/insertion-queue:
+    get:
+      tags:
+        - Routes
+      summary: "Pedidos en espera de inserción en ruta"
+      operationId: internal_get_routes_insertion_queue
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - /routes/insertion-queue
+      security:
+        - bearerAuth: []
+  /internal/routes/plan-daily:
+    post:
+      tags:
+        - Routes
+      summary: "Planificar las rutas del día (o simular con dryRun)"
+      operationId: internal_post_routes_plan_daily
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      x-aliases:
+        - /routes/plan-daily
+      security:
+        - bearerAuth: []
+  /internal/routes/plan-daily/confirm:
+    post:
+      tags:
+        - Routes
+      summary: "Confirmar una simulación y replanificar"
+      operationId: internal_post_routes_plan_daily_confirm
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      x-aliases:
+        - /routes/plan-daily/confirm
+      security:
+        - bearerAuth: []
+  /internal/routes/plan-daily/simulation:
+    get:
+      tags:
+        - Routes
+      summary: "Última simulación sin confirmar"
+      operationId: internal_get_routes_plan_daily_simulation
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      x-aliases:
+        - /routes/plan-daily/simulation
+      security:
+        - bearerAuth: []
+  /internal/routes/planning-quota:
+    get:
+      tags:
+        - Routes
+      summary: "Corridas de planificación que quedan hoy"
+      operationId: internal_get_routes_planning_quota
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      x-aliases:
+        - /routes/planning-quota
+      security:
+        - bearerAuth: []
+  /internal/routes/settings:
+    get:
+      tags:
+        - Routes
+      summary: "Estado de la planificación automática diaria (planner_settings)"
+      operationId: internal_get_routes_settings
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - /routes/settings
+      security:
+        - bearerAuth: []
+    patch:
+      tags:
+        - Routes
+      summary: "Activar o desactivar la planificación automática diaria (root)"
+      operationId: internal_patch_routes_settings
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - /routes/settings
+      security:
+        - bearerAuth: []
+  /internal/users:
     get:
       tags:
         - "Users Administration"
@@ -386,324 +2584,179 @@ paths:
       x-roles:
         - root
         - admin
-  /orders:
-    get:
+      x-aliases:
+        - /users
+    post:
       tags:
-        - "Orders & Dispatch"
-      summary: "Listar órdenes de despacho con paginación Importal y filtrado por rol"
-      operationId: orders_get_orders
+        - "Users Administration"
+      summary: "Crear usuario interno en VPC (Roles: root, admin, driver, client)"
+      operationId: internal_post_users
       responses:
-        200:
-          description: "Listado de órdenes paginado y redactado conforme al rol del usuario."
+        201:
+          description: "Usuario interno creado exitosamente en VPC."
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/OrderSummary
-                  orders:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/OrderSummary
-                  total:
-                    type: integer
-                    example: 120
-                  meta:
-                    $ref: #/components/schemas/PaginationMeta
-        401:
-          description: "No autenticado o token ausente/inválido."
+                $ref: #/components/schemas/InternalUserResponse
+        400:
+          description: "Error de validación en los campos o rol desconocido."
           content:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
-      description: "Obtiene las órdenes de despacho registradas con alcance acotado según el rol del solicitante (los clientes ven únicamente sus pedidos, conductores sus órdenes de ruta y administradores todas). Retorna respuesta dual data/orders con metadatos de paginación."
       security:
         - bearerAuth: []
-      parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 1
-          description: "Número de página actual (1-indexed)"
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 20
-          description: "Cantidad de órdenes por página (máximo 100)"
-        - name: status
-          in: query
-          required: false
-          schema:
-            type: string
-          description: "Filtrar por estado del ciclo de vida del pedido"
-        - name: driverId
-          in: query
-          required: false
-          schema:
-            type: string
-          description: "Filtrar por conductor asignado (reservado a roles operativos)"
-        - name: customerId
-          in: query
-          required: false
-          schema:
-            type: string
-          description: "Filtrar por identificador de cliente"
-        - name: search
-          in: query
-          required: false
-          schema:
-            type: string
-          description: "Búsqueda por número de tracking, remitente, destinatario o comuna"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/InternalUserCreateRequest
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
-        - client
-        - admin
         - root
-  /internal/orders:
-    get:
+        - admin
+  /internal/users/{userId}:
+    delete:
       tags:
-        - "Orders & Dispatch"
-      summary: "Listar todas las órdenes operativas con paginación Importal"
-      operationId: internal_get_orders
+        - "Users Administration"
+      summary: "Eliminar o desactivar usuario interno"
+      operationId: internal_delete_user_by_id
       responses:
         200:
-          description: "Listado completo de órdenes paginadas para operaciones internas."
+          description: "Usuario eliminado del sistema."
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/OrderSummary
-                  orders:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/OrderSummary
-                  total:
-                    type: integer
-                    example: 340
-                  meta:
-                    $ref: #/components/schemas/PaginationMeta
-        401:
-          description: "No autenticado o token ausente/inválido."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-        403:
-          description: "Acceso denegado: Requiere rol admin o root."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      description: "Endpoint administrativo y de despacho para supervisión global de pedidos en VPC, con filtros combinados por estado, conductor o cliente y metadatos estándar de paginación."
+                $ref: #/components/schemas/StandardSuccessResponse
       security:
         - bearerAuth: []
       parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 1
-          description: "Número de página actual (1-indexed)"
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 20
-          description: "Cantidad máxima de órdenes por página (máximo 100)"
-        - name: status
-          in: query
-          required: false
+        - name: userId
+          in: path
+          required: true
           schema:
             type: string
-          description: "Filtrar por estado del pedido"
-        - name: driverId
-          in: query
-          required: false
-          schema:
-            type: string
-          description: "Filtrar por ID de conductor asignado"
-        - name: customerId
-          in: query
-          required: false
-          schema:
-            type: string
-          description: "Filtrar por ID o RUT de cliente"
-        - name: search
-          in: query
-          required: false
-          schema:
-            type: string
-          description: "Búsqueda por tracking, remitente, destinatario o comuna"
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
-        - admin
         - root
-  /routes:
+        - admin
+      x-aliases:
+        - "/users/{userId}"
     get:
       tags:
-        - "Route Planning"
-      summary: "Listar rutas planificadas con paginación Importal"
-      operationId: routes_get_routes
+        - "Users Administration"
+      summary: "Obtener información y estado de usuario interno por ID"
+      operationId: internal_get_user_by_id
       responses:
         200:
-          description: "Listado de rutas planificadas con pedidos y paradas ordenadas."
+          description: "Datos del usuario interno."
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/RouteSummary
-                  routes:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/RouteSummary
-                  total:
-                    type: integer
-                    example: 8
-                  meta:
-                    $ref: #/components/schemas/PaginationMeta
-        401:
-          description: "No autenticado o token ausente/inválido."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      description: "Consulta las rutas planificadas de recolección y distribución. Los conductores sólo reciben las rutas asignadas a su vehículo, mientras que administradores pueden listar todas las rutas operativas."
+                $ref: #/components/schemas/InternalUserResponse
       security:
         - bearerAuth: []
       parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 1
-          description: "Número de página actual (1-indexed)"
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 20
-          description: "Cantidad máxima de rutas por página (máximo 100)"
-        - name: type
-          in: query
-          required: false
+        - name: userId
+          in: path
+          required: true
           schema:
             type: string
-            enum:
-              - pickup
-              - delivery
-              - transfer
-          description: "Filtrar por tipo de ruta logística"
-        - name: driverId
-          in: query
-          required: false
-          schema:
-            type: string
-          description: "Filtrar por conductor asignado (exclusivo para administradores)"
+          description: "Identificador del usuario en el sistema"
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
-        - driver
-        - admin
         - root
-  /internal/routes:
-    get:
+        - admin
+      x-aliases:
+        - "/users/{userId}"
+    put:
       tags:
-        - "Route Planning"
-      summary: "Listar rutas operativas con paradas ordenadas y paginación Importal"
-      operationId: internal_get_routes
+        - "Users Administration"
+      summary: "Actualizar datos de perfil, estado o rol de usuario interno"
+      operationId: internal_put_user_by_id
       responses:
         200:
-          description: "Listado operativo de rutas con paradas y métricas de optimización."
+          description: "Usuario actualizado."
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/RouteSummary
-                  routes:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/RouteSummary
-                  total:
-                    type: integer
-                    example: 15
-                  meta:
-                    $ref: #/components/schemas/PaginationMeta
-        401:
-          description: "No autenticado o token ausente/inválido."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-        403:
-          description: "Acceso denegado: Requiere rol admin o root."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      description: "Consulta interna en VPC de rutas planificadas con paradas ordenadas secuencialmente por stopSequence, cálculo de distancias y paginación estándar Importal."
+                $ref: #/components/schemas/StandardSuccessResponse
       security:
         - bearerAuth: []
       parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 1
-          description: "Número de página actual (1-indexed)"
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 20
-          description: "Cantidad máxima de rutas por página (máximo 100)"
-        - name: type
-          in: query
-          required: false
+        - name: userId
+          in: path
+          required: true
           schema:
             type: string
-            enum:
-              - pickup
-              - delivery
-              - transfer
-          description: "Filtrar por tipo de ruta"
-        - name: driverId
-          in: query
-          required: false
-          schema:
-            type: string
-          description: "Filtrar por conductor asignado"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/InternalUserUpdateRequest
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
-        - admin
         - root
+        - admin
+      x-aliases:
+        - "/users/{userId}"
+  /internal/users/{userId}/addresses:
+    get:
+      tags:
+        - Users
+      summary: "Direcciones guardadas de un usuario"
+      operationId: internal_get_users_userId_addresses
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/users/{userId}/addresses"
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Users
+      summary: "Agregar una dirección a un usuario"
+      operationId: internal_post_users_userId_addresses
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - "/users/{userId}/addresses"
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
   /internal/users/{userId}/consents:
     get:
       tags:
@@ -749,217 +2802,375 @@ paths:
       x-roles:
         - root
         - admin
-  /internal/users/{userId}:
+      x-aliases:
+        - "/users/{userId}/consents"
+  /internal/users/{userId}/orders:
     get:
       tags:
-        - "Users Administration"
-      summary: "Obtener información y estado de usuario interno por ID"
-      operationId: internal_get_user_by_id
+        - Users
+      summary: "Pedidos de un usuario (como cliente o conductor)"
+      operationId: internal_get_users_userId_orders
       responses:
         200:
-          description: "Datos del usuario interno."
+          description: "Operación ejecutada exitosamente."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/InternalUserResponse
-      security:
-        - bearerAuth: []
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - "/users/{userId}/orders"
       parameters:
         - name: userId
           in: path
           required: true
           schema:
             type: string
-          description: "Identificador del usuario en el sistema"
+      security:
+        - bearerAuth: []
+  /internal/users/{userId}/status:
+    patch:
+      tags:
+        - Users
+      summary: "Bloquear o reactivar una cuenta"
+      operationId: internal_patch_users_userId_status
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - root
-        - admin
+      x-aliases:
+        - "/users/{userId}/status"
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
     put:
       tags:
-        - "Users Administration"
-      summary: "Actualizar datos de perfil, estado o rol de usuario interno"
-      operationId: internal_put_user_by_id
+        - Users
+      summary: "Bloquear o reactivar una cuenta"
+      operationId: internal_put_users_userId_status
       responses:
         200:
-          description: "Usuario actualizado."
+          description: "Operación ejecutada exitosamente."
           content:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
-      security:
-        - bearerAuth: []
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - "/users/{userId}/status"
       parameters:
         - name: userId
           in: path
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/InternalUserUpdateRequest
-      x-service: auth-admin-lambda
-      x-source: Flowex-auth-admin-lambda/src/index.ts
-      x-roles:
-        - root
-        - admin
-    delete:
-      tags:
-        - "Users Administration"
-      summary: "Eliminar o desactivar usuario interno"
-      operationId: internal_delete_user_by_id
-      responses:
-        200:
-          description: "Usuario eliminado del sistema."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardSuccessResponse
       security:
         - bearerAuth: []
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-      x-service: auth-admin-lambda
-      x-source: Flowex-auth-admin-lambda/src/index.ts
-      x-roles:
-        - root
-        - admin
-  /internal/coupons/validate:
-    post:
-      tags:
-        - Coupons
-      summary: "Validar y pre-aplicar cupón promocional en checkout (Exclusivo rol client)"
-      operationId: coupons_post_validate
-      responses:
-        200:
-          description: "Cupón válido y descuento calculado."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/CouponValidationResponse
-        400:
-          description: "Cupón no válido, expirado o agotado."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-        403:
-          description: "Acceso denegado: Exclusivo para rol client."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      description: "Valida la aplicabilidad de un cupón según vigencia, límite de uso, tope de $30.000 CLP y 15% de descuento máximo. Exclusivo para clientes."
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/CouponValidationRequest
-      x-service: auth-admin-lambda
-      x-source: Flowex-auth-admin-lambda/src/index.ts
-      x-roles:
-        - client
-  /internal/coupons/release:
-    post:
-      tags:
-        - Coupons
-      summary: "Liberar cupón reservado por cancelación o abandono (Exclusivo rol client)"
-      operationId: coupons_post_release
-      responses:
-        200:
-          description: "Reserva de cupón liberada exitosamente."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardSuccessResponse
-        400:
-          description: "Falta orderId u orden no posee reserva."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-        403:
-          description: "Acceso denegado: Exclusivo para rol client."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      description: "Libera la reserva temporal de un cupón para que el cliente pueda volver a utilizarlo si el pago no se completó."
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/CouponReleaseRequest
-      x-service: auth-admin-lambda
-      x-source: Flowex-auth-admin-lambda/src/index.ts
-      x-roles:
-        - client
-  /internal/root/coupons:
-    post:
-      tags:
-        - Coupons
-      summary: "Crear cupón promocional individual (Exclusivo rol root)"
-      operationId: root_post_coupons
-      responses:
-        201:
-          description: "Cupón creado exitosamente."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  coupon:
-                    $ref: #/components/schemas/Coupon
-        400:
-          description: "Parámetros inválidos o superación de topes (máx 15%, máx $30.000 CLP)."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-        403:
-          description: "Acceso denegado: Exclusivo para rol root."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      description: "Crea un cupón único con restricciones financieras de máx 15% y $30.000 CLP. Exclusivo para el rol root."
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/CouponCreateRequest
-      x-service: auth-admin-lambda
-      x-source: Flowex-auth-admin-lambda/src/index.ts
-      x-roles:
-        - root
+  /internal/vehicles:
     get:
       tags:
-        - Coupons
-      summary: "Listar cupones y KPIs de rendimiento (Exclusivo rol root)"
-      operationId: root_get_coupons
+        - Fleet
+      summary: "Listar vehículos de la flota con su hub"
+      operationId: internal_get_vehicles
       responses:
         200:
-          description: "Listado de cupones y métricas de campaña."
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Fleet
+      summary: "Registrar un vehículo con límites de carga y hub"
+      operationId: internal_post_vehicles
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      security:
+        - bearerAuth: []
+  /internal/vehicles/{vehicleId}:
+    delete:
+      tags:
+        - Fleet
+      summary: "Dar de baja un vehículo"
+      operationId: internal_delete_vehicles_vehicleId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    patch:
+      tags:
+        - Fleet
+      summary: "Actualizar un vehículo"
+      operationId: internal_patch_vehicles_vehicleId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Fleet
+      summary: "Actualizar un vehículo"
+      operationId: internal_put_vehicles_vehicleId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/vehicles/available:
+    get:
+      tags:
+        - Fleet
+      summary: "Vehículos disponibles para asignar a una ruta"
+      operationId: internal_get_vehicles_available
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+      security:
+        - bearerAuth: []
+  /internal/vehicles/presets:
+    get:
+      tags:
+        - Fleet
+      summary: "Tipos de vehículo con capacidades sugeridas"
+      operationId: internal_get_vehicles_presets
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+      security:
+        - bearerAuth: []
+  /notifications/email/order-created:
+    post:
+      tags:
+        - Notifications
+      summary: "Enviar confirmación de despacho con número de tracking y PIN de entrega"
+      operationId: notifications_post_email_order_created
+      responses:
+        200:
+          description: "Comprobante de envío con tracking y PIN de entrega despachado."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/EmailOrderCreatedRequest
+      x-service: notification-lambda
+      x-source: Flowex-notification-lambda/src/index.ts
+  /notifications/email/order-status-update:
+    post:
+      tags:
+        - Notifications
+      summary: "Enviar actualización de estado del envío al cliente destinatario"
+      operationId: notifications_post_email_order_status_update
+      responses:
+        200:
+          description: "Actualización de tracking despachada al cliente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/EmailOrderStatusUpdateRequest
+      x-service: notification-lambda
+      x-source: Flowex-notification-lambda/src/index.ts
+  /notifications/email/package-discrepancy:
+    post:
+      tags:
+        - Notifications
+      summary: "Avisar al remitente una diferencia de bulto"
+      operationId: notifications_post_email_package_discrepancy
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: notification-lambda
+      x-source: Flowex-notification-lambda/src/index.ts
+  /notifications/email/verify-account:
+    post:
+      tags:
+        - Notifications
+      summary: "Enviar correo HTML de verificación con código OTP vía Amazon SES"
+      operationId: notifications_post_email_verify_account
+      responses:
+        200:
+          description: "Correo HTML de verificación despachado por Amazon SES."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/EmailVerifyAccountRequest
+      x-service: notification-lambda
+      x-source: Flowex-notification-lambda/src/index.ts
+  /notifications/email/welcome:
+    post:
+      tags:
+        - Notifications
+      summary: "Enviar correo de bienvenida con enlace de acceso tras activación"
+      operationId: notifications_post_email_welcome
+      responses:
+        200:
+          description: "Correo de bienvenida enviado."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/EmailWelcomeRequest
+      x-service: notification-lambda
+      x-source: Flowex-notification-lambda/src/index.ts
+  /notifications/whatsapp:
+    post:
+      tags:
+        - "OTP & WhatsApp"
+      summary: "Despachar plantillas transaccionales de WhatsApp (Envíos, Tránsito, Incidentes)"
+      operationId: notifications_post_whatsapp
+      responses:
+        200:
+          description: "Notificación de plantilla WhatsApp enviada al destinatario."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/WhatsAppNotificationRequest
+      x-service: otp-service-lambda
+      x-source: Flowex-otp-service-lambda/src/index.ts
+  /otp/deliveries:
+    get:
+      tags:
+        - "OTP & WhatsApp"
+      summary: "Listar entregas y envíos OTP con paginación Importal y enmascaramiento PII"
+      operationId: otp_get_deliveries
+      responses:
+        200:
+          description: "Historial de entregas OTP con métricas de fallos y paginación Importal."
           content:
             application/json:
               schema:
@@ -971,38 +3182,41 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: #/components/schemas/Coupon
-                  total:
-                    type: integer
-                    example: 120
-                  coupons:
+                      $ref: #/components/schemas/OtpDeliveryItem
+                  deliveries:
                     type: array
                     items:
-                      $ref: #/components/schemas/Coupon
+                      $ref: #/components/schemas/OtpDeliveryItem
+                  total:
+                    type: integer
+                    example: 88
                   meta:
                     $ref: #/components/schemas/PaginationMeta
-                  metrics:
-                    type: object
-                    properties:
-                      totalCoupons:
-                        type: integer
-                        example: 120
-                      activeCoupons:
-                        type: integer
-                        example: 110
-                      totalRedemptions:
-                        type: integer
-                        example: 840
-                      totalDiscountGranted:
-                        type: number
-                        example: 2520000
-        403:
-          description: "Acceso denegado: Exclusivo para rol root."
+                  fallidos:
+                    type: integer
+                    example: 2
+                    description: "Cantidad de envíos en estado fallido en la página actual"
+                  ttlMinutos:
+                    type: integer
+                    example: 10
+                    description: "Vigencia de los códigos OTP en minutos"
+                  intentosMaximos:
+                    type: integer
+                    example: 5
+                    description: "Máximo de intentos de verificación permitidos"
+        401:
+          description: "No autenticado o token ausente/inválido."
           content:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
-      description: "Devuelve la lista paginada de cupones con métricas consolidadas de canjes, descuentos acumulados y creadores asociados."
+        403:
+          description: "Acceso denegado: Reservado a operaciones (roles root o admin)."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      description: "Consulta el registro de emisiones y entregas de códigos OTP vía Meta WhatsApp Cloud API y canales de respaldo, aplicando enmascaramiento estricto de datos de contacto (Ley N° 21.719) y formato de paginación estándar Importal."
       security:
         - bearerAuth: []
       parameters:
@@ -1013,184 +3227,214 @@ paths:
             type: integer
             default: 1
           description: "Número de página actual (1-indexed)"
-        - name: isActive
-          in: query
-          required: false
-          schema:
-            type: boolean
-          description: "Filtrar por estado activo/inactivo"
-        - name: creator
-          in: query
-          required: false
-          schema:
-            type: string
-          description: "Filtrar por nombre o atribución de creador"
         - name: limit
           in: query
           required: false
           schema:
             type: integer
-            default: 50
-        - name: offset
+            default: 20
+          description: "Cantidad máxima de entregas por página (máximo 100)"
+        - name: q
           in: query
           required: false
           schema:
-            type: integer
-            default: 0
-      x-service: auth-admin-lambda
-      x-source: Flowex-auth-admin-lambda/src/index.ts
+            type: string
+          description: "Búsqueda por identificador, correo o dígitos telefónicos"
+      x-service: otp-service-lambda
+      x-source: Flowex-otp-service-lambda/src/index.ts
       x-roles:
         - root
-  /internal/root/coupons/batch:
+        - admin
+  /otp/deliveries/{deliveryId}/resend:
     post:
       tags:
-        - Coupons
-      summary: "Generación masiva de cupones con prefijo (Exclusivo rol root)"
-      operationId: root_post_coupons_batch
-      responses:
-        201:
-          description: "Lote de cupones generado exitosamente."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  count:
-                    type: integer
-                    example: 50
-                  coupons:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/Coupon
-        400:
-          description: "Parámetros de lote inválidos."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-        403:
-          description: "Acceso denegado: Exclusivo para rol root."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      description: "Genera un lote de cupones con prefijo unificado (hasta 500 unidades) para activaciones o convenios de creadores. Exclusivo para root."
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/CouponBatchCreateRequest
-      x-service: auth-admin-lambda
-      x-source: Flowex-auth-admin-lambda/src/index.ts
-      x-roles:
-        - root
-  /internal/root/coupons/import-csv:
-    post:
-      tags:
-        - Coupons
-      summary: "Importar cupones de creadores vía CSV (Exclusivo rol root)"
-      operationId: root_post_coupons_import_csv
-      responses:
-        201:
-          description: "Importación de cupones completada."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  importedCount:
-                    type: integer
-                    example: 25
-                  coupons:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/Coupon
-        400:
-          description: "Formato CSV o datos de cupones inválidos."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-        403:
-          description: "Acceso denegado: Exclusivo para rol root."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      description: "Permite la carga de listas masivas de códigos personalizados de influencers/creadores respetando topes comerciales."
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/CouponImportCsvRequest
-      x-service: auth-admin-lambda
-      x-source: Flowex-auth-admin-lambda/src/index.ts
-      x-roles:
-        - root
-  /internal/root/coupons/{id}:
-    patch:
-      tags:
-        - Coupons
-      summary: "Actualizar cupón o prorrogar vigencia (Exclusivo rol root)"
-      operationId: root_patch_coupon_by_id
+        - "OTP & WhatsApp"
+      summary: "Reenviar un código de verificación por correo (operaciones)"
+      operationId: otp_post_deliveries_deliveryId_resend
       responses:
         200:
-          description: "Cupón actualizado exitosamente."
+          description: "Operación ejecutada exitosamente."
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  coupon:
-                    $ref: #/components/schemas/Coupon
-        400:
-          description: "Datos de actualización inválidos."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-        403:
-          description: "Acceso denegado: Exclusivo para rol root."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      description: "Permite pausar/desactivar un cupón, extender su vigencia o aumentar el límite de usos."
-      security:
-        - bearerAuth: []
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: otp-service-lambda
+      x-source: Flowex-otp-service-lambda/src/index.ts
+      x-roles:
+        - root
       parameters:
-        - name: id
+        - name: deliveryId
           in: path
           required: true
           schema:
             type: string
-            format: uuid
-          description: "ID único del cupón a actualizar"
+      security:
+        - bearerAuth: []
+  /otp/send:
+    post:
+      tags:
+        - "OTP & WhatsApp"
+      summary: "Emitir y enviar el código de verificación por correo (único canal)"
+      operationId: otp_post_send
+      responses:
+        200:
+          description: "Código emitido y enviado al correo."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/SendOtpResponse
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: #/components/schemas/CouponUpdateRequest
-      x-service: auth-admin-lambda
-      x-source: Flowex-auth-admin-lambda/src/index.ts
+              $ref: #/components/schemas/SendOtpRequest
+      x-service: otp-service-lambda
+      x-source: Flowex-otp-service-lambda/src/index.ts
+  /otp/send-delivery-code:
+    post:
+      tags:
+        - "OTP & WhatsApp"
+      summary: "Enviar al destinatario el código de entrega por WhatsApp (operaciones)"
+      operationId: otp_post_send_delivery_code
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: otp-service-lambda
+      x-source: Flowex-otp-service-lambda/src/index.ts
       x-roles:
         - root
+      security:
+        - bearerAuth: []
+  /otp/verify:
+    post:
+      tags:
+        - "OTP & WhatsApp"
+      summary: "Verificar código OTP, auto-activar registro y generar Status Token HMAC"
+      operationId: otp_post_verify
+      responses:
+        200:
+          description: "OTP validado con éxito. Cuenta activada y Status Token generado."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/VerifyOtpResponse
+        400:
+          description: "Código OTP erróneo o expirado."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/VerifyOtpRequest
+      x-service: otp-service-lambda
+      x-source: Flowex-otp-service-lambda/src/index.ts
+  /payments/fintoc/checkout-session:
+    post:
+      tags:
+        - Payments
+      summary: "Crear sesión de pago Fintoc"
+      operationId: payments_post_fintoc_checkout_session
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: payments-api-lambda
+      x-source: Flowex-payments-api-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /payments/fintoc/status:
+    get:
+      tags:
+        - Payments
+      summary: "Estado de una sesión de pago Fintoc"
+      operationId: payments_get_fintoc_status
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: payments-api-lambda
+      x-source: Flowex-payments-api-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /payments/mercadopago/preference:
+    post:
+      tags:
+        - Payments
+      summary: "Crear preferencia de pago Mercado Pago (Checkout Pro / WebPay)"
+      operationId: payments_post_mercadopago_preference
+      responses:
+        200:
+          description: "Preferencia de Checkout Pro generada."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/MercadoPagoPreferenceResponse
+        400:
+          description: "Monto, email o identificador de orden faltantes."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardErrorResponse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/MercadoPagoPreferenceRequest
+      x-service: payments-api-lambda
+      x-source: Flowex-payments-api-lambda/src/index.ts
+      x-roles:
+        - client
+        - admin
+  /payments/mercadopago/status:
+    get:
+      tags:
+        - Payments
+      summary: "Estado de un pago de Mercado Pago"
+      operationId: payments_get_mercadopago_status
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: payments-api-lambda
+      x-source: Flowex-payments-api-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /registration/calculate-sla:
+    post:
+      tags:
+        - Registration
+      summary: "Calcular el plazo de entrega entre dos comunas"
+      operationId: registration_post_calculate_sla
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: registration-public-lambda
+      x-source: Flowex-registration-public-lambda/src/index.ts
+      x-aliases:
+        - /registration/coverage/calculate-sla
   /registration/client:
     post:
       tags:
@@ -1234,6 +3478,23 @@ paths:
               $ref: #/components/schemas/RegistrationClientCreate
       x-service: registration-public-lambda
       x-source: Flowex-registration-public-lambda/src/index.ts
+  /registration/communes:
+    get:
+      tags:
+        - Registration
+      summary: "Comunas con cobertura (público)"
+      operationId: registration_get_communes
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: registration-public-lambda
+      x-source: Flowex-registration-public-lambda/src/index.ts
+      x-aliases:
+        - /registration/coverage/communes
   /registration/invite:
     post:
       tags:
@@ -1320,6 +3581,34 @@ paths:
               $ref: #/components/schemas/RegistrationRequestCreate
       x-service: registration-public-lambda
       x-source: Flowex-registration-public-lambda/src/index.ts
+  /registration/requests/{email}/reupload-comprobante:
+    put:
+      tags:
+        - Registration
+      summary: "Subir o reemplazar comprobante en S3 para solicitud pendiente"
+      operationId: registration_put_reupload_comprobante
+      responses:
+        200:
+          description: "Comprobante almacenado en S3 exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+            format: email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: #/components/schemas/ReuploadComprobanteRequest
+      x-service: registration-public-lambda
+      x-source: Flowex-registration-public-lambda/src/index.ts
   /registration/requests/{email}/status:
     get:
       tags:
@@ -1371,327 +3660,297 @@ paths:
               $ref: #/components/schemas/UpdateContactRequest
       x-service: registration-public-lambda
       x-source: Flowex-registration-public-lambda/src/index.ts
-  /registration/requests/{email}/reupload-comprobante:
-    put:
-      tags:
-        - Registration
-      summary: "Subir o reemplazar comprobante en S3 para solicitud pendiente"
-      operationId: registration_put_reupload_comprobante
-      responses:
-        200:
-          description: "Comprobante almacenado en S3 exitosamente."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardSuccessResponse
-      parameters:
-        - name: email
-          in: path
-          required: true
-          schema:
-            type: string
-            format: email
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/ReuploadComprobanteRequest
-      x-service: registration-public-lambda
-      x-source: Flowex-registration-public-lambda/src/index.ts
-  /otp/send:
-    post:
-      tags:
-        - "OTP & WhatsApp"
-      summary: "Generar y despachar código OTP multicanal (SMS, WhatsApp, SQS/Email)"
-      operationId: otp_post_send
-      responses:
-        200:
-          description: "OTP despachado por SMS/WhatsApp/Email."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/SendOtpResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/SendOtpRequest
-      x-service: otp-service-lambda
-      x-source: Flowex-otp-service-lambda/src/index.ts
-  /otp/send-whatsapp:
-    post:
-      tags:
-        - "OTP & WhatsApp"
-      summary: "Enviar código OTP vía Meta WhatsApp Cloud API (Template flowex_otp_code)"
-      operationId: otp_post_send_whatsapp
-      responses:
-        200:
-          description: "OTP enviado por Meta WhatsApp Cloud API."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/SendWhatsAppOtpResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/SendWhatsAppOtpRequest
-      x-service: otp-service-lambda
-      x-source: Flowex-otp-service-lambda/src/index.ts
-  /otp/verify:
-    post:
-      tags:
-        - "OTP & WhatsApp"
-      summary: "Verificar código OTP, auto-activar registro y generar Status Token HMAC"
-      operationId: otp_post_verify
-      responses:
-        200:
-          description: "OTP validado con éxito. Cuenta activada y Status Token generado."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/VerifyOtpResponse
-        400:
-          description: "Código OTP erróneo o expirado."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/VerifyOtpRequest
-      x-service: otp-service-lambda
-      x-source: Flowex-otp-service-lambda/src/index.ts
-  /otp/deliveries:
+  /registration/tariffs:
     get:
       tags:
-        - "OTP & WhatsApp"
-      summary: "Listar entregas y envíos OTP con paginación Importal y enmascaramiento PII"
-      operationId: otp_get_deliveries
+        - Registration
+      summary: "Tarifas vigentes por tamaño de bulto (público)"
+      operationId: registration_get_tariffs
       responses:
         200:
-          description: "Historial de entregas OTP con métricas de fallos y paginación Importal."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/OtpDeliveryItem
-                  deliveries:
-                    type: array
-                    items:
-                      $ref: #/components/schemas/OtpDeliveryItem
-                  total:
-                    type: integer
-                    example: 88
-                  meta:
-                    $ref: #/components/schemas/PaginationMeta
-                  fallidos:
-                    type: integer
-                    example: 2
-                    description: "Cantidad de envíos en estado fallido en la página actual"
-                  ttlMinutos:
-                    type: integer
-                    example: 10
-                    description: "Vigencia de los códigos OTP en minutos"
-                  intentosMaximos:
-                    type: integer
-                    example: 5
-                    description: "Máximo de intentos de verificación permitidos"
-        401:
-          description: "No autenticado o token ausente/inválido."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-        403:
-          description: "Acceso denegado: Reservado a operaciones (roles root o admin)."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      description: "Consulta el registro de emisiones y entregas de códigos OTP vía Meta WhatsApp Cloud API y canales de respaldo, aplicando enmascaramiento estricto de datos de contacto (Ley N° 21.719) y formato de paginación estándar Importal."
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 1
-          description: "Número de página actual (1-indexed)"
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 20
-          description: "Cantidad máxima de entregas por página (máximo 100)"
-        - name: q
-          in: query
-          required: false
-          schema:
-            type: string
-          description: "Búsqueda por identificador, correo o dígitos telefónicos"
-      x-service: otp-service-lambda
-      x-source: Flowex-otp-service-lambda/src/index.ts
-      x-roles:
-        - root
-        - admin
-  /notifications/whatsapp:
-    post:
-      tags:
-        - "OTP & WhatsApp"
-      summary: "Despachar plantillas transaccionales de WhatsApp (Envíos, Tránsito, Incidentes)"
-      operationId: notifications_post_whatsapp
-      responses:
-        200:
-          description: "Notificación de plantilla WhatsApp enviada al destinatario."
+          description: "Operación ejecutada exitosamente."
           content:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/WhatsAppNotificationRequest
-      x-service: otp-service-lambda
-      x-source: Flowex-otp-service-lambda/src/index.ts
-  /admin/registration-requests/{email}/override-activate:
-    post:
+      x-service: registration-public-lambda
+      x-source: Flowex-registration-public-lambda/src/index.ts
+      x-aliases:
+        - /registration/coverage/tariffs
+  /users/me/addresses:
+    get:
       tags:
-        - "Admin Overrides"
-      summary: "Aprobación manual y activación forzada de solicitud por administrador"
-      operationId: admin_post_override_activate_registration
+        - Users
+      summary: "Mis direcciones guardadas"
+      operationId: internal_get_users_me_addresses
       responses:
         200:
-          description: "Cuenta activada manualmente por administrador."
+          description: "Operación ejecutada exitosamente."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/AdminOverrideActivateResponse
-        403:
-          description: "Acceso denegado: Requiere rol admin o root."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
         - bearerAuth: []
+    post:
+      tags:
+        - Users
+      summary: "Agregar una dirección"
+      operationId: internal_post_users_me_addresses
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /users/me/addresses/{addressId}:
+    delete:
+      tags:
+        - Users
+      summary: "Eliminar una dirección"
+      operationId: internal_delete_users_me_addresses_addressId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
       parameters:
-        - name: email
+        - name: addressId
           in: path
           required: true
           schema:
             type: string
-            format: email
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/AdminOverrideActivateRequest
-      x-service: registration-admin-lambda
-      x-source: Flowex-registration-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Users
+      summary: "Editar una dirección"
+      operationId: internal_put_users_me_addresses_addressId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      parameters:
+        - name: addressId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /users/me/addresses/{addressId}/default:
+    patch:
+      tags:
+        - Users
+      summary: "Marcar una dirección como predeterminada"
+      operationId: internal_patch_users_me_addresses_addressId_default
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      parameters:
+        - name: addressId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Users
+      summary: "Marcar una dirección como predeterminada"
+      operationId: internal_put_users_me_addresses_addressId_default
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      parameters:
+        - name: addressId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /users/me/avatar:
+    get:
+      tags:
+        - Users
+      summary: "Obtener una URL firmada vigente"
+      operationId: internal_get_users_me_avatar
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Users
+      summary: "Subir foto de perfil"
+      operationId: internal_post_users_me_avatar
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /users/me/billing:
+    get:
+      tags:
+        - Users
+      summary: "Mis datos de facturación"
+      operationId: internal_get_users_me_billing
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Users
+      summary: "Actualizar mis datos de facturación"
+      operationId: internal_put_users_me_billing
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /users/me/driver-profile:
+    get:
+      tags:
+        - Users
+      summary: "Mi ficha de conductor con vehículo asignado y hub"
+      operationId: internal_get_users_me_driver_profile
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - root
-        - admin
-  /payments/mercadopago/preference:
-    post:
+      security:
+        - bearerAuth: []
+    put:
       tags:
-        - Payments
-      summary: "Crear preferencia de pago Mercado Pago (Checkout Pro / WebPay)"
-      operationId: payments_post_mercadopago_preference
+        - Users
+      summary: "Actualizar licencia y vehículo declarados"
+      operationId: internal_put_users_me_driver_profile
       responses:
         200:
-          description: "Preferencia de Checkout Pro generada."
+          description: "Operación ejecutada exitosamente."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/MercadoPagoPreferenceResponse
-        400:
-          description: "Monto, email o identificador de orden faltantes."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/MercadoPagoPreferenceRequest
-      x-service: payments-api-lambda
-      x-source: Flowex-payments-api-lambda/src/index.ts
-      x-roles:
-        - client
-        - admin
-  /payments/fintoc/payment-intent:
-    post:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /users/me/export:
+    get:
       tags:
-        - Payments
-      summary: "Crear intención de pago Fintoc (Transferencia bancaria A2A Open Banking)"
-      operationId: payments_post_fintoc_payment_intent
+        - Users
+      summary: "Exportar todos mis datos personales en JSON (portabilidad, Ley N° 21.719)"
+      operationId: internal_get_users_me_export
       responses:
         200:
-          description: "Intención de pago Fintoc A2A generada."
+          description: "Operación ejecutada exitosamente."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/FintocPaymentIntentResponse
-        400:
-          description: "Parámetros obligatorios ausentes."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/FintocPaymentIntentRequest
-      x-service: payments-api-lambda
-      x-source: Flowex-payments-api-lambda/src/index.ts
-      x-roles:
-        - client
-        - admin
-  /webhooks/mercadopago:
-    post:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+  /users/me/notifications:
+    get:
       tags:
-        - Payments
-      summary: "Webhook receptor de notificaciones IPN de Mercado Pago"
-      operationId: payments_post_webhook_mercadopago
+        - Users
+      summary: "Mis preferencias de notificación (correo y WhatsApp)"
+      operationId: internal_get_users_me_notifications
       responses:
         200:
-          description: "Notificación IPN recibida y procesada."
+          description: "Operación ejecutada exitosamente."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/WebhookMercadoPagoResponse
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-      x-service: payments-api-lambda
-      x-source: Flowex-payments-api-lambda/src/index.ts
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Users
+      summary: "Actualizar mis preferencias de notificación"
+      operationId: internal_put_users_me_notifications
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
   /webhooks/fintoc:
     post:
       tags:
@@ -1713,143 +3972,27 @@ paths:
               type: object
       x-service: payments-api-lambda
       x-source: Flowex-payments-api-lambda/src/index.ts
-  /payments/simulate:
+  /webhooks/mercadopago:
     post:
       tags:
         - Payments
-      summary: "Simular procesamiento de pago y liberación de cupones (Motor de pruebas)"
-      operationId: payments_post_simulate
+      summary: "Webhook receptor de notificaciones IPN de Mercado Pago"
+      operationId: payments_post_webhook_mercadopago
       responses:
         200:
-          description: "Simulación ejecutada con actualización de orden y cupón."
+          description: "Notificación IPN recibida y procesada."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/PaymentSimulateResponse
-        400:
-          description: "Parámetros obligatorios ausentes o escenario inválido."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardErrorResponse
-      description: "Permite emular pasarelas de pago (Mercado Pago / Fintoc) con escenarios success, failure o abandon, garantizando la liberación inmediata del cupón ante fallos."
+                $ref: #/components/schemas/WebhookMercadoPagoResponse
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
-              $ref: #/components/schemas/PaymentSimulateRequest
+              type: object
       x-service: payments-api-lambda
       x-source: Flowex-payments-api-lambda/src/index.ts
-      x-roles:
-        - client
-        - admin
-        - root
-  /notifications/email/verify-account:
-    post:
-      tags:
-        - Notifications
-      summary: "Enviar correo HTML de verificación con código OTP vía Amazon SES"
-      operationId: notifications_post_email_verify_account
-      responses:
-        200:
-          description: "Correo HTML de verificación despachado por Amazon SES."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardSuccessResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/EmailVerifyAccountRequest
-      x-service: notification-lambda
-      x-source: Flowex-notification-lambda/src/index.ts
-  /notifications/sms/verify-phone:
-    post:
-      tags:
-        - Notifications
-      summary: "Enviar SMS de verificación a número telefónico E.164"
-      operationId: notifications_post_sms_verify_phone
-      responses:
-        200:
-          description: "Mensaje de texto SMS despachado."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardSuccessResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/SmsVerifyPhoneRequest
-      x-service: notification-lambda
-      x-source: Flowex-notification-lambda/src/index.ts
-  /notifications/email/welcome:
-    post:
-      tags:
-        - Notifications
-      summary: "Enviar correo de bienvenida con enlace de acceso tras activación"
-      operationId: notifications_post_email_welcome
-      responses:
-        200:
-          description: "Correo de bienvenida enviado."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardSuccessResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/EmailWelcomeRequest
-      x-service: notification-lambda
-      x-source: Flowex-notification-lambda/src/index.ts
-  /notifications/email/order-created:
-    post:
-      tags:
-        - Notifications
-      summary: "Enviar confirmación de despacho con número de tracking y PIN de entrega"
-      operationId: notifications_post_email_order_created
-      responses:
-        200:
-          description: "Comprobante de envío con tracking y PIN de entrega despachado."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardSuccessResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/EmailOrderCreatedRequest
-      x-service: notification-lambda
-      x-source: Flowex-notification-lambda/src/index.ts
-  /notifications/email/order-status-update:
-    post:
-      tags:
-        - Notifications
-      summary: "Enviar actualización de estado del envío al cliente destinatario"
-      operationId: notifications_post_email_order_status_update
-      responses:
-        200:
-          description: "Actualización de tracking despachada al cliente."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardSuccessResponse
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/EmailOrderStatusUpdateRequest
-      x-service: notification-lambda
-      x-source: Flowex-notification-lambda/src/index.ts
 components:
   securitySchemes:
     bearerAuth:
@@ -2079,10 +4222,10 @@ components:
         channel:
           type: string
           enum:
-            - whatsapp
-            - sms
             - email
-          example: whatsapp
+            - whatsapp
+          description: "Los códigos nuevos salen solo por correo; `whatsapp` solo aparece en envíos antiguos."
+          example: email
         status:
           type: string
           enum:
@@ -2094,10 +4237,11 @@ components:
           example: entregado
         statusLabel:
           type: string
-          example: "Entregado vía WhatsApp Cloud API"
+          example: "Entregado por correo"
         providerMessageId:
           type: string
-          example: wamid.HBgLMNTY5ODc2NTQzMjEVAgARGBIwRjN...
+          nullable: true
+          example: null
         lastError:
           type: string
           nullable: true
@@ -2186,7 +4330,7 @@ components:
           example: addr_1771344928000
         alias:
           type: string
-          example: "Bodega Central Quilicura"
+          example: "Bodega principal"
         calle:
           type: string
           example: "Av. Américo Vespucio"
@@ -2198,7 +4342,7 @@ components:
           example: "Módulo B-12"
         ciudad:
           type: string
-          example: Quilicura
+          example: Pudahuel
         region:
           type: string
           example: "Región Metropolitana"
@@ -2243,7 +4387,6 @@ components:
       required:
         - emailSes
         - whatsappMeta
-        - smsSns
       description: "Preferencias de notificaciones multicanal para seguimiento de envíos y alertas operativas"
       properties:
         emailSes:
@@ -2252,12 +4395,8 @@ components:
           example: true
         whatsappMeta:
           type: boolean
-          description: "Alertas en tiempo real y códigos OTP vía Meta WhatsApp Business Cloud API"
+          description: "Avisos del pedido por Meta WhatsApp Business Cloud API (no códigos de verificación)"
           example: true
-        smsSns:
-          type: boolean
-          description: "Mensajes de texto SMS vía Amazon SNS para contingencias y fallback"
-          example: false
     LegalConsent:
       type: object
       required:
@@ -2371,7 +4510,7 @@ components:
             - sms_whatsapp_alerts
         reason:
           type: string
-          example: "El titular solicita cese voluntario de alertas SMS/WhatsApp"
+          example: "El titular solicita dejar de recibir alertas por WhatsApp"
     UserProfile:
       type: object
       description: "Modelo estandarizado de perfil de usuario en Flowex para todos los roles (root, admin, driver, client, customer)"
@@ -2898,68 +5037,50 @@ components:
           example: application/pdf
     SendOtpRequest:
       type: object
+      required:
+        - email
+      description: "El código de verificación tiene un único canal: el correo. Un teléfono o un `channel` distinto se ignoran."
       properties:
-        target:
-          type: string
-          description: "Correo o teléfono destino"
-          example: cliente.nuevo@gmail.com
         email:
           type: string
+          format: email
           example: cliente.nuevo@gmail.com
-        phone:
+        identifier:
           type: string
-          example: "+56991234567"
+          description: "Alias de `email`."
+          example: cliente.nuevo@gmail.com
         channel:
           type: string
           enum:
-            - sms
-            - whatsapp
             - email
-            - both
-          example: both
+          example: email
     SendOtpResponse:
       type: object
       properties:
+        success:
+          type: boolean
+          example: true
         message:
           type: string
-          example: "OTP generado y enviado por SMS/WhatsApp/Email correctamente"
+          example: "Código enviado. Vence en 10 minutos."
+        deliveryId:
+          type: string
+          example: otp_1771344928000
         email:
           type: string
           example: cliente.nuevo@gmail.com
-        phone:
-          type: string
-          example: "+56991234567"
         channel:
           type: string
-          example: both
-        mockOtpCode:
+          enum:
+            - email
+          example: email
+        delivered:
+          type: boolean
+          example: true
+        devOtpCode:
           type: string
+          description: "Solo fuera de producción y con activación explícita."
           example: 654321
-    SendWhatsAppOtpRequest:
-      type: object
-      required:
-        - phone
-      properties:
-        phone:
-          type: string
-          example: "+56991234567"
-    SendWhatsAppOtpResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          example: "Código OTP enviado por WhatsApp exitosamente"
-        phone:
-          type: string
-          example: "+56991234567"
-        channel:
-          type: string
-          example: whatsapp
-        otp:
-          type: string
-          example: 482910
-        whatsappResponse:
-          type: object
     VerifyOtpRequest:
       type: object
       required:
@@ -3028,7 +5149,7 @@ components:
             type: string
           example:
             - FLX-2026-8492
-            - "Hub Central Quilicura"
+            - "Hub Pudahuel"
     AdminOverrideActivateRequest:
       type: object
       properties:
@@ -3098,43 +5219,6 @@ components:
           example: "https://sandbox.mercadopago.cl/checkout/v1/redirect?pref_id=pref_mp_1771344928000"
         payload:
           type: object
-    FintocPaymentIntentRequest:
-      type: object
-      required:
-        - orderId
-        - amount
-        - payerEmail
-      properties:
-        orderId:
-          type: string
-          example: ord_1771344928
-        trackingNumber:
-          type: string
-          example: FLX-2026-8492
-        amount:
-          type: number
-          example: 14500
-        payerEmail:
-          type: string
-          format: email
-          example: cliente@gmail.com
-    FintocPaymentIntentResponse:
-      type: object
-      properties:
-        provider:
-          type: string
-          example: fintoc
-        paymentIntentId:
-          type: string
-          example: pi_fintoc_1771344928000
-        widgetToken:
-          type: string
-          example: wt_a1b2c3d4e5f6g7h8i9j0
-        checkoutUrl:
-          type: string
-          example: "https://checkout.fintoc.com/p/wt_a1b2c3d4e5f6g7h8i9j0"
-        payload:
-          type: object
     WebhookMercadoPagoResponse:
       type: object
       properties:
@@ -3193,18 +5277,6 @@ components:
         name:
           type: string
           example: "Rodrigo Fuentes"
-    SmsVerifyPhoneRequest:
-      type: object
-      required:
-        - phone
-        - code
-      properties:
-        phone:
-          type: string
-          example: "+56987654321"
-        code:
-          type: string
-          example: 839201
     EmailWelcomeRequest:
       type: object
       required:
@@ -3610,66 +5682,6 @@ components:
           type: integer
           minimum: 1
           example: 200
-    PaymentSimulateRequest:
-      type: object
-      required:
-        - orderId
-        - scenario
-      properties:
-        orderId:
-          type: string
-          example: ord_123456789
-        scenario:
-          type: string
-          enum:
-            - success
-            - failure
-            - abandon
-          example: failure
-        amount:
-          type: number
-          example: 21250
-        couponId:
-          type: string
-          format: uuid
-          nullable: true
-        couponCode:
-          type: string
-          nullable: true
-          example: INSPY15
-        provider:
-          type: string
-          enum:
-            - mercadopago
-            - fintoc
-          example: mercadopago
-        payerEmail:
-          type: string
-          format: email
-          example: cliente@flowex.cl
-    PaymentSimulateResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        orderId:
-          type: string
-          example: ord_123456789
-        scenario:
-          type: string
-          example: failure
-        orderStatus:
-          type: string
-          example: payment_failed
-        couponReleased:
-          type: boolean
-          example: true
-        message:
-          type: string
-          example: "Simulación de fallo completada. Reserva de cupón liberada."
-        details:
-          type: object
     StandardSuccessResponse:
       type: object
       properties:

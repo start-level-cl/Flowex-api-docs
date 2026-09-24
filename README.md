@@ -41,7 +41,7 @@ npm run serve
 
 ## ⚙️ Cómo Funciona el Motor de Documentación
 
-1. **Extracción Automática:** `scripts/lib/route-extractor.mjs` analiza las funciones Lambda de Flowex e indexa sus métodos HTTP, rutas, parámetros y roles requeridos.
+1. **Extracción desde el código:** `scripts/lib/route-extractor.mjs` lee `src/index.ts` de cada Lambda y reconoce sus manejadores (`httpMethod === ...`, `path === ...`, `path.match(/.../)`). Solo documenta las rutas que API Gateway entrega a esa Lambda (mapa `GATEWAY`, tomado de `Flowex-iac/lib/constructs/api-gateway.ts`); los alias alcanzables van en `x-aliases`. Los títulos, etiquetas y roles escritos a mano salen de `route-metadata.mjs` y `route-summaries.mjs`. Antes el inventario era una lista fija que documentaba 46 de las ~150 rutas y seguía listando rutas eliminadas.
 2. **Enriquecimiento de Metadata:** `scripts/lib/spec-config.mjs` aporta esquemas JSON Schema, ejemplos transaccionales, códigos de respuesta y esquemas de seguridad (`bearerAuth`, `cookieAccessAuth`, `cookieRefreshAuth`, `statusTokenAuth`).
 3. **Generación de Tipos:** `scripts/lib/typegen.mjs` transforma automáticamente la especificación OpenAPI en interfaces TypeScript puras.
 4. **Validación Continua:** `scripts/validate-openapi.mjs` asegura que no existan endpoints en el código que no estén debidamente especificados.

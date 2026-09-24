@@ -47,7 +47,7 @@ export const tags = [
   },
   {
     name: 'Notifications',
-    description: 'Servicio de notificaciones transaccionales vía Amazon SES (HTML emails) y SMS',
+    description: 'Notificaciones transaccionales: correo vía Amazon SES y avisos de pedido por Meta WhatsApp. Flowex no envía SMS.',
   },
   {
     name: 'Users Administration',
@@ -183,10 +183,15 @@ export const schemas = {
       identifier: { type: 'string', description: 'Identificador o contacto con enmascaramiento PII (Ley N° 21.719)', example: 'j***@flowex.cl' },
       email: { type: 'string', description: 'Correo electrónico enmascarado', example: 'j***@flowex.cl' },
       phone: { type: 'string', description: 'Teléfono móvil enmascarado', example: '+569****4321' },
-      channel: { type: 'string', enum: ['whatsapp', 'sms', 'email'], example: 'whatsapp' },
+      channel: {
+        type: 'string',
+        enum: ['email', 'whatsapp'],
+        description: 'Los códigos nuevos salen solo por correo; `whatsapp` solo aparece en envíos antiguos.',
+        example: 'email',
+      },
       status: { type: 'string', enum: ['pendiente', 'entregado', 'fallido', 'usado', 'expirado'], example: 'entregado' },
-      statusLabel: { type: 'string', example: 'Entregado vía WhatsApp Cloud API' },
-      providerMessageId: { type: 'string', example: 'wamid.HBgLMNTY5ODc2NTQzMjEVAgARGBIwRjN...' },
+      statusLabel: { type: 'string', example: 'Entregado por correo' },
+      providerMessageId: { type: 'string', nullable: true, example: null },
       lastError: { type: 'string', nullable: true, example: null },
       sendCount: { type: 'integer', example: 1 },
       verifyAttempts: { type: 'integer', example: 0 },
@@ -238,11 +243,11 @@ export const schemas = {
     description: 'Estructura de dirección guardada en la libreta de direcciones frecuentes del usuario',
     properties: {
       id: { type: 'string', example: 'addr_1771344928000' },
-      alias: { type: 'string', example: 'Bodega Central Quilicura' },
+      alias: { type: 'string', example: 'Bodega principal' },
       calle: { type: 'string', example: 'Av. Américo Vespucio' },
       numero: { type: 'string', example: '1500' },
       departamento: { type: 'string', example: 'Módulo B-12' },
-      ciudad: { type: 'string', example: 'Quilicura' },
+      ciudad: { type: 'string', example: 'Pudahuel' },
       region: { type: 'string', example: 'Región Metropolitana' },
       codigoPostal: { type: 'string', example: '8700000' },
       referencias: { type: 'string', example: 'Portón azul, acceso por calle lateral' },
@@ -263,12 +268,11 @@ export const schemas = {
   },
   NotificationPreferences: {
     type: 'object',
-    required: ['emailSes', 'whatsappMeta', 'smsSns'],
+    required: ['emailSes', 'whatsappMeta'],
     description: 'Preferencias de notificaciones multicanal para seguimiento de envíos y alertas operativas',
     properties: {
       emailSes: { type: 'boolean', description: 'Correos transaccionales vía Amazon SES (resumen de órdenes, facturas PDF y cambios de estado)', example: true },
-      whatsappMeta: { type: 'boolean', description: 'Alertas en tiempo real y códigos OTP vía Meta WhatsApp Business Cloud API', example: true },
-      smsSns: { type: 'boolean', description: 'Mensajes de texto SMS vía Amazon SNS para contingencias y fallback', example: false },
+      whatsappMeta: { type: 'boolean', description: 'Avisos del pedido por Meta WhatsApp Business Cloud API (no códigos de verificación)', example: true },
     },
   },
   LegalConsent: {
@@ -326,7 +330,7 @@ export const schemas = {
         items: { type: 'string' },
         example: ['sms_whatsapp_alerts'],
       },
-      reason: { type: 'string', example: 'El titular solicita cese voluntario de alertas SMS/WhatsApp' },
+      reason: { type: 'string', example: 'El titular solicita dejar de recibir alertas por WhatsApp' },
     },
   },
   UserProfile: {
@@ -606,38 +610,24 @@ export const schemas = {
   },
   SendOtpRequest: {
     type: 'object',
+    required: ['email'],
+    description: 'El código de verificación tiene un único canal: el correo. Un teléfono o un `channel` distinto se ignoran.',
     properties: {
-      target: { type: 'string', description: 'Correo o teléfono destino', example: 'cliente.nuevo@gmail.com' },
-      email: { type: 'string', example: 'cliente.nuevo@gmail.com' },
-      phone: { type: 'string', example: '+56991234567' },
-      channel: { type: 'string', enum: ['sms', 'whatsapp', 'email', 'both'], example: 'both' },
+      email: { type: 'string', format: 'email', example: 'cliente.nuevo@gmail.com' },
+      identifier: { type: 'string', description: 'Alias de `email`.', example: 'cliente.nuevo@gmail.com' },
+      channel: { type: 'string', enum: ['email'], example: 'email' },
     },
   },
   SendOtpResponse: {
     type: 'object',
     properties: {
-      message: { type: 'string', example: 'OTP generado y enviado por SMS/WhatsApp/Email correctamente' },
+      success: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Código enviado. Vence en 10 minutos.' },
+      deliveryId: { type: 'string', example: 'otp_1771344928000' },
       email: { type: 'string', example: 'cliente.nuevo@gmail.com' },
-      phone: { type: 'string', example: '+56991234567' },
-      channel: { type: 'string', example: 'both' },
-      mockOtpCode: { type: 'string', example: '654321' },
-    },
-  },
-  SendWhatsAppOtpRequest: {
-    type: 'object',
-    required: ['phone'],
-    properties: {
-      phone: { type: 'string', example: '+56991234567' },
-    },
-  },
-  SendWhatsAppOtpResponse: {
-    type: 'object',
-    properties: {
-      message: { type: 'string', example: 'Código OTP enviado por WhatsApp exitosamente' },
-      phone: { type: 'string', example: '+56991234567' },
-      channel: { type: 'string', example: 'whatsapp' },
-      otp: { type: 'string', example: '482910' },
-      whatsappResponse: { type: 'object' },
+      channel: { type: 'string', enum: ['email'], example: 'email' },
+      delivered: { type: 'boolean', example: true },
+      devOtpCode: { type: 'string', description: 'Solo fuera de producción y con activación explícita.', example: '654321' },
     },
   },
   VerifyOtpRequest: {
@@ -680,7 +670,7 @@ export const schemas = {
       parameters: {
         type: 'array',
         items: { type: 'string' },
-        example: ['FLX-2026-8492', 'Hub Central Quilicura'],
+        example: ['FLX-2026-8492', 'Hub Pudahuel'],
       },
     },
   },
@@ -723,26 +713,6 @@ export const schemas = {
       payload: { type: 'object' },
     },
   },
-  FintocPaymentIntentRequest: {
-    type: 'object',
-    required: ['orderId', 'amount', 'payerEmail'],
-    properties: {
-      orderId: { type: 'string', example: 'ord_1771344928' },
-      trackingNumber: { type: 'string', example: 'FLX-2026-8492' },
-      amount: { type: 'number', example: 14500 },
-      payerEmail: { type: 'string', format: 'email', example: 'cliente@gmail.com' },
-    },
-  },
-  FintocPaymentIntentResponse: {
-    type: 'object',
-    properties: {
-      provider: { type: 'string', example: 'fintoc' },
-      paymentIntentId: { type: 'string', example: 'pi_fintoc_1771344928000' },
-      widgetToken: { type: 'string', example: 'wt_a1b2c3d4e5f6g7h8i9j0' },
-      checkoutUrl: { type: 'string', example: 'https://checkout.fintoc.com/p/wt_a1b2c3d4e5f6g7h8i9j0' },
-      payload: { type: 'object' },
-    },
-  },
   WebhookMercadoPagoResponse: {
     type: 'object',
     properties: {
@@ -772,14 +742,6 @@ export const schemas = {
       email: { type: 'string', format: 'email', example: 'cliente@flowex.cl' },
       code: { type: 'string', example: '839201' },
       name: { type: 'string', example: 'Rodrigo Fuentes' },
-    },
-  },
-  SmsVerifyPhoneRequest: {
-    type: 'object',
-    required: ['phone', 'code'],
-    properties: {
-      phone: { type: 'string', example: '+56987654321' },
-      code: { type: 'string', example: '839201' },
     },
   },
   EmailWelcomeRequest: {
@@ -973,31 +935,6 @@ export const schemas = {
       isActive: { type: 'boolean', example: false },
       validityDaysExtension: { type: 'integer', minimum: 1, example: 15 },
       maxTotalUses: { type: 'integer', minimum: 1, example: 200 },
-    },
-  },
-  PaymentSimulateRequest: {
-    type: 'object',
-    required: ['orderId', 'scenario'],
-    properties: {
-      orderId: { type: 'string', example: 'ord_123456789' },
-      scenario: { type: 'string', enum: ['success', 'failure', 'abandon'], example: 'failure' },
-      amount: { type: 'number', example: 21250 },
-      couponId: { type: 'string', format: 'uuid', nullable: true },
-      couponCode: { type: 'string', nullable: true, example: 'INSPY15' },
-      provider: { type: 'string', enum: ['mercadopago', 'fintoc'], example: 'mercadopago' },
-      payerEmail: { type: 'string', format: 'email', example: 'cliente@flowex.cl' },
-    },
-  },
-  PaymentSimulateResponse: {
-    type: 'object',
-    properties: {
-      success: { type: 'boolean', example: true },
-      orderId: { type: 'string', example: 'ord_123456789' },
-      scenario: { type: 'string', example: 'failure' },
-      orderStatus: { type: 'string', example: 'payment_failed' },
-      couponReleased: { type: 'boolean', example: true },
-      message: { type: 'string', example: 'Simulación de fallo completada. Reserva de cupón liberada.' },
-      details: { type: 'object' },
     },
   },
   StandardSuccessResponse: {
@@ -1405,20 +1342,8 @@ export const operationOverrides = {
     },
     responses: {
       200: {
-        description: 'OTP despachado por SMS/WhatsApp/Email.',
+        description: 'Código emitido y enviado al correo.',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/SendOtpResponse' } } },
-      },
-    },
-  },
-  otp_post_send_whatsapp: {
-    requestBody: {
-      required: true,
-      content: { 'application/json': { schema: { $ref: '#/components/schemas/SendWhatsAppOtpRequest' } } },
-    },
-    responses: {
-      200: {
-        description: 'OTP enviado por Meta WhatsApp Cloud API.',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/SendWhatsAppOtpResponse' } } },
       },
     },
   },
@@ -1495,22 +1420,6 @@ export const operationOverrides = {
       },
     },
   },
-  payments_post_fintoc_payment_intent: {
-    requestBody: {
-      required: true,
-      content: { 'application/json': { schema: { $ref: '#/components/schemas/FintocPaymentIntentRequest' } } },
-    },
-    responses: {
-      200: {
-        description: 'Intención de pago Fintoc A2A generada.',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/FintocPaymentIntentResponse' } } },
-      },
-      400: {
-        description: 'Parámetros obligatorios ausentes.',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
-      },
-    },
-  },
   payments_post_webhook_mercadopago: {
     requestBody: {
       required: false,
@@ -1545,18 +1454,6 @@ export const operationOverrides = {
     responses: {
       200: {
         description: 'Correo HTML de verificación despachado por Amazon SES.',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardSuccessResponse' } } },
-      },
-    },
-  },
-  notifications_post_sms_verify_phone: {
-    requestBody: {
-      required: true,
-      content: { 'application/json': { schema: { $ref: '#/components/schemas/SmsVerifyPhoneRequest' } } },
-    },
-    responses: {
-      200: {
-        description: 'Mensaje de texto SMS despachado.',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardSuccessResponse' } } },
       },
     },
@@ -1868,24 +1765,6 @@ export const operationOverrides = {
       },
       403: {
         description: 'Acceso denegado: Exclusivo para rol root.',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
-      },
-    },
-  },
-  payments_post_simulate: {
-    summary: 'Simular procesamiento de pago y liberación de cupones (Motor de pruebas)',
-    description: 'Permite emular pasarelas de pago (Mercado Pago / Fintoc) con escenarios success, failure o abandon, garantizando la liberación inmediata del cupón ante fallos.',
-    requestBody: {
-      required: true,
-      content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentSimulateRequest' } } },
-    },
-    responses: {
-      200: {
-        description: 'Simulación ejecutada con actualización de orden y cupón.',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentSimulateResponse' } } },
-      },
-      400: {
-        description: 'Parámetros obligatorios ausentes o escenario inválido.',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } },
       },
     },

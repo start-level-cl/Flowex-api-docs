@@ -93,6 +93,22 @@ function buildOpenApiSpec(routes) {
       operation['x-roles'] = route.roles
     }
 
+    // Otras rutas que llegan al mismo manejador (p. ej. sin `/internal`).
+    if (route.aliases && route.aliases.length > 0) {
+      operation['x-aliases'] = route.aliases
+    }
+
+    // OpenAPI exige declarar cada `{param}` de la ruta. Las rutas que salen del código no
+    // traen esa declaración, así que se agrega la que falte.
+    const declared = new Set((operation.parameters || []).filter(p => p.in === 'path').map(p => p.name))
+    const pathParams = [...routePath.matchAll(/\{([^}]+)\}/g)].map(m => m[1]).filter(n => !declared.has(n))
+    if (pathParams.length > 0) {
+      operation.parameters = [
+        ...pathParams.map(name => ({ name, in: 'path', required: true, schema: { type: 'string' } })),
+        ...(operation.parameters || []),
+      ]
+    }
+
     if (route.security && !operation.security) {
       if (route.security === 'bearerAuth') {
         operation.security = [{ bearerAuth: [] }]

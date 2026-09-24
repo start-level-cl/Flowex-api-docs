@@ -131,7 +131,12 @@ export interface Order {
   insuranceCost: number;
   shippingType: 'normal' | 'express' | 'same_day';
   zone: string;
-  hubName: string;
+  /**
+   * Hub donde se recibió el pedido; null hasta que llega a uno. Se fija al pasar a
+   * `in_hub` (ver "Recepción en hub") y se actualiza si el hub cambia de nombre.
+   */
+  hubId: string | null;
+  hubName: string | null;
 
   // Estados & Pagos
   status: OrderStatus;
@@ -305,6 +310,23 @@ El contrato de respuesta incluye el arreglo principal en `data`, el alias de com
 
 Flowex provee generación e impresión directa de etiquetas logísticas estándar optimizadas para impresoras térmicas adhesivas (**100 mm x 150 mm / 4" x 6"**) o papel común A4/Carta.
 
+### Recepción en hub (varios hubs)
+
+Flowex opera con varios hubs y se pueden crear más. Al pasar un pedido a `in_hub`
+(`PATCH /internal/orders/{orderId}/status`), el servidor fija `hubId`, `hubName` y
+`hub_reception_at` en la misma sentencia, eligiendo el hub en este orden:
+
+1. El que indique operaciones en el cuerpo (`hubId`, id o código). Si no existe o está inactivo responde `400`.
+2. El hub de la ruta de recogida más reciente del pedido.
+3. El que el pedido ya tenía.
+4. El único hub activo de la región de la comuna del remitente.
+5. El único hub activo.
+
+Si ninguno aplica (varios hubs y ninguna pista), el pedido se recibe igual y el hub queda
+sin fijar, en vez de mostrar el nombre de uno que no corresponde. Las rutas traen el nombre y
+las coordenadas de su hub (`hubName`, `hubLatitude`, `hubLongitude`), y el rastreo público
+muestra el hub del pedido.
+
 ### 1. Fraccionamiento Multi-Bulto (`1/N`)
 Cuando un pedido se ingresa con múltiples bultos (`packagesCount > 1`), el motor emite una etiqueta única por cada bulto con la numeración secuencial explícita:
 * **`1/3`**: Bulto 1 de 3.
@@ -312,7 +334,7 @@ Cuando un pedido se ingresa con múltiples bultos (`packagesCount > 1`), el moto
 * **`3/3`**: Bulto 3 de 3.
 * **`1/1`**: Bulto unitario único.
 
-Esto permite a conductores en ruta y operadores en el **Hub Central Quilicura** verificar que el lote viaje íntegro antes de la carga en vehículo o entrega final.
+Esto permite a conductores en ruta y operadores del hub verificar que el lote viaje íntegro antes de la carga en vehículo o entrega final.
 
 ### 2. Estructura de la Etiqueta
 Cada etiqueta incluye:
@@ -320,7 +342,7 @@ Cada etiqueta incluye:
 * **Código de Barras Code-128 (SVG)**: Renderizado vectorial sin dependencias externas para escaneo nítido con pistolas láser o cámaras móviles.
 * **Datos del Destinatario**: Nombre completo de quien recibe (`recipientName`), dirección de entrega y comuna destacada en caja de alto contraste.
 * **Remitente**: Nombre y dirección de origen para devoluciones o trazabilidad.
-* **Trazabilidad Operacional**: Hub responsable (`Hub Central Quilicura`), PIN de validación (`deliveryCode`), peso en kg y tipo de servicio.
+* **Trazabilidad Operacional**: Hub donde está el bulto (`hubName`; "Por asignar" hasta que se recibe), peso en kg y tipo de servicio. El PIN de entrega **no** se imprime: la etiqueta viaja pegada al paquete.
 
 ### 3. Acceso Permanente desde Tablas
 * **Mis Envíos (Cliente)**: Botón con icono `Printer` en la columna *Acciones* de `CustomerOrdersPage`.

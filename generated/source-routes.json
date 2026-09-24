@@ -1,5 +1,140 @@
 [
   {
+    "service": "registration-admin-lambda",
+    "source": "Flowex-registration-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/admin/registration-requests/{email}/override-activate",
+    "operationId": "admin_post_override_activate_registration",
+    "tag": "Admin Overrides",
+    "tags": [
+      "Admin Overrides"
+    ],
+    "summary": "Aprobación manual y activación forzada de solicitud por administrador",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/admin/registration/requests/{requestId}/override-activate"
+    ]
+  },
+  {
+    "service": "registration-admin-lambda",
+    "source": "Flowex-registration-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/admin/registration/requests/{requestId}/approve",
+    "operationId": "admin_post_registration_requests_requestId_approve",
+    "tag": "Registration Admin",
+    "tags": [
+      "Registration Admin"
+    ],
+    "summary": "Aprobar una solicitud de registro pendiente",
+    "roles": [],
+    "security": false,
+    "aliases": [
+      "/admin/registration-requests/{registrationRequestId}/approve"
+    ]
+  },
+  {
+    "service": "registration-admin-lambda",
+    "source": "Flowex-registration-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/admin/tariffs",
+    "operationId": "admin_get_tariffs",
+    "tag": "Registration Admin",
+    "tags": [
+      "Registration Admin"
+    ],
+    "summary": "Listar tarifas por tamaño de bulto (panel de administración)",
+    "roles": [
+      "root"
+    ],
+    "security": false
+  },
+  {
+    "service": "registration-admin-lambda",
+    "source": "Flowex-registration-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/admin/tariffs/{tariffId}",
+    "operationId": "admin_put_tariffs_tariffId",
+    "tag": "Registration Admin",
+    "tags": [
+      "Registration Admin"
+    ],
+    "summary": "Actualizar una tarifa por tamaño de bulto, con auditoría",
+    "roles": [
+      "root"
+    ],
+    "security": false
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/change-password",
+    "operationId": "auth_post_change_password",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Cambio y actualización de contraseña de usuario",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "get",
+    "path": "/auth/consent",
+    "operationId": "auth_get_user_consent",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Consultar estado vigente de consentimiento informado y finalidades del usuario",
+    "roles": [
+      "root",
+      "admin",
+      "driver",
+      "client"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/consent/grant",
+    "operationId": "auth_post_consent_grant",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Otorgar finalidades accesorias de consentimiento (Ley N° 21.719)",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/consent/revoke",
+    "operationId": "auth_post_revoke_consent",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Revocar consentimiento sobre finalidades accesorias (Ley N° 21.719)",
+    "roles": [
+      "root",
+      "admin",
+      "driver",
+      "client"
+    ],
+    "security": "bearerAuth"
+  },
+  {
     "service": "auth-api-lambda",
     "source": "Flowex-auth-api-lambda/src/index.ts",
     "method": "post",
@@ -16,6 +151,34 @@
       "driver",
       "client"
     ],
+    "security": false
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/login/resend-2fa",
+    "operationId": "auth_post_login_resend_2fa",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Reenviar el código del segundo factor al correo",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/login/verify-2fa",
+    "operationId": "auth_post_login_verify_2fa",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Verificar el código del segundo factor y emitir la sesión",
+    "roles": [],
     "security": false
   },
   {
@@ -49,6 +212,24 @@
   {
     "service": "auth-api-lambda",
     "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/auth/security",
+    "operationId": "auth_patch_security",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Activar o desactivar el segundo factor de la cuenta",
+    "roles": [
+      "root",
+      "admin",
+      "driver"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
     "method": "get",
     "path": "/auth/validate",
     "operationId": "auth_get_validate",
@@ -61,56 +242,1324 @@
     "security": "bearerAuth"
   },
   {
-    "service": "auth-api-lambda",
-    "source": "Flowex-auth-api-lambda/src/index.ts",
-    "method": "post",
-    "path": "/auth/change-password",
-    "operationId": "auth_post_change_password",
-    "tag": "Auth",
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/capacity/availability",
+    "operationId": "internal_get_capacity_availability",
+    "tag": "Fleet",
     "tags": [
-      "Auth"
+      "Fleet"
     ],
-    "summary": "Cambio y actualización de contraseña de usuario",
+    "summary": "Capacidad disponible de la flota para el día",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/communes",
+    "operationId": "internal_get_communes",
+    "tag": "Communes",
+    "tags": [
+      "Communes"
+    ],
+    "summary": "Listar comunas con cobertura, zona y días de servicio",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/communes",
+    "operationId": "internal_post_communes",
+    "tag": "Communes",
+    "tags": [
+      "Communes"
+    ],
+    "summary": "Crear una comuna con evaluación de factibilidad desde el hub más cercano",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/internal/communes/{communeId}",
+    "operationId": "internal_patch_communes_communeId",
+    "tag": "Communes",
+    "tags": [
+      "Communes"
+    ],
+    "summary": "Actualizar cobertura o días de servicio de una comuna",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/internal/communes/{communeId}",
+    "operationId": "internal_put_communes_communeId",
+    "tag": "Communes",
+    "tags": [
+      "Communes"
+    ],
+    "summary": "Actualizar cobertura o días de servicio de una comuna",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/communes/{communeId}/change-request",
+    "operationId": "internal_post_communes_communeId_change_request",
+    "tag": "Communes",
+    "tags": [
+      "Communes"
+    ],
+    "summary": "Solicitar confirmación para un cambio de cobertura con impacto",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/communes/{communeId}/feasibility",
+    "operationId": "internal_get_communes_communeId_feasibility",
+    "tag": "Communes",
+    "tags": [
+      "Communes"
+    ],
+    "summary": "Evaluar si la flota alcanza la comuna desde un hub",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/communes/{communeId}/history",
+    "operationId": "internal_get_communes_communeId_history",
+    "tag": "Communes",
+    "tags": [
+      "Communes"
+    ],
+    "summary": "Bitácora de cambios de una comuna (acepta id o nombre)",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/contacts",
+    "operationId": "internal_get_contacts",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "Listar la libreta de contactos del remitente",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/contacts",
+    "operationId": "internal_post_contacts",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "Guardar un contacto con declaración de licitud (Ley N° 21.719)",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "delete",
+    "path": "/internal/contacts/{contactId}",
+    "operationId": "internal_delete_contacts_contactId",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "Suprimir un contacto de la libreta",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/internal/contacts/{contactId}",
+    "operationId": "internal_put_contacts_contactId",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "Editar un contacto de la libreta",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/contacts/erasure-requests",
+    "operationId": "internal_get_contacts_erasure_requests",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "Listar solicitudes de supresión de titulares sin cuenta",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/contacts/erasure-requests",
+    "operationId": "internal_post_contacts_erasure_requests",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "Registrar la solicitud de supresión de un titular sin cuenta",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/contacts/erasure-requests/{erasureRequestId}/identify",
+    "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_identify",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "Identificar los contactos afectados por una solicitud de supresión",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/contacts/erasure-requests/{erasureRequestId}/notify",
+    "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_notify",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "Avisar a los remitentes afectados por una supresión",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/contacts/erasure-requests/{erasureRequestId}/purge",
+    "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_purge",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "Ejecutar la supresión de los contactos del titular",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/contacts/erasure-requests/{erasureRequestId}/reject",
+    "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_reject",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "Rechazar una solicitud de supresión con motivo",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/contacts/lawful-basis",
+    "operationId": "internal_get_contacts_lawful_basis",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "Texto y versión vigentes de la declaración de licitud",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/coupons/release",
+    "operationId": "coupons_post_release",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Liberar reserva activa de cupón tras cancelación o abandono (Exclusivo para rol client)",
+    "roles": [
+      "client"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/coupons/release"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/coupons/validate",
+    "operationId": "coupons_post_validate",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Validar y pre-aplicar cupón promocional (Exclusivo para rol client)",
+    "roles": [
+      "client"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/coupons/validate"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/internal/drivers/{driverId}/shift",
+    "operationId": "internal_patch_drivers_driverId_shift",
+    "tag": "Fleet",
+    "tags": [
+      "Fleet"
+    ],
+    "summary": "Actualizar la jornada de un conductor",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/internal/drivers/{driverId}/shift",
+    "operationId": "internal_put_drivers_driverId_shift",
+    "tag": "Fleet",
+    "tags": [
+      "Fleet"
+    ],
+    "summary": "Actualizar la jornada de un conductor",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/drivers/shifts",
+    "operationId": "internal_get_drivers_shifts",
+    "tag": "Fleet",
+    "tags": [
+      "Fleet"
+    ],
+    "summary": "Jornadas configuradas de los conductores",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/geo/commune-at",
+    "operationId": "internal_get_geo_commune_at",
+    "tag": "General",
+    "tags": [
+      "General"
+    ],
+    "summary": "Comuna que contiene un punto (latitud y longitud)",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/hubs",
+    "operationId": "internal_get_hubs",
+    "tag": "Hubs",
+    "tags": [
+      "Hubs"
+    ],
+    "summary": "Listar hubs (incluye inactivos con ?includeInactive=true)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/hubs",
+    "operationId": "internal_post_hubs",
+    "tag": "Hubs",
+    "tags": [
+      "Hubs"
+    ],
+    "summary": "Crear un hub; la dirección se geocodifica en el servidor (root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "delete",
+    "path": "/internal/hubs/{hubId}",
+    "operationId": "internal_delete_hubs_hubId",
+    "tag": "Hubs",
+    "tags": [
+      "Hubs"
+    ],
+    "summary": "Dar de baja un hub sin vehículos activos (root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/internal/hubs/{hubId}",
+    "operationId": "internal_patch_hubs_hubId",
+    "tag": "Hubs",
+    "tags": [
+      "Hubs"
+    ],
+    "summary": "Actualizar un hub; un nombre nuevo se propaga a pedidos y rutas (root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/internal/hubs/{hubId}",
+    "operationId": "internal_put_hubs_hubId",
+    "tag": "Hubs",
+    "tags": [
+      "Hubs"
+    ],
+    "summary": "Actualizar un hub; un nombre nuevo se propaga a pedidos y rutas (root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/invites",
+    "operationId": "internal_get_invites",
+    "tag": "Invitations",
+    "tags": [
+      "Invitations"
+    ],
+    "summary": "Listar invitaciones emitidas",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/invites",
+    "operationId": "internal_post_invites",
+    "tag": "Invitations",
+    "tags": [
+      "Invitations"
+    ],
+    "summary": "Invitar a un administrador o conductor (root)",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "delete",
+    "path": "/internal/invites/{inviteId}",
+    "operationId": "internal_delete_invites_inviteId",
+    "tag": "Invitations",
+    "tags": [
+      "Invitations"
+    ],
+    "summary": "Revocar una invitación",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/invites/{inviteId}/verify",
+    "operationId": "internal_get_invites_inviteId_verify",
+    "tag": "Invitations",
+    "tags": [
+      "Invitations"
+    ],
+    "summary": "Verificar una invitación antes del registro",
     "roles": [],
     "security": false
   },
   {
-    "service": "auth-api-lambda",
-    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
-    "path": "/users/me/consentimiento",
-    "operationId": "auth_get_user_consent",
-    "tag": "Auth",
+    "path": "/internal/orders",
+    "operationId": "internal_get_orders",
+    "tag": "Orders & Dispatch",
     "tags": [
-      "Auth"
+      "Orders & Dispatch"
     ],
-    "summary": "Consultar estado vigente de consentimiento informado y finalidades del usuario",
+    "summary": "Listar todas las órdenes operativas con paginación Importal",
+    "roles": [
+      "admin",
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/orders",
+    "operationId": "internal_post_orders",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Crear un pedido",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/orders/{orderId}",
+    "operationId": "internal_get_orders_orderId",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Detalle de un pedido; sin sesión devuelve solo la vista pública de rastreo",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/internal/orders/{orderId}/client-modifications",
+    "operationId": "internal_patch_orders_orderId_client_modifications",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Modificaciones del cliente antes del retiro",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/client-modifications"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "delete",
+    "path": "/internal/orders/{orderId}/coupon",
+    "operationId": "internal_delete_orders_orderId_coupon",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Quitar el cupón de un pedido",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/coupon"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/orders/{orderId}/coupon",
+    "operationId": "internal_post_orders_orderId_coupon",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Aplicar un cupón a un pedido",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/coupon"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "delete",
+    "path": "/internal/orders/{orderId}/coupon/remove",
+    "operationId": "internal_delete_orders_orderId_coupon_remove",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Quitar el cupón de un pedido",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/coupon/remove"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/orders/{orderId}/coupon/remove",
+    "operationId": "internal_post_orders_orderId_coupon_remove",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Quitar el cupón de un pedido",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/coupon/remove"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/orders/{orderId}/delivery-code/regenerate",
+    "operationId": "internal_post_orders_orderId_delivery_code_regenerate",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Regenerar el código de entrega (root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/delivery-code/regenerate"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/orders/{orderId}/discrepancy",
+    "operationId": "internal_post_orders_orderId_discrepancy",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Registrar diferencia de bulto detectada en bodega",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/discrepancy"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/orders/{orderId}/discrepancy/settle",
+    "operationId": "internal_post_orders_orderId_discrepancy_settle",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Liberar un pedido retenido tras pagar la diferencia",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/discrepancy/settle"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/orders/{orderId}/evidence",
+    "operationId": "internal_get_orders_orderId_evidence",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Fotografías de retiro y entrega con URL firmada",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/evidence"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/orders/{orderId}/evidence",
+    "operationId": "internal_post_orders_orderId_evidence",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Subir las dos fotografías de un hito (retiro o entrega)",
     "roles": [
       "root",
       "admin",
-      "driver",
-      "client"
+      "driver"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/evidence"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/internal/orders/{orderId}/invoice",
+    "operationId": "internal_patch_orders_orderId_invoice",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Registrar el folio SII de la factura (root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/invoice"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/internal/orders/{orderId}/status",
+    "operationId": "internal_patch_orders_orderId_status",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Cambiar el estado de un pedido; al pasar a in_hub fija el hub donde se recibe",
+    "roles": [
+      "root",
+      "admin",
+      "driver"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/status"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/orders/batch",
+    "operationId": "internal_post_orders_batch",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Crear pedidos en lote",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/batch"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/planner-settings",
+    "operationId": "internal_get_planner_settings",
+    "tag": "Planner Settings",
+    "tags": [
+      "Planner Settings"
+    ],
+    "summary": "Parámetros vigentes del planificador",
+    "roles": [
+      "root"
     ],
     "security": "bearerAuth"
   },
   {
-    "service": "auth-api-lambda",
-    "source": "Flowex-auth-api-lambda/src/index.ts",
-    "method": "post",
-    "path": "/users/me/revocar-consentimiento",
-    "operationId": "auth_post_revoke_consent",
-    "tag": "Auth",
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/internal/planner-settings/{plannerSettingId}",
+    "operationId": "internal_patch_planner_settings_plannerSettingId",
+    "tag": "Planner Settings",
     "tags": [
-      "Auth"
+      "Planner Settings"
     ],
-    "summary": "Revocar consentimiento sobre finalidades accesorias (Ley N° 21.719)",
+    "summary": "Cambiar un parámetro del planificador con confirmación",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/internal/planner-settings/{plannerSettingId}",
+    "operationId": "internal_put_planner_settings_plannerSettingId",
+    "tag": "Planner Settings",
+    "tags": [
+      "Planner Settings"
+    ],
+    "summary": "Cambiar un parámetro del planificador con confirmación",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/planner-settings/{plannerSettingId}/change-request",
+    "operationId": "internal_post_planner_settings_plannerSettingId_change_request",
+    "tag": "Planner Settings",
+    "tags": [
+      "Planner Settings"
+    ],
+    "summary": "Solicitar el token de confirmación y el impacto de un cambio",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/planner-settings/{plannerSettingId}/history",
+    "operationId": "internal_get_planner_settings_plannerSettingId_history",
+    "tag": "Planner Settings",
+    "tags": [
+      "Planner Settings"
+    ],
+    "summary": "Bitácora de cambios de un parámetro",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/root/coupons",
+    "operationId": "root_get_coupons",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Listar cupones y métricas globales de canjes/ahorros (Exclusivo para rol root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/root/coupons"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/root/coupons",
+    "operationId": "root_post_coupons",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Crear cupón promocional individual (Exclusivo para rol root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/root/coupons"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/internal/root/coupons/{id}",
+    "operationId": "root_patch_coupon_by_id",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Actualizar estado o vencimiento de cupón (Exclusivo para rol root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/root/coupons/{couponId}"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/root/coupons/batch",
+    "operationId": "root_post_coupons_batch",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Generar lote masivo de cupones promocionales con prefijo (Exclusivo para rol root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/root/coupons/batch"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/root/coupons/import-csv",
+    "operationId": "root_post_coupons_import_csv",
+    "tag": "Coupons",
+    "tags": [
+      "Coupons"
+    ],
+    "summary": "Importar cupones promocionales desde CSV (Exclusivo para rol root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/root/coupons/import-csv"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/route-assignments",
+    "operationId": "internal_get_route_assignments",
+    "tag": "General",
+    "tags": [
+      "General"
+    ],
+    "summary": "Asignaciones de ruta, conductor y vehículo",
     "roles": [
       "root",
       "admin",
-      "driver",
-      "client"
+      "driver"
     ],
     "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/routes",
+    "operationId": "internal_get_routes",
+    "tag": "Route Planning",
+    "tags": [
+      "Route Planning"
+    ],
+    "summary": "Listar rutas operativas con paradas ordenadas y paginación Importal",
+    "roles": [
+      "admin",
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/routes/{routeId}",
+    "operationId": "internal_get_routes_routeId",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Detalle de una ruta con sus paradas",
+    "roles": [
+      "root",
+      "admin",
+      "driver"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/{routeId}"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/routes/{routeId}/close",
+    "operationId": "internal_post_routes_routeId_close",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Cerrar una ruta y registrar distancia y duración reales",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/{routeId}/close"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/routes/{routeId}/directions",
+    "operationId": "internal_get_routes_routeId_directions",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Google Maps Routes via AWS Secrets Manager",
+    "roles": [],
+    "security": false,
+    "aliases": [
+      "/routes/{routeId}/directions"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/routes/{routeId}/directions",
+    "operationId": "internal_post_routes_routeId_directions",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Google Maps Routes via AWS Secrets Manager",
+    "roles": [],
+    "security": false,
+    "aliases": [
+      "/routes/{routeId}/directions"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/routes/{routeId}/orders",
+    "operationId": "internal_post_routes_routeId_orders",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Agregar pedidos a una ruta existente",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/{routeId}/orders"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/routes/directions",
+    "operationId": "internal_post_routes_directions",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Generic Route Directions from coordinates",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/directions"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/routes/insertion-candidates",
+    "operationId": "internal_get_routes_insertion_candidates",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Rutas candidatas para insertar un pedido",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/insertion-candidates"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/routes/insertion-queue",
+    "operationId": "internal_get_routes_insertion_queue",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Pedidos en espera de inserción en ruta",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/insertion-queue"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/routes/plan-daily",
+    "operationId": "internal_post_routes_plan_daily",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Planificar las rutas del día (o simular con dryRun)",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/plan-daily"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/routes/plan-daily/confirm",
+    "operationId": "internal_post_routes_plan_daily_confirm",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Confirmar una simulación y replanificar",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/plan-daily/confirm"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/routes/plan-daily/simulation",
+    "operationId": "internal_get_routes_plan_daily_simulation",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Última simulación sin confirmar",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/plan-daily/simulation"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/routes/planning-quota",
+    "operationId": "internal_get_routes_planning_quota",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Corridas de planificación que quedan hoy",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/planning-quota"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/routes/settings",
+    "operationId": "internal_get_routes_settings",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Estado de la planificación automática diaria (planner_settings)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/settings"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/internal/routes/settings",
+    "operationId": "internal_patch_routes_settings",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Activar o desactivar la planificación automática diaria (root)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/settings"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/users",
+    "operationId": "internal_get_users",
+    "tag": "Users Administration",
+    "tags": [
+      "Users Administration"
+    ],
+    "summary": "Listar usuarios internos del sistema con paginación Importal y filtros",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/users"
+    ]
   },
   {
     "service": "auth-admin-lambda",
@@ -132,106 +1581,22 @@
   {
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "get",
-    "path": "/internal/users",
-    "operationId": "internal_get_users",
+    "method": "delete",
+    "path": "/internal/users/{userId}",
+    "operationId": "internal_delete_user_by_id",
     "tag": "Users Administration",
     "tags": [
       "Users Administration"
     ],
-    "summary": "Listar usuarios internos del sistema con paginación Importal y filtros",
+    "summary": "Eliminar o desactivar usuario interno",
     "roles": [
       "root",
       "admin"
     ],
-    "security": "bearerAuth"
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "get",
-    "path": "/orders",
-    "operationId": "orders_get_orders",
-    "tag": "Orders & Dispatch",
-    "tags": [
-      "Orders & Dispatch"
-    ],
-    "summary": "Listar órdenes de despacho con paginación Importal y filtrado por rol",
-    "roles": [
-      "client",
-      "admin",
-      "root"
-    ],
-    "security": "bearerAuth"
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "get",
-    "path": "/internal/orders",
-    "operationId": "internal_get_orders",
-    "tag": "Orders & Dispatch",
-    "tags": [
-      "Orders & Dispatch"
-    ],
-    "summary": "Listar todas las órdenes operativas con paginación Importal",
-    "roles": [
-      "admin",
-      "root"
-    ],
-    "security": "bearerAuth"
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "get",
-    "path": "/routes",
-    "operationId": "routes_get_routes",
-    "tag": "Route Planning",
-    "tags": [
-      "Route Planning"
-    ],
-    "summary": "Listar rutas planificadas con paginación Importal",
-    "roles": [
-      "driver",
-      "admin",
-      "root"
-    ],
-    "security": "bearerAuth"
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "get",
-    "path": "/internal/routes",
-    "operationId": "internal_get_routes",
-    "tag": "Route Planning",
-    "tags": [
-      "Route Planning"
-    ],
-    "summary": "Listar rutas operativas con paradas ordenadas y paginación Importal",
-    "roles": [
-      "admin",
-      "root"
-    ],
-    "security": "bearerAuth"
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "get",
-    "path": "/internal/users/{userId}/consents",
-    "operationId": "internal_get_user_consents",
-    "tag": "Users Administration",
-    "tags": [
-      "Users Administration"
-    ],
-    "summary": "Inspección forense de consentimientos de usuario por administrador (Ley N° 21.719)",
-    "roles": [
-      "root",
-      "admin"
-    ],
-    "security": "bearerAuth"
+    "security": "bearerAuth",
+    "aliases": [
+      "/users/{userId}"
+    ]
   },
   {
     "service": "auth-admin-lambda",
@@ -248,7 +1613,10 @@
       "root",
       "admin"
     ],
-    "security": "bearerAuth"
+    "security": "bearerAuth",
+    "aliases": [
+      "/users/{userId}"
+    ]
   },
   {
     "service": "auth-admin-lambda",
@@ -265,19 +1633,153 @@
       "root",
       "admin"
     ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/users/{userId}"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/users/{userId}/addresses",
+    "operationId": "internal_get_users_userId_addresses",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Direcciones guardadas de un usuario",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/users/{userId}/addresses"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/users/{userId}/addresses",
+    "operationId": "internal_post_users_userId_addresses",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Agregar una dirección a un usuario",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/users/{userId}/addresses"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/users/{userId}/consents",
+    "operationId": "internal_get_user_consents",
+    "tag": "Users Administration",
+    "tags": [
+      "Users Administration"
+    ],
+    "summary": "Inspección forense de consentimientos de usuario por administrador (Ley N° 21.719)",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/users/{userId}/consents"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/users/{userId}/orders",
+    "operationId": "internal_get_users_userId_orders",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Pedidos de un usuario (como cliente o conductor)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/users/{userId}/orders"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/internal/users/{userId}/status",
+    "operationId": "internal_patch_users_userId_status",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Bloquear o reactivar una cuenta",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/users/{userId}/status"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/internal/users/{userId}/status",
+    "operationId": "internal_put_users_userId_status",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Bloquear o reactivar una cuenta",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/users/{userId}/status"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/vehicles",
+    "operationId": "internal_get_vehicles",
+    "tag": "Fleet",
+    "tags": [
+      "Fleet"
+    ],
+    "summary": "Listar vehículos de la flota con su hub",
+    "roles": [
+      "root",
+      "admin",
+      "driver"
+    ],
     "security": "bearerAuth"
   },
   {
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "delete",
-    "path": "/internal/users/{userId}",
-    "operationId": "internal_delete_user_by_id",
-    "tag": "Users Administration",
+    "method": "post",
+    "path": "/internal/vehicles",
+    "operationId": "internal_post_vehicles",
+    "tag": "Fleet",
     "tags": [
-      "Users Administration"
+      "Fleet"
     ],
-    "summary": "Eliminar o desactivar usuario interno",
+    "summary": "Registrar un vehículo con límites de carga y hub",
     "roles": [
       "root",
       "admin"
@@ -287,96 +1789,17 @@
   {
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "post",
-    "path": "/internal/coupons/validate",
-    "operationId": "coupons_post_validate",
-    "tag": "Coupons",
+    "method": "delete",
+    "path": "/internal/vehicles/{vehicleId}",
+    "operationId": "internal_delete_vehicles_vehicleId",
+    "tag": "Fleet",
     "tags": [
-      "Coupons"
+      "Fleet"
     ],
-    "summary": "Validar y pre-aplicar cupón promocional (Exclusivo para rol client)",
+    "summary": "Dar de baja un vehículo",
     "roles": [
-      "client"
-    ],
-    "security": "bearerAuth"
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "post",
-    "path": "/internal/coupons/release",
-    "operationId": "coupons_post_release",
-    "tag": "Coupons",
-    "tags": [
-      "Coupons"
-    ],
-    "summary": "Liberar reserva activa de cupón tras cancelación o abandono (Exclusivo para rol client)",
-    "roles": [
-      "client"
-    ],
-    "security": "bearerAuth"
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "post",
-    "path": "/internal/root/coupons",
-    "operationId": "root_post_coupons",
-    "tag": "Coupons",
-    "tags": [
-      "Coupons"
-    ],
-    "summary": "Crear cupón promocional individual (Exclusivo para rol root)",
-    "roles": [
-      "root"
-    ],
-    "security": "bearerAuth"
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "post",
-    "path": "/internal/root/coupons/batch",
-    "operationId": "root_post_coupons_batch",
-    "tag": "Coupons",
-    "tags": [
-      "Coupons"
-    ],
-    "summary": "Generar lote masivo de cupones promocionales con prefijo (Exclusivo para rol root)",
-    "roles": [
-      "root"
-    ],
-    "security": "bearerAuth"
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "post",
-    "path": "/internal/root/coupons/import-csv",
-    "operationId": "root_post_coupons_import_csv",
-    "tag": "Coupons",
-    "tags": [
-      "Coupons"
-    ],
-    "summary": "Importar cupones promocionales desde CSV (Exclusivo para rol root)",
-    "roles": [
-      "root"
-    ],
-    "security": "bearerAuth"
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "get",
-    "path": "/internal/root/coupons",
-    "operationId": "root_get_coupons",
-    "tag": "Coupons",
-    "tags": [
-      "Coupons"
-    ],
-    "summary": "Listar cupones y métricas globales de canjes/ahorros (Exclusivo para rol root)",
-    "roles": [
-      "root"
+      "root",
+      "admin"
     ],
     "security": "bearerAuth"
   },
@@ -384,17 +1807,308 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "patch",
-    "path": "/internal/root/coupons/{id}",
-    "operationId": "root_patch_coupon_by_id",
-    "tag": "Coupons",
+    "path": "/internal/vehicles/{vehicleId}",
+    "operationId": "internal_patch_vehicles_vehicleId",
+    "tag": "Fleet",
     "tags": [
-      "Coupons"
+      "Fleet"
     ],
-    "summary": "Actualizar estado o vencimiento de cupón (Exclusivo para rol root)",
+    "summary": "Actualizar un vehículo",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/internal/vehicles/{vehicleId}",
+    "operationId": "internal_put_vehicles_vehicleId",
+    "tag": "Fleet",
+    "tags": [
+      "Fleet"
+    ],
+    "summary": "Actualizar un vehículo",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/vehicles/available",
+    "operationId": "internal_get_vehicles_available",
+    "tag": "Fleet",
+    "tags": [
+      "Fleet"
+    ],
+    "summary": "Vehículos disponibles para asignar a una ruta",
+    "roles": [
+      "root",
+      "admin",
+      "driver"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/vehicles/presets",
+    "operationId": "internal_get_vehicles_presets",
+    "tag": "Fleet",
+    "tags": [
+      "Fleet"
+    ],
+    "summary": "Tipos de vehículo con capacidades sugeridas",
+    "roles": [
+      "root",
+      "admin",
+      "driver"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "notification-lambda",
+    "source": "Flowex-notification-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/email/order-created",
+    "operationId": "notifications_post_email_order_created",
+    "tag": "Notifications",
+    "tags": [
+      "Notifications"
+    ],
+    "summary": "Enviar confirmación de despacho con número de tracking y PIN de entrega",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "notification-lambda",
+    "source": "Flowex-notification-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/email/order-status-update",
+    "operationId": "notifications_post_email_order_status_update",
+    "tag": "Notifications",
+    "tags": [
+      "Notifications"
+    ],
+    "summary": "Enviar actualización de estado del envío al cliente destinatario",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "notification-lambda",
+    "source": "Flowex-notification-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/email/package-discrepancy",
+    "operationId": "notifications_post_email_package_discrepancy",
+    "tag": "Notifications",
+    "tags": [
+      "Notifications"
+    ],
+    "summary": "Avisar al remitente una diferencia de bulto",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "notification-lambda",
+    "source": "Flowex-notification-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/email/verify-account",
+    "operationId": "notifications_post_email_verify_account",
+    "tag": "Notifications",
+    "tags": [
+      "Notifications"
+    ],
+    "summary": "Enviar correo HTML de verificación con código OTP vía Amazon SES",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "notification-lambda",
+    "source": "Flowex-notification-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/email/welcome",
+    "operationId": "notifications_post_email_welcome",
+    "tag": "Notifications",
+    "tags": [
+      "Notifications"
+    ],
+    "summary": "Enviar correo de bienvenida con enlace de acceso tras activación",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "otp-service-lambda",
+    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "method": "post",
+    "path": "/notifications/whatsapp",
+    "operationId": "notifications_post_whatsapp",
+    "tag": "OTP & WhatsApp",
+    "tags": [
+      "OTP & WhatsApp"
+    ],
+    "summary": "Despachar plantillas transaccionales de WhatsApp (Envíos, Tránsito, Incidentes)",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "otp-service-lambda",
+    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "method": "get",
+    "path": "/otp/deliveries",
+    "operationId": "otp_get_deliveries",
+    "tag": "OTP & WhatsApp",
+    "tags": [
+      "OTP & WhatsApp"
+    ],
+    "summary": "Listar entregas y envíos OTP con paginación Importal y enmascaramiento PII",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "otp-service-lambda",
+    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "method": "post",
+    "path": "/otp/deliveries/{deliveryId}/resend",
+    "operationId": "otp_post_deliveries_deliveryId_resend",
+    "tag": "OTP & WhatsApp",
+    "tags": [
+      "OTP & WhatsApp"
+    ],
+    "summary": "Reenviar un código de verificación por correo (operaciones)",
     "roles": [
       "root"
     ],
     "security": "bearerAuth"
+  },
+  {
+    "service": "otp-service-lambda",
+    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "method": "post",
+    "path": "/otp/send",
+    "operationId": "otp_post_send",
+    "tag": "OTP & WhatsApp",
+    "tags": [
+      "OTP & WhatsApp"
+    ],
+    "summary": "Emitir y enviar el código de verificación por correo (único canal)",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "otp-service-lambda",
+    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "method": "post",
+    "path": "/otp/send-delivery-code",
+    "operationId": "otp_post_send_delivery_code",
+    "tag": "OTP & WhatsApp",
+    "tags": [
+      "OTP & WhatsApp"
+    ],
+    "summary": "Enviar al destinatario el código de entrega por WhatsApp (operaciones)",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "otp-service-lambda",
+    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "method": "post",
+    "path": "/otp/verify",
+    "operationId": "otp_post_verify",
+    "tag": "OTP & WhatsApp",
+    "tags": [
+      "OTP & WhatsApp"
+    ],
+    "summary": "Verificar código OTP, auto-activar registro y generar Status Token HMAC",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "payments-api-lambda",
+    "source": "Flowex-payments-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/payments/fintoc/checkout-session",
+    "operationId": "payments_post_fintoc_checkout_session",
+    "tag": "Payments",
+    "tags": [
+      "Payments"
+    ],
+    "summary": "Crear sesión de pago Fintoc",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "payments-api-lambda",
+    "source": "Flowex-payments-api-lambda/src/index.ts",
+    "method": "get",
+    "path": "/payments/fintoc/status",
+    "operationId": "payments_get_fintoc_status",
+    "tag": "Payments",
+    "tags": [
+      "Payments"
+    ],
+    "summary": "Estado de una sesión de pago Fintoc",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "payments-api-lambda",
+    "source": "Flowex-payments-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/payments/mercadopago/preference",
+    "operationId": "payments_post_mercadopago_preference",
+    "tag": "Payments",
+    "tags": [
+      "Payments"
+    ],
+    "summary": "Crear preferencia de pago Mercado Pago (Checkout Pro / WebPay)",
+    "roles": [
+      "client",
+      "admin"
+    ],
+    "security": false
+  },
+  {
+    "service": "payments-api-lambda",
+    "source": "Flowex-payments-api-lambda/src/index.ts",
+    "method": "get",
+    "path": "/payments/mercadopago/status",
+    "operationId": "payments_get_mercadopago_status",
+    "tag": "Payments",
+    "tags": [
+      "Payments"
+    ],
+    "summary": "Estado de un pago de Mercado Pago",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "registration-public-lambda",
+    "source": "Flowex-registration-public-lambda/src/index.ts",
+    "method": "post",
+    "path": "/registration/calculate-sla",
+    "operationId": "registration_post_calculate_sla",
+    "tag": "Registration",
+    "tags": [
+      "Registration"
+    ],
+    "summary": "Calcular el plazo de entrega entre dos comunas",
+    "roles": [],
+    "security": false,
+    "aliases": [
+      "/registration/coverage/calculate-sla"
+    ]
   },
   {
     "service": "registration-public-lambda",
@@ -409,6 +2123,23 @@
     "summary": "Registro público de cliente (sin dirección fija; pickup/delivery se configuran en POST /orders)",
     "roles": [],
     "security": false
+  },
+  {
+    "service": "registration-public-lambda",
+    "source": "Flowex-registration-public-lambda/src/index.ts",
+    "method": "get",
+    "path": "/registration/communes",
+    "operationId": "registration_get_communes",
+    "tag": "Registration",
+    "tags": [
+      "Registration"
+    ],
+    "summary": "Comunas con cobertura (público)",
+    "roles": [],
+    "security": false,
+    "aliases": [
+      "/registration/coverage/communes"
+    ]
   },
   {
     "service": "registration-public-lambda",
@@ -435,6 +2166,20 @@
       "Registration"
     ],
     "summary": "Crear solicitud de registro pública (Clientes/Conductores con validación RUT)",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "registration-public-lambda",
+    "source": "Flowex-registration-public-lambda/src/index.ts",
+    "method": "put",
+    "path": "/registration/requests/{email}/reupload-comprobante",
+    "operationId": "registration_put_reupload_comprobante",
+    "tag": "Registration",
+    "tags": [
+      "Registration"
+    ],
+    "summary": "Subir o reemplazar comprobante en S3 para solicitud pendiente",
     "roles": [],
     "security": false
   },
@@ -469,154 +2214,231 @@
   {
     "service": "registration-public-lambda",
     "source": "Flowex-registration-public-lambda/src/index.ts",
-    "method": "put",
-    "path": "/registration/requests/{email}/reupload-comprobante",
-    "operationId": "registration_put_reupload_comprobante",
+    "method": "get",
+    "path": "/registration/tariffs",
+    "operationId": "registration_get_tariffs",
     "tag": "Registration",
     "tags": [
       "Registration"
     ],
-    "summary": "Subir o reemplazar comprobante en S3 para solicitud pendiente",
+    "summary": "Tarifas vigentes por tamaño de bulto (público)",
     "roles": [],
-    "security": false
+    "security": false,
+    "aliases": [
+      "/registration/coverage/tariffs"
+    ]
   },
   {
-    "service": "otp-service-lambda",
-    "source": "Flowex-otp-service-lambda/src/index.ts",
-    "method": "post",
-    "path": "/otp/send",
-    "operationId": "otp_post_send",
-    "tag": "OTP & WhatsApp",
-    "tags": [
-      "OTP & WhatsApp"
-    ],
-    "summary": "Generar y despachar código OTP multicanal (SMS, WhatsApp, SQS/Email)",
-    "roles": [],
-    "security": false
-  },
-  {
-    "service": "otp-service-lambda",
-    "source": "Flowex-otp-service-lambda/src/index.ts",
-    "method": "post",
-    "path": "/otp/send-whatsapp",
-    "operationId": "otp_post_send_whatsapp",
-    "tag": "OTP & WhatsApp",
-    "tags": [
-      "OTP & WhatsApp"
-    ],
-    "summary": "Enviar código OTP vía Meta WhatsApp Cloud API (Template flowex_otp_code)",
-    "roles": [],
-    "security": false
-  },
-  {
-    "service": "otp-service-lambda",
-    "source": "Flowex-otp-service-lambda/src/index.ts",
-    "method": "post",
-    "path": "/otp/verify",
-    "operationId": "otp_post_verify",
-    "tag": "OTP & WhatsApp",
-    "tags": [
-      "OTP & WhatsApp"
-    ],
-    "summary": "Verificar código OTP, auto-activar registro y generar Status Token HMAC",
-    "roles": [],
-    "security": false
-  },
-  {
-    "service": "otp-service-lambda",
-    "source": "Flowex-otp-service-lambda/src/index.ts",
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
-    "path": "/otp/deliveries",
-    "operationId": "otp_get_deliveries",
-    "tag": "OTP & WhatsApp",
+    "path": "/users/me/addresses",
+    "operationId": "internal_get_users_me_addresses",
+    "tag": "Users",
     "tags": [
-      "OTP & WhatsApp"
+      "Users"
     ],
-    "summary": "Listar entregas y envíos OTP con paginación Importal y enmascaramiento PII",
+    "summary": "Mis direcciones guardadas",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/users/me/addresses",
+    "operationId": "internal_post_users_me_addresses",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Agregar una dirección",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "delete",
+    "path": "/users/me/addresses/{addressId}",
+    "operationId": "internal_delete_users_me_addresses_addressId",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Eliminar una dirección",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/users/me/addresses/{addressId}",
+    "operationId": "internal_put_users_me_addresses_addressId",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Editar una dirección",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/users/me/addresses/{addressId}/default",
+    "operationId": "internal_patch_users_me_addresses_addressId_default",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Marcar una dirección como predeterminada",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/users/me/addresses/{addressId}/default",
+    "operationId": "internal_put_users_me_addresses_addressId_default",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Marcar una dirección como predeterminada",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/users/me/avatar",
+    "operationId": "internal_get_users_me_avatar",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Obtener una URL firmada vigente",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/users/me/avatar",
+    "operationId": "internal_post_users_me_avatar",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Subir foto de perfil",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/users/me/billing",
+    "operationId": "internal_get_users_me_billing",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Mis datos de facturación",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/users/me/billing",
+    "operationId": "internal_put_users_me_billing",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Actualizar mis datos de facturación",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/users/me/driver-profile",
+    "operationId": "internal_get_users_me_driver_profile",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Mi ficha de conductor con vehículo asignado y hub",
     "roles": [
-      "root",
-      "admin"
+      "root"
     ],
     "security": "bearerAuth"
   },
   {
-    "service": "otp-service-lambda",
-    "source": "Flowex-otp-service-lambda/src/index.ts",
-    "method": "post",
-    "path": "/notifications/whatsapp",
-    "operationId": "notifications_post_whatsapp",
-    "tag": "OTP & WhatsApp",
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/users/me/driver-profile",
+    "operationId": "internal_put_users_me_driver_profile",
+    "tag": "Users",
     "tags": [
-      "OTP & WhatsApp"
+      "Users"
     ],
-    "summary": "Despachar plantillas transaccionales de WhatsApp (Envíos, Tránsito, Incidentes)",
+    "summary": "Actualizar licencia y vehículo declarados",
     "roles": [],
-    "security": false
-  },
-  {
-    "service": "registration-admin-lambda",
-    "source": "Flowex-registration-admin-lambda/src/index.ts",
-    "method": "post",
-    "path": "/admin/registration-requests/{email}/override-activate",
-    "operationId": "admin_post_override_activate_registration",
-    "tag": "Admin Overrides",
-    "tags": [
-      "Admin Overrides"
-    ],
-    "summary": "Aprobación manual y activación forzada de solicitud por administrador",
-    "roles": [
-      "root",
-      "admin"
-    ],
     "security": "bearerAuth"
   },
   {
-    "service": "payments-api-lambda",
-    "source": "Flowex-payments-api-lambda/src/index.ts",
-    "method": "post",
-    "path": "/payments/mercadopago/preference",
-    "operationId": "payments_post_mercadopago_preference",
-    "tag": "Payments",
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/users/me/export",
+    "operationId": "internal_get_users_me_export",
+    "tag": "Users",
     "tags": [
-      "Payments"
+      "Users"
     ],
-    "summary": "Crear preferencia de pago Mercado Pago (Checkout Pro / WebPay)",
-    "roles": [
-      "client",
-      "admin"
-    ],
-    "security": false
-  },
-  {
-    "service": "payments-api-lambda",
-    "source": "Flowex-payments-api-lambda/src/index.ts",
-    "method": "post",
-    "path": "/payments/fintoc/payment-intent",
-    "operationId": "payments_post_fintoc_payment_intent",
-    "tag": "Payments",
-    "tags": [
-      "Payments"
-    ],
-    "summary": "Crear intención de pago Fintoc (Transferencia bancaria A2A Open Banking)",
-    "roles": [
-      "client",
-      "admin"
-    ],
-    "security": false
-  },
-  {
-    "service": "payments-api-lambda",
-    "source": "Flowex-payments-api-lambda/src/index.ts",
-    "method": "post",
-    "path": "/webhooks/mercadopago",
-    "operationId": "payments_post_webhook_mercadopago",
-    "tag": "Payments",
-    "tags": [
-      "Payments"
-    ],
-    "summary": "Webhook receptor de notificaciones IPN de Mercado Pago",
+    "summary": "Exportar todos mis datos personales en JSON (portabilidad, Ley N° 21.719)",
     "roles": [],
-    "security": false
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/users/me/notifications",
+    "operationId": "internal_get_users_me_notifications",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Mis preferencias de notificación (correo y WhatsApp)",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/users/me/notifications",
+    "operationId": "internal_put_users_me_notifications",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Actualizar mis preferencias de notificación",
+    "roles": [],
+    "security": "bearerAuth"
   },
   {
     "service": "payments-api-lambda",
@@ -636,87 +2458,13 @@
     "service": "payments-api-lambda",
     "source": "Flowex-payments-api-lambda/src/index.ts",
     "method": "post",
-    "path": "/payments/simulate",
-    "operationId": "payments_post_simulate",
+    "path": "/webhooks/mercadopago",
+    "operationId": "payments_post_webhook_mercadopago",
     "tag": "Payments",
     "tags": [
       "Payments"
     ],
-    "summary": "Simular procesamiento de pago y liberación de cupones en caso de fallo (Motor de simulación)",
-    "roles": [
-      "client",
-      "admin",
-      "root"
-    ],
-    "security": false
-  },
-  {
-    "service": "notification-lambda",
-    "source": "Flowex-notification-lambda/src/index.ts",
-    "method": "post",
-    "path": "/notifications/email/verify-account",
-    "operationId": "notifications_post_email_verify_account",
-    "tag": "Notifications",
-    "tags": [
-      "Notifications"
-    ],
-    "summary": "Enviar correo HTML de verificación con código OTP vía Amazon SES",
-    "roles": [],
-    "security": false
-  },
-  {
-    "service": "notification-lambda",
-    "source": "Flowex-notification-lambda/src/index.ts",
-    "method": "post",
-    "path": "/notifications/sms/verify-phone",
-    "operationId": "notifications_post_sms_verify_phone",
-    "tag": "Notifications",
-    "tags": [
-      "Notifications"
-    ],
-    "summary": "Enviar SMS de verificación a número telefónico E.164",
-    "roles": [],
-    "security": false
-  },
-  {
-    "service": "notification-lambda",
-    "source": "Flowex-notification-lambda/src/index.ts",
-    "method": "post",
-    "path": "/notifications/email/welcome",
-    "operationId": "notifications_post_email_welcome",
-    "tag": "Notifications",
-    "tags": [
-      "Notifications"
-    ],
-    "summary": "Enviar correo de bienvenida con enlace de acceso tras activación",
-    "roles": [],
-    "security": false
-  },
-  {
-    "service": "notification-lambda",
-    "source": "Flowex-notification-lambda/src/index.ts",
-    "method": "post",
-    "path": "/notifications/email/order-created",
-    "operationId": "notifications_post_email_order_created",
-    "tag": "Notifications",
-    "tags": [
-      "Notifications"
-    ],
-    "summary": "Enviar confirmación de despacho con número de tracking y PIN de entrega",
-    "roles": [],
-    "security": false
-  },
-  {
-    "service": "notification-lambda",
-    "source": "Flowex-notification-lambda/src/index.ts",
-    "method": "post",
-    "path": "/notifications/email/order-status-update",
-    "operationId": "notifications_post_email_order_status_update",
-    "tag": "Notifications",
-    "tags": [
-      "Notifications"
-    ],
-    "summary": "Enviar actualización de estado del envío al cliente destinatario",
+    "summary": "Webhook receptor de notificaciones IPN de Mercado Pago",
     "roles": [],
     "security": false
   }

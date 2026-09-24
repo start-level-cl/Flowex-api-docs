@@ -70,7 +70,7 @@ export type OtpDeliveryItem = {
   identifier?: string
   email?: string
   phone?: string
-  channel?: "whatsapp" | "sms" | "email"
+  channel?: "email" | "whatsapp"
   status?: "pendiente" | "entregado" | "fallido" | "usado" | "expirado"
   statusLabel?: string
   providerMessageId?: string
@@ -119,7 +119,6 @@ export type BillingInfo = {
 export type NotificationPreferences = {
   emailSes: boolean
   whatsappMeta: boolean
-  smsSns: boolean
 }
 
 export type LegalConsent = {
@@ -336,30 +335,19 @@ export type ReuploadComprobanteRequest = {
 }
 
 export type SendOtpRequest = {
-  target?: string
-  email?: string
-  phone?: string
-  channel?: "sms" | "whatsapp" | "email" | "both"
+  email: string
+  identifier?: string
+  channel?: "email"
 }
 
 export type SendOtpResponse = {
+  success?: boolean
   message?: string
+  deliveryId?: string
   email?: string
-  phone?: string
-  channel?: string
-  mockOtpCode?: string
-}
-
-export type SendWhatsAppOtpRequest = {
-  phone: string
-}
-
-export type SendWhatsAppOtpResponse = {
-  message?: string
-  phone?: string
-  channel?: string
-  otp?: string
-  whatsappResponse?: Record<string, unknown>
+  channel?: "email"
+  delivered?: boolean
+  devOtpCode?: string
 }
 
 export type VerifyOtpRequest = {
@@ -417,21 +405,6 @@ export type MercadoPagoPreferenceResponse = {
   payload?: Record<string, unknown>
 }
 
-export type FintocPaymentIntentRequest = {
-  orderId: string
-  trackingNumber?: string
-  amount: number
-  payerEmail: string
-}
-
-export type FintocPaymentIntentResponse = {
-  provider?: string
-  paymentIntentId?: string
-  widgetToken?: string
-  checkoutUrl?: string
-  payload?: Record<string, unknown>
-}
-
 export type WebhookMercadoPagoResponse = {
   received?: boolean
   provider?: string
@@ -454,11 +427,6 @@ export type EmailVerifyAccountRequest = {
   email: string
   code: string
   name?: string
-}
-
-export type SmsVerifyPhoneRequest = {
-  phone: string
-  code: string
 }
 
 export type EmailWelcomeRequest = {
@@ -593,26 +561,6 @@ export type CouponUpdateRequest = {
   maxTotalUses?: number
 }
 
-export type PaymentSimulateRequest = {
-  orderId: string
-  scenario: "success" | "failure" | "abandon"
-  amount?: number
-  couponId?: string
-  couponCode?: string
-  provider?: "mercadopago" | "fintoc"
-  payerEmail?: string
-}
-
-export type PaymentSimulateResponse = {
-  success?: boolean
-  orderId?: string
-  scenario?: string
-  orderStatus?: string
-  couponReleased?: boolean
-  message?: string
-  details?: Record<string, unknown>
-}
-
 export type StandardSuccessResponse = {
   message?: string
 }
@@ -623,6 +571,76 @@ export type StandardErrorResponse = {
 }
 
 export interface Operations {
+  "admin_post_override_activate_registration": {
+    method: "POST"
+    path: "/admin/registration-requests/{email}/override-activate"
+    requestBody: AdminOverrideActivateRequest
+    responses: {
+      "200": AdminOverrideActivateResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "admin_post_registration_requests_requestId_approve": {
+    method: "POST"
+    path: "/admin/registration/requests/{requestId}/approve"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "admin_get_tariffs": {
+    method: "GET"
+    path: "/admin/tariffs"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "admin_put_tariffs_tariffId": {
+    method: "PUT"
+    path: "/admin/tariffs/{tariffId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "auth_post_change_password": {
+    method: "POST"
+    path: "/auth/change-password"
+    requestBody: ChangePasswordRequest
+    responses: {
+      "200": StandardSuccessResponse
+      "400": StandardErrorResponse
+      "401": StandardErrorResponse
+    }
+  }
+  "auth_get_user_consent": {
+    method: "GET"
+    path: "/auth/consent"
+    requestBody: undefined
+    responses: {
+      "200": UserConsent
+      "401": StandardErrorResponse
+    }
+  }
+  "auth_post_consent_grant": {
+    method: "POST"
+    path: "/auth/consent/grant"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "auth_post_revoke_consent": {
+    method: "POST"
+    path: "/auth/consent/revoke"
+    requestBody: RevokeConsentRequest
+    responses: {
+      "200": UserConsent
+      "400": StandardErrorResponse
+      "401": StandardErrorResponse
+    }
+  }
   "auth_post_login": {
     method: "POST"
     path: "/auth/login"
@@ -630,6 +648,22 @@ export interface Operations {
     responses: {
       "200": LoginResponse
       "400": StandardErrorResponse
+    }
+  }
+  "auth_post_login_resend_2fa": {
+    method: "POST"
+    path: "/auth/login/resend-2fa"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "auth_post_login_verify_2fa": {
+    method: "POST"
+    path: "/auth/login/verify-2fa"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
     }
   }
   "auth_post_logout": {
@@ -650,6 +684,14 @@ export interface Operations {
       "401": StandardErrorResponse
     }
   }
+  "auth_patch_security": {
+    method: "PATCH"
+    path: "/auth/security"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "auth_get_validate": {
     method: "GET"
     path: "/auth/validate"
@@ -659,73 +701,280 @@ export interface Operations {
       "401": StandardErrorResponse
     }
   }
-  "auth_post_change_password": {
+  "internal_get_capacity_availability": {
+    method: "GET"
+    path: "/internal/capacity/availability"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_communes": {
+    method: "GET"
+    path: "/internal/communes"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_communes": {
     method: "POST"
-    path: "/auth/change-password"
-    requestBody: ChangePasswordRequest
+    path: "/internal/communes"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_patch_communes_communeId": {
+    method: "PATCH"
+    path: "/internal/communes/{communeId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_communes_communeId": {
+    method: "PUT"
+    path: "/internal/communes/{communeId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_communes_communeId_change_request": {
+    method: "POST"
+    path: "/internal/communes/{communeId}/change-request"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_communes_communeId_feasibility": {
+    method: "GET"
+    path: "/internal/communes/{communeId}/feasibility"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_communes_communeId_history": {
+    method: "GET"
+    path: "/internal/communes/{communeId}/history"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_contacts": {
+    method: "GET"
+    path: "/internal/contacts"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_contacts": {
+    method: "POST"
+    path: "/internal/contacts"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_delete_contacts_contactId": {
+    method: "DELETE"
+    path: "/internal/contacts/{contactId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_contacts_contactId": {
+    method: "PUT"
+    path: "/internal/contacts/{contactId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_contacts_erasure_requests": {
+    method: "GET"
+    path: "/internal/contacts/erasure-requests"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_contacts_erasure_requests": {
+    method: "POST"
+    path: "/internal/contacts/erasure-requests"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_contacts_erasure_requests_erasureRequestId_identify": {
+    method: "POST"
+    path: "/internal/contacts/erasure-requests/{erasureRequestId}/identify"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_contacts_erasure_requests_erasureRequestId_notify": {
+    method: "POST"
+    path: "/internal/contacts/erasure-requests/{erasureRequestId}/notify"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_contacts_erasure_requests_erasureRequestId_purge": {
+    method: "POST"
+    path: "/internal/contacts/erasure-requests/{erasureRequestId}/purge"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_contacts_erasure_requests_erasureRequestId_reject": {
+    method: "POST"
+    path: "/internal/contacts/erasure-requests/{erasureRequestId}/reject"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_contacts_lawful_basis": {
+    method: "GET"
+    path: "/internal/contacts/lawful-basis"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "coupons_post_release": {
+    method: "POST"
+    path: "/internal/coupons/release"
+    requestBody: CouponReleaseRequest
     responses: {
       "200": StandardSuccessResponse
       "400": StandardErrorResponse
-      "401": StandardErrorResponse
-    }
-  }
-  "auth_get_user_consent": {
-    method: "GET"
-    path: "/users/me/consentimiento"
-    requestBody: undefined
-    responses: {
-      "200": UserConsent
-      "401": StandardErrorResponse
-    }
-  }
-  "auth_post_revoke_consent": {
-    method: "POST"
-    path: "/users/me/revocar-consentimiento"
-    requestBody: RevokeConsentRequest
-    responses: {
-      "200": UserConsent
-      "400": StandardErrorResponse
-      "401": StandardErrorResponse
-    }
-  }
-  "internal_post_users": {
-    method: "POST"
-    path: "/internal/users"
-    requestBody: InternalUserCreateRequest
-    responses: {
-      "201": InternalUserResponse
-      "400": StandardErrorResponse
-    }
-  }
-  "internal_get_users": {
-    method: "GET"
-    path: "/internal/users"
-    requestBody: undefined
-    responses: {
-      "200": {
-        data?: (InternalUserSummary)[]
-        users?: (InternalUserSummary)[]
-        total?: number
-        limit?: number
-        offset?: number
-        meta?: PaginationMeta
-      }
-      "401": StandardErrorResponse
       "403": StandardErrorResponse
     }
   }
-  "orders_get_orders": {
-    method: "GET"
-    path: "/orders"
+  "coupons_post_validate": {
+    method: "POST"
+    path: "/internal/coupons/validate"
+    requestBody: CouponValidationRequest
+    responses: {
+      "200": CouponValidationResponse
+      "400": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "internal_patch_drivers_driverId_shift": {
+    method: "PATCH"
+    path: "/internal/drivers/{driverId}/shift"
     requestBody: undefined
     responses: {
-      "200": {
-        data?: (OrderSummary)[]
-        orders?: (OrderSummary)[]
-        total?: number
-        meta?: PaginationMeta
-      }
-      "401": StandardErrorResponse
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_drivers_driverId_shift": {
+    method: "PUT"
+    path: "/internal/drivers/{driverId}/shift"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_drivers_shifts": {
+    method: "GET"
+    path: "/internal/drivers/shifts"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_geo_commune_at": {
+    method: "GET"
+    path: "/internal/geo/commune-at"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_hubs": {
+    method: "GET"
+    path: "/internal/hubs"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_hubs": {
+    method: "POST"
+    path: "/internal/hubs"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_delete_hubs_hubId": {
+    method: "DELETE"
+    path: "/internal/hubs/{hubId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_patch_hubs_hubId": {
+    method: "PATCH"
+    path: "/internal/hubs/{hubId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_hubs_hubId": {
+    method: "PUT"
+    path: "/internal/hubs/{hubId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_invites": {
+    method: "GET"
+    path: "/internal/invites"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_invites": {
+    method: "POST"
+    path: "/internal/invites"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_delete_invites_inviteId": {
+    method: "DELETE"
+    path: "/internal/invites/{inviteId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_invites_inviteId_verify": {
+    method: "GET"
+    path: "/internal/invites/{inviteId}/verify"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
     }
   }
   "internal_get_orders": {
@@ -743,100 +992,164 @@ export interface Operations {
       "403": StandardErrorResponse
     }
   }
-  "routes_get_routes": {
-    method: "GET"
-    path: "/routes"
+  "internal_post_orders": {
+    method: "POST"
+    path: "/internal/orders"
     requestBody: undefined
-    responses: {
-      "200": {
-        data?: (RouteSummary)[]
-        routes?: (RouteSummary)[]
-        total?: number
-        meta?: PaginationMeta
-      }
-      "401": StandardErrorResponse
-    }
-  }
-  "internal_get_routes": {
-    method: "GET"
-    path: "/internal/routes"
-    requestBody: undefined
-    responses: {
-      "200": {
-        data?: (RouteSummary)[]
-        routes?: (RouteSummary)[]
-        total?: number
-        meta?: PaginationMeta
-      }
-      "401": StandardErrorResponse
-      "403": StandardErrorResponse
-    }
-  }
-  "internal_get_user_consents": {
-    method: "GET"
-    path: "/internal/users/{userId}/consents"
-    requestBody: undefined
-    responses: {
-      "200": UserConsent
-      "401": StandardErrorResponse
-      "403": StandardErrorResponse
-    }
-  }
-  "internal_get_user_by_id": {
-    method: "GET"
-    path: "/internal/users/{userId}"
-    requestBody: undefined
-    responses: {
-      "200": InternalUserResponse
-    }
-  }
-  "internal_put_user_by_id": {
-    method: "PUT"
-    path: "/internal/users/{userId}"
-    requestBody: InternalUserUpdateRequest
     responses: {
       "200": StandardSuccessResponse
     }
   }
-  "internal_delete_user_by_id": {
+  "internal_get_orders_orderId": {
+    method: "GET"
+    path: "/internal/orders/{orderId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_patch_orders_orderId_client_modifications": {
+    method: "PATCH"
+    path: "/internal/orders/{orderId}/client-modifications"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_delete_orders_orderId_coupon": {
     method: "DELETE"
-    path: "/internal/users/{userId}"
+    path: "/internal/orders/{orderId}/coupon"
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
     }
   }
-  "coupons_post_validate": {
+  "internal_post_orders_orderId_coupon": {
     method: "POST"
-    path: "/internal/coupons/validate"
-    requestBody: CouponValidationRequest
-    responses: {
-      "200": CouponValidationResponse
-      "400": StandardErrorResponse
-      "403": StandardErrorResponse
-    }
-  }
-  "coupons_post_release": {
-    method: "POST"
-    path: "/internal/coupons/release"
-    requestBody: CouponReleaseRequest
+    path: "/internal/orders/{orderId}/coupon"
+    requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
-      "400": StandardErrorResponse
-      "403": StandardErrorResponse
     }
   }
-  "root_post_coupons": {
-    method: "POST"
-    path: "/internal/root/coupons"
-    requestBody: CouponCreateRequest
+  "internal_delete_orders_orderId_coupon_remove": {
+    method: "DELETE"
+    path: "/internal/orders/{orderId}/coupon/remove"
+    requestBody: undefined
     responses: {
-      "201": {
-        success?: boolean
-        coupon?: Coupon
-      }
-      "400": StandardErrorResponse
-      "403": StandardErrorResponse
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_orders_orderId_coupon_remove": {
+    method: "POST"
+    path: "/internal/orders/{orderId}/coupon/remove"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_orders_orderId_delivery_code_regenerate": {
+    method: "POST"
+    path: "/internal/orders/{orderId}/delivery-code/regenerate"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_orders_orderId_discrepancy": {
+    method: "POST"
+    path: "/internal/orders/{orderId}/discrepancy"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_orders_orderId_discrepancy_settle": {
+    method: "POST"
+    path: "/internal/orders/{orderId}/discrepancy/settle"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_orders_orderId_evidence": {
+    method: "GET"
+    path: "/internal/orders/{orderId}/evidence"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_orders_orderId_evidence": {
+    method: "POST"
+    path: "/internal/orders/{orderId}/evidence"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_patch_orders_orderId_invoice": {
+    method: "PATCH"
+    path: "/internal/orders/{orderId}/invoice"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_patch_orders_orderId_status": {
+    method: "PATCH"
+    path: "/internal/orders/{orderId}/status"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_orders_batch": {
+    method: "POST"
+    path: "/internal/orders/batch"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_planner_settings": {
+    method: "GET"
+    path: "/internal/planner-settings"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_patch_planner_settings_plannerSettingId": {
+    method: "PATCH"
+    path: "/internal/planner-settings/{plannerSettingId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_planner_settings_plannerSettingId": {
+    method: "PUT"
+    path: "/internal/planner-settings/{plannerSettingId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_planner_settings_plannerSettingId_change_request": {
+    method: "POST"
+    path: "/internal/planner-settings/{plannerSettingId}/change-request"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_planner_settings_plannerSettingId_history": {
+    method: "GET"
+    path: "/internal/planner-settings/{plannerSettingId}/history"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
     }
   }
   "root_get_coupons": {
@@ -857,6 +1170,32 @@ export interface Operations {
           totalDiscountGranted?: number
         }
       }
+      "403": StandardErrorResponse
+    }
+  }
+  "root_post_coupons": {
+    method: "POST"
+    path: "/internal/root/coupons"
+    requestBody: CouponCreateRequest
+    responses: {
+      "201": {
+        success?: boolean
+        coupon?: Coupon
+      }
+      "400": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "root_patch_coupon_by_id": {
+    method: "PATCH"
+    path: "/internal/root/coupons/{id}"
+    requestBody: CouponUpdateRequest
+    responses: {
+      "200": {
+        success?: boolean
+        coupon?: Coupon
+      }
+      "400": StandardErrorResponse
       "403": StandardErrorResponse
     }
   }
@@ -888,17 +1227,436 @@ export interface Operations {
       "403": StandardErrorResponse
     }
   }
-  "root_patch_coupon_by_id": {
+  "internal_get_route_assignments": {
+    method: "GET"
+    path: "/internal/route-assignments"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_routes": {
+    method: "GET"
+    path: "/internal/routes"
+    requestBody: undefined
+    responses: {
+      "200": {
+        data?: (RouteSummary)[]
+        routes?: (RouteSummary)[]
+        total?: number
+        meta?: PaginationMeta
+      }
+      "401": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "internal_get_routes_routeId": {
+    method: "GET"
+    path: "/internal/routes/{routeId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_routes_routeId_close": {
+    method: "POST"
+    path: "/internal/routes/{routeId}/close"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_routes_routeId_directions": {
+    method: "GET"
+    path: "/internal/routes/{routeId}/directions"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_routes_routeId_directions": {
+    method: "POST"
+    path: "/internal/routes/{routeId}/directions"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_routes_routeId_orders": {
+    method: "POST"
+    path: "/internal/routes/{routeId}/orders"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_routes_directions": {
+    method: "POST"
+    path: "/internal/routes/directions"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_routes_insertion_candidates": {
+    method: "GET"
+    path: "/internal/routes/insertion-candidates"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_routes_insertion_queue": {
+    method: "GET"
+    path: "/internal/routes/insertion-queue"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_routes_plan_daily": {
+    method: "POST"
+    path: "/internal/routes/plan-daily"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_routes_plan_daily_confirm": {
+    method: "POST"
+    path: "/internal/routes/plan-daily/confirm"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_routes_plan_daily_simulation": {
+    method: "GET"
+    path: "/internal/routes/plan-daily/simulation"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_routes_planning_quota": {
+    method: "GET"
+    path: "/internal/routes/planning-quota"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_routes_settings": {
+    method: "GET"
+    path: "/internal/routes/settings"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_patch_routes_settings": {
     method: "PATCH"
-    path: "/internal/root/coupons/{id}"
-    requestBody: CouponUpdateRequest
+    path: "/internal/routes/settings"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_users": {
+    method: "GET"
+    path: "/internal/users"
+    requestBody: undefined
+    responses: {
+      "200": {
+        data?: (InternalUserSummary)[]
+        users?: (InternalUserSummary)[]
+        total?: number
+        limit?: number
+        offset?: number
+        meta?: PaginationMeta
+      }
+      "401": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "internal_post_users": {
+    method: "POST"
+    path: "/internal/users"
+    requestBody: InternalUserCreateRequest
+    responses: {
+      "201": InternalUserResponse
+      "400": StandardErrorResponse
+    }
+  }
+  "internal_delete_user_by_id": {
+    method: "DELETE"
+    path: "/internal/users/{userId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_user_by_id": {
+    method: "GET"
+    path: "/internal/users/{userId}"
+    requestBody: undefined
+    responses: {
+      "200": InternalUserResponse
+    }
+  }
+  "internal_put_user_by_id": {
+    method: "PUT"
+    path: "/internal/users/{userId}"
+    requestBody: InternalUserUpdateRequest
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_users_userId_addresses": {
+    method: "GET"
+    path: "/internal/users/{userId}/addresses"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_users_userId_addresses": {
+    method: "POST"
+    path: "/internal/users/{userId}/addresses"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_user_consents": {
+    method: "GET"
+    path: "/internal/users/{userId}/consents"
+    requestBody: undefined
+    responses: {
+      "200": UserConsent
+      "401": StandardErrorResponse
+      "403": StandardErrorResponse
+    }
+  }
+  "internal_get_users_userId_orders": {
+    method: "GET"
+    path: "/internal/users/{userId}/orders"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_patch_users_userId_status": {
+    method: "PATCH"
+    path: "/internal/users/{userId}/status"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_users_userId_status": {
+    method: "PUT"
+    path: "/internal/users/{userId}/status"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_vehicles": {
+    method: "GET"
+    path: "/internal/vehicles"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_vehicles": {
+    method: "POST"
+    path: "/internal/vehicles"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_delete_vehicles_vehicleId": {
+    method: "DELETE"
+    path: "/internal/vehicles/{vehicleId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_patch_vehicles_vehicleId": {
+    method: "PATCH"
+    path: "/internal/vehicles/{vehicleId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_vehicles_vehicleId": {
+    method: "PUT"
+    path: "/internal/vehicles/{vehicleId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_vehicles_available": {
+    method: "GET"
+    path: "/internal/vehicles/available"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_vehicles_presets": {
+    method: "GET"
+    path: "/internal/vehicles/presets"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "notifications_post_email_order_created": {
+    method: "POST"
+    path: "/notifications/email/order-created"
+    requestBody: EmailOrderCreatedRequest
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "notifications_post_email_order_status_update": {
+    method: "POST"
+    path: "/notifications/email/order-status-update"
+    requestBody: EmailOrderStatusUpdateRequest
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "notifications_post_email_package_discrepancy": {
+    method: "POST"
+    path: "/notifications/email/package-discrepancy"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "notifications_post_email_verify_account": {
+    method: "POST"
+    path: "/notifications/email/verify-account"
+    requestBody: EmailVerifyAccountRequest
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "notifications_post_email_welcome": {
+    method: "POST"
+    path: "/notifications/email/welcome"
+    requestBody: EmailWelcomeRequest
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "notifications_post_whatsapp": {
+    method: "POST"
+    path: "/notifications/whatsapp"
+    requestBody: WhatsAppNotificationRequest
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "otp_get_deliveries": {
+    method: "GET"
+    path: "/otp/deliveries"
+    requestBody: undefined
     responses: {
       "200": {
         success?: boolean
-        coupon?: Coupon
+        data?: (OtpDeliveryItem)[]
+        deliveries?: (OtpDeliveryItem)[]
+        total?: number
+        meta?: PaginationMeta
+        fallidos?: number
+        ttlMinutos?: number
+        intentosMaximos?: number
       }
-      "400": StandardErrorResponse
+      "401": StandardErrorResponse
       "403": StandardErrorResponse
+    }
+  }
+  "otp_post_deliveries_deliveryId_resend": {
+    method: "POST"
+    path: "/otp/deliveries/{deliveryId}/resend"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "otp_post_send": {
+    method: "POST"
+    path: "/otp/send"
+    requestBody: SendOtpRequest
+    responses: {
+      "200": SendOtpResponse
+    }
+  }
+  "otp_post_send_delivery_code": {
+    method: "POST"
+    path: "/otp/send-delivery-code"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "otp_post_verify": {
+    method: "POST"
+    path: "/otp/verify"
+    requestBody: VerifyOtpRequest
+    responses: {
+      "200": VerifyOtpResponse
+      "400": StandardErrorResponse
+    }
+  }
+  "payments_post_fintoc_checkout_session": {
+    method: "POST"
+    path: "/payments/fintoc/checkout-session"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "payments_get_fintoc_status": {
+    method: "GET"
+    path: "/payments/fintoc/status"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "payments_post_mercadopago_preference": {
+    method: "POST"
+    path: "/payments/mercadopago/preference"
+    requestBody: MercadoPagoPreferenceRequest
+    responses: {
+      "200": MercadoPagoPreferenceResponse
+      "400": StandardErrorResponse
+    }
+  }
+  "payments_get_mercadopago_status": {
+    method: "GET"
+    path: "/payments/mercadopago/status"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "registration_post_calculate_sla": {
+    method: "POST"
+    path: "/registration/calculate-sla"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
     }
   }
   "registration_post_client": {
@@ -913,6 +1671,14 @@ export interface Operations {
       }
       "400": StandardErrorResponse
       "403": StandardErrorResponse
+    }
+  }
+  "registration_get_communes": {
+    method: "GET"
+    path: "/registration/communes"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
     }
   }
   "registration_post_invite": {
@@ -943,6 +1709,14 @@ export interface Operations {
       "403": StandardErrorResponse
     }
   }
+  "registration_put_reupload_comprobante": {
+    method: "PUT"
+    path: "/registration/requests/{email}/reupload-comprobante"
+    requestBody: ReuploadComprobanteRequest
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "registration_get_request_status": {
     method: "GET"
     path: "/registration/requests/{email}/status"
@@ -959,99 +1733,132 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
-  "registration_put_reupload_comprobante": {
-    method: "PUT"
-    path: "/registration/requests/{email}/reupload-comprobante"
-    requestBody: ReuploadComprobanteRequest
-    responses: {
-      "200": StandardSuccessResponse
-    }
-  }
-  "otp_post_send": {
-    method: "POST"
-    path: "/otp/send"
-    requestBody: SendOtpRequest
-    responses: {
-      "200": SendOtpResponse
-    }
-  }
-  "otp_post_send_whatsapp": {
-    method: "POST"
-    path: "/otp/send-whatsapp"
-    requestBody: SendWhatsAppOtpRequest
-    responses: {
-      "200": SendWhatsAppOtpResponse
-    }
-  }
-  "otp_post_verify": {
-    method: "POST"
-    path: "/otp/verify"
-    requestBody: VerifyOtpRequest
-    responses: {
-      "200": VerifyOtpResponse
-      "400": StandardErrorResponse
-    }
-  }
-  "otp_get_deliveries": {
+  "registration_get_tariffs": {
     method: "GET"
-    path: "/otp/deliveries"
+    path: "/registration/tariffs"
     requestBody: undefined
     responses: {
-      "200": {
-        success?: boolean
-        data?: (OtpDeliveryItem)[]
-        deliveries?: (OtpDeliveryItem)[]
-        total?: number
-        meta?: PaginationMeta
-        fallidos?: number
-        ttlMinutos?: number
-        intentosMaximos?: number
-      }
-      "401": StandardErrorResponse
-      "403": StandardErrorResponse
+      "200": StandardSuccessResponse
     }
   }
-  "notifications_post_whatsapp": {
-    method: "POST"
-    path: "/notifications/whatsapp"
-    requestBody: WhatsAppNotificationRequest
+  "internal_get_users_me_addresses": {
+    method: "GET"
+    path: "/users/me/addresses"
+    requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
     }
   }
-  "admin_post_override_activate_registration": {
+  "internal_post_users_me_addresses": {
     method: "POST"
-    path: "/admin/registration-requests/{email}/override-activate"
-    requestBody: AdminOverrideActivateRequest
+    path: "/users/me/addresses"
+    requestBody: undefined
     responses: {
-      "200": AdminOverrideActivateResponse
-      "403": StandardErrorResponse
+      "200": StandardSuccessResponse
     }
   }
-  "payments_post_mercadopago_preference": {
-    method: "POST"
-    path: "/payments/mercadopago/preference"
-    requestBody: MercadoPagoPreferenceRequest
+  "internal_delete_users_me_addresses_addressId": {
+    method: "DELETE"
+    path: "/users/me/addresses/{addressId}"
+    requestBody: undefined
     responses: {
-      "200": MercadoPagoPreferenceResponse
-      "400": StandardErrorResponse
+      "200": StandardSuccessResponse
     }
   }
-  "payments_post_fintoc_payment_intent": {
-    method: "POST"
-    path: "/payments/fintoc/payment-intent"
-    requestBody: FintocPaymentIntentRequest
+  "internal_put_users_me_addresses_addressId": {
+    method: "PUT"
+    path: "/users/me/addresses/{addressId}"
+    requestBody: undefined
     responses: {
-      "200": FintocPaymentIntentResponse
-      "400": StandardErrorResponse
+      "200": StandardSuccessResponse
     }
   }
-  "payments_post_webhook_mercadopago": {
-    method: "POST"
-    path: "/webhooks/mercadopago"
-    requestBody: Record<string, unknown>
+  "internal_patch_users_me_addresses_addressId_default": {
+    method: "PATCH"
+    path: "/users/me/addresses/{addressId}/default"
+    requestBody: undefined
     responses: {
-      "200": WebhookMercadoPagoResponse
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_users_me_addresses_addressId_default": {
+    method: "PUT"
+    path: "/users/me/addresses/{addressId}/default"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_users_me_avatar": {
+    method: "GET"
+    path: "/users/me/avatar"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_users_me_avatar": {
+    method: "POST"
+    path: "/users/me/avatar"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_users_me_billing": {
+    method: "GET"
+    path: "/users/me/billing"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_users_me_billing": {
+    method: "PUT"
+    path: "/users/me/billing"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_users_me_driver_profile": {
+    method: "GET"
+    path: "/users/me/driver-profile"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_users_me_driver_profile": {
+    method: "PUT"
+    path: "/users/me/driver-profile"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_users_me_export": {
+    method: "GET"
+    path: "/users/me/export"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_users_me_notifications": {
+    method: "GET"
+    path: "/users/me/notifications"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_users_me_notifications": {
+    method: "PUT"
+    path: "/users/me/notifications"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
     }
   }
   "payments_post_webhook_fintoc": {
@@ -1062,53 +1869,12 @@ export interface Operations {
       "200": WebhookFintocResponse
     }
   }
-  "payments_post_simulate": {
+  "payments_post_webhook_mercadopago": {
     method: "POST"
-    path: "/payments/simulate"
-    requestBody: PaymentSimulateRequest
+    path: "/webhooks/mercadopago"
+    requestBody: Record<string, unknown>
     responses: {
-      "200": PaymentSimulateResponse
-      "400": StandardErrorResponse
-    }
-  }
-  "notifications_post_email_verify_account": {
-    method: "POST"
-    path: "/notifications/email/verify-account"
-    requestBody: EmailVerifyAccountRequest
-    responses: {
-      "200": StandardSuccessResponse
-    }
-  }
-  "notifications_post_sms_verify_phone": {
-    method: "POST"
-    path: "/notifications/sms/verify-phone"
-    requestBody: SmsVerifyPhoneRequest
-    responses: {
-      "200": StandardSuccessResponse
-    }
-  }
-  "notifications_post_email_welcome": {
-    method: "POST"
-    path: "/notifications/email/welcome"
-    requestBody: EmailWelcomeRequest
-    responses: {
-      "200": StandardSuccessResponse
-    }
-  }
-  "notifications_post_email_order_created": {
-    method: "POST"
-    path: "/notifications/email/order-created"
-    requestBody: EmailOrderCreatedRequest
-    responses: {
-      "200": StandardSuccessResponse
-    }
-  }
-  "notifications_post_email_order_status_update": {
-    method: "POST"
-    path: "/notifications/email/order-status-update"
-    requestBody: EmailOrderStatusUpdateRequest
-    responses: {
-      "200": StandardSuccessResponse
+      "200": WebhookMercadoPagoResponse
     }
   }
 }

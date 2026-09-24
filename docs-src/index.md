@@ -21,8 +21,8 @@ features:
     title: Autenticación Segura & Roles
     details: Tokens JWT, Cookies HttpOnly seguras y control de acceso basado en roles (root, admin, driver, client).
   - icon: 📲
-    title: Motor OTP & Meta WhatsApp API
-    details: Verificación en 2 pasos vía WhatsApp Business Cloud API, SMS y auto-activación instantánea de cuentas.
+    title: Verificación por correo & avisos WhatsApp
+    details: Código de verificación y segundo factor por correo; avisos del pedido y código de entrega por WhatsApp Business Cloud API.
   - icon: 💳
     title: Pasarelas de Pago & Webhooks
     details: Checkout Pro de Mercado Pago, transferencias Open Banking A2A con Fintoc y conciliación por webhooks.

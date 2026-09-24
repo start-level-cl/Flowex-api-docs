@@ -1,0 +1,570 @@
+import fs from 'node:fs'
+import path from 'node:path'
+
+/**
+ * Descripciones, etiquetas y roles escritos a mano para rutas conocidas.
+ *
+ * Antes esta lista ERA el inventario de rutas: no leía el código, solo comprobaba que el
+ * archivo existiera, así que documentaba 46 de las ~146 rutas y seguía listando rutas
+ * eliminadas. Ahora las rutas salen del código (route-extractor.mjs) y esta lista solo
+ * aporta metadatos a las que coinciden por método y ruta.
+ */
+export function catalogMetadata({ repoRoot }) {
+  const allRoutes = []
+
+  // 1. Auth API Lambda
+  const authApiFile = path.join(repoRoot, 'Flowex-auth-api-lambda', 'src', 'index.ts')
+  if (fs.existsSync(authApiFile)) {
+    const src = fs.readFileSync(authApiFile, 'utf8')
+    allRoutes.push(
+      {
+        service: 'auth-api-lambda',
+        source: 'Flowex-auth-api-lambda/src/index.ts',
+        method: 'post',
+        path: '/auth/login',
+        operationId: 'auth_post_login',
+        tag: 'Auth',
+        tags: ['Auth'],
+        summary: 'Inicio de sesión de usuario (Generación de JWT y Cookies HttpOnly)',
+        roles: ['root', 'admin', 'driver', 'client'],
+        security: false,
+      },
+      {
+        service: 'auth-api-lambda',
+        source: 'Flowex-auth-api-lambda/src/index.ts',
+        method: 'post',
+        path: '/auth/logout',
+        operationId: 'auth_post_logout',
+        tag: 'Auth',
+        tags: ['Auth'],
+        summary: 'Cierre de sesión e invalidación de cookies de acceso',
+        roles: [],
+        security: 'cookieAccessAuth',
+      },
+      {
+        service: 'auth-api-lambda',
+        source: 'Flowex-auth-api-lambda/src/index.ts',
+        method: 'post',
+        path: '/auth/refresh',
+        operationId: 'auth_post_refresh',
+        tag: 'Auth',
+        tags: ['Auth'],
+        summary: 'Renovación de Access Token mediante Refresh Token',
+        roles: [],
+        security: 'cookieRefreshAuth',
+      },
+      {
+        service: 'auth-api-lambda',
+        source: 'Flowex-auth-api-lambda/src/index.ts',
+        method: 'get',
+        path: '/auth/validate',
+        operationId: 'auth_get_validate',
+        tag: 'Auth',
+        tags: ['Auth'],
+        summary: 'Validación de token activo y resolución de claims/rol',
+        roles: [],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-api-lambda',
+        source: 'Flowex-auth-api-lambda/src/index.ts',
+        method: 'post',
+        path: '/auth/change-password',
+        operationId: 'auth_post_change_password',
+        tag: 'Auth',
+        tags: ['Auth'],
+        summary: 'Cambio y actualización de contraseña de usuario',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'auth-api-lambda',
+        source: 'Flowex-auth-api-lambda/src/index.ts',
+        method: 'get',
+        path: '/auth/consent',
+        operationId: 'auth_get_user_consent',
+        tag: 'Auth',
+        tags: ['Auth'],
+        summary: 'Consultar estado vigente de consentimiento informado y finalidades del usuario',
+        roles: ['root', 'admin', 'driver', 'client'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-api-lambda',
+        source: 'Flowex-auth-api-lambda/src/index.ts',
+        method: 'post',
+        path: '/auth/consent/revoke',
+        operationId: 'auth_post_revoke_consent',
+        tag: 'Auth',
+        tags: ['Auth'],
+        summary: 'Revocar consentimiento sobre finalidades accesorias (Ley N° 21.719)',
+        roles: ['root', 'admin', 'driver', 'client'],
+        security: 'bearerAuth',
+      }
+    )
+  }
+
+  // 2. Auth Admin Lambda (Internal VPC)
+  const authAdminFile = path.join(repoRoot, 'Flowex-auth-admin-lambda', 'src', 'index.ts')
+  if (fs.existsSync(authAdminFile)) {
+    allRoutes.push(
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'post',
+        path: '/internal/users',
+        operationId: 'internal_post_users',
+        tag: 'Users Administration',
+        tags: ['Users Administration'],
+        summary: 'Crear usuario interno en VPC (Roles: root, admin, driver, client)',
+        roles: ['root', 'admin'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'get',
+        path: '/internal/users',
+        operationId: 'internal_get_users',
+        tag: 'Users Administration',
+        tags: ['Users Administration'],
+        summary: 'Listar usuarios internos del sistema con paginación Importal y filtros',
+        roles: ['root', 'admin'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'get',
+        path: '/orders',
+        operationId: 'orders_get_orders',
+        tag: 'Orders & Dispatch',
+        tags: ['Orders & Dispatch'],
+        summary: 'Listar órdenes de despacho con paginación Importal y filtrado por rol',
+        roles: ['client', 'admin', 'root'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'get',
+        path: '/internal/orders',
+        operationId: 'internal_get_orders',
+        tag: 'Orders & Dispatch',
+        tags: ['Orders & Dispatch'],
+        summary: 'Listar todas las órdenes operativas con paginación Importal',
+        roles: ['admin', 'root'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'get',
+        path: '/routes',
+        operationId: 'routes_get_routes',
+        tag: 'Route Planning',
+        tags: ['Route Planning'],
+        summary: 'Listar rutas planificadas con paginación Importal',
+        roles: ['driver', 'admin', 'root'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'get',
+        path: '/internal/routes',
+        operationId: 'internal_get_routes',
+        tag: 'Route Planning',
+        tags: ['Route Planning'],
+        summary: 'Listar rutas operativas con paradas ordenadas y paginación Importal',
+        roles: ['admin', 'root'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'get',
+        path: '/internal/users/{userId}/consents',
+        operationId: 'internal_get_user_consents',
+        tag: 'Users Administration',
+        tags: ['Users Administration'],
+        summary: 'Inspección forense de consentimientos de usuario por administrador (Ley N° 21.719)',
+        roles: ['root', 'admin'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'get',
+        path: '/internal/users/{userId}',
+        operationId: 'internal_get_user_by_id',
+        tag: 'Users Administration',
+        tags: ['Users Administration'],
+        summary: 'Obtener información y estado de usuario interno por ID',
+        roles: ['root', 'admin'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'put',
+        path: '/internal/users/{userId}',
+        operationId: 'internal_put_user_by_id',
+        tag: 'Users Administration',
+        tags: ['Users Administration'],
+        summary: 'Actualizar datos de perfil, estado o rol de usuario interno',
+        roles: ['root', 'admin'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'delete',
+        path: '/internal/users/{userId}',
+        operationId: 'internal_delete_user_by_id',
+        tag: 'Users Administration',
+        tags: ['Users Administration'],
+        summary: 'Eliminar o desactivar usuario interno',
+        roles: ['root', 'admin'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'post',
+        path: '/internal/coupons/validate',
+        operationId: 'coupons_post_validate',
+        tag: 'Coupons',
+        tags: ['Coupons'],
+        summary: 'Validar y pre-aplicar cupón promocional (Exclusivo para rol client)',
+        roles: ['client'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'post',
+        path: '/internal/coupons/release',
+        operationId: 'coupons_post_release',
+        tag: 'Coupons',
+        tags: ['Coupons'],
+        summary: 'Liberar reserva activa de cupón tras cancelación o abandono (Exclusivo para rol client)',
+        roles: ['client'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'post',
+        path: '/internal/root/coupons',
+        operationId: 'root_post_coupons',
+        tag: 'Coupons',
+        tags: ['Coupons'],
+        summary: 'Crear cupón promocional individual (Exclusivo para rol root)',
+        roles: ['root'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'post',
+        path: '/internal/root/coupons/batch',
+        operationId: 'root_post_coupons_batch',
+        tag: 'Coupons',
+        tags: ['Coupons'],
+        summary: 'Generar lote masivo de cupones promocionales con prefijo (Exclusivo para rol root)',
+        roles: ['root'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'post',
+        path: '/internal/root/coupons/import-csv',
+        operationId: 'root_post_coupons_import_csv',
+        tag: 'Coupons',
+        tags: ['Coupons'],
+        summary: 'Importar cupones promocionales desde CSV (Exclusivo para rol root)',
+        roles: ['root'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'get',
+        path: '/internal/root/coupons',
+        operationId: 'root_get_coupons',
+        tag: 'Coupons',
+        tags: ['Coupons'],
+        summary: 'Listar cupones y métricas globales de canjes/ahorros (Exclusivo para rol root)',
+        roles: ['root'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'patch',
+        path: '/internal/root/coupons/{id}',
+        operationId: 'root_patch_coupon_by_id',
+        tag: 'Coupons',
+        tags: ['Coupons'],
+        summary: 'Actualizar estado o vencimiento de cupón (Exclusivo para rol root)',
+        roles: ['root'],
+        security: 'bearerAuth',
+      }
+    )
+  }
+
+  // 3. Registration Public Lambda
+  const regPublicFile = path.join(repoRoot, 'Flowex-registration-public-lambda', 'src', 'index.ts')
+  if (fs.existsSync(regPublicFile)) {
+    allRoutes.push(
+      {
+        service: 'registration-public-lambda',
+        source: 'Flowex-registration-public-lambda/src/index.ts',
+        method: 'post',
+        path: '/registration/client',
+        operationId: 'registration_post_client',
+        tag: 'Registration',
+        tags: ['Registration'],
+        summary: 'Registro público de cliente (sin dirección fija; pickup/delivery se configuran en POST /orders)',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'registration-public-lambda',
+        source: 'Flowex-registration-public-lambda/src/index.ts',
+        method: 'post',
+        path: '/registration/invite',
+        operationId: 'registration_post_invite',
+        tag: 'Registration',
+        tags: ['Registration'],
+        summary: 'Registro mediante token de invitación (Admin / Chofer con datos de vehículo)',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'registration-public-lambda',
+        source: 'Flowex-registration-public-lambda/src/index.ts',
+        method: 'post',
+        path: '/registration/requests',
+        operationId: 'registration_post_requests',
+        tag: 'Registration',
+        tags: ['Registration'],
+        summary: 'Crear solicitud de registro pública (Clientes/Conductores con validación RUT)',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'registration-public-lambda',
+        source: 'Flowex-registration-public-lambda/src/index.ts',
+        method: 'get',
+        path: '/registration/requests/{email}/status',
+        operationId: 'registration_get_request_status',
+        tag: 'Registration',
+        tags: ['Registration'],
+        summary: 'Consultar estado de verificación y progreso de solicitud por email',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'registration-public-lambda',
+        source: 'Flowex-registration-public-lambda/src/index.ts',
+        method: 'put',
+        path: '/registration/requests/{email}/update-contact',
+        operationId: 'registration_put_update_contact',
+        tag: 'Registration',
+        tags: ['Registration'],
+        summary: 'Actualizar teléfono o correo de contacto en solicitud pendiente',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'registration-public-lambda',
+        source: 'Flowex-registration-public-lambda/src/index.ts',
+        method: 'put',
+        path: '/registration/requests/{email}/reupload-comprobante',
+        operationId: 'registration_put_reupload_comprobante',
+        tag: 'Registration',
+        tags: ['Registration'],
+        summary: 'Subir o reemplazar comprobante en S3 para solicitud pendiente',
+        roles: [],
+        security: false,
+      }
+    )
+  }
+
+  // 4. OTP Service Lambda
+  const otpFile = path.join(repoRoot, 'Flowex-otp-service-lambda', 'src', 'index.ts')
+  if (fs.existsSync(otpFile)) {
+    allRoutes.push(
+      {
+        service: 'otp-service-lambda',
+        source: 'Flowex-otp-service-lambda/src/index.ts',
+        method: 'post',
+        path: '/otp/send',
+        operationId: 'otp_post_send',
+        tag: 'OTP & WhatsApp',
+        tags: ['OTP & WhatsApp'],
+        summary: 'Emitir y enviar el código de verificación por correo (único canal)',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'otp-service-lambda',
+        source: 'Flowex-otp-service-lambda/src/index.ts',
+        method: 'post',
+        path: '/otp/verify',
+        operationId: 'otp_post_verify',
+        tag: 'OTP & WhatsApp',
+        tags: ['OTP & WhatsApp'],
+        summary: 'Verificar código OTP, auto-activar registro y generar Status Token HMAC',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'otp-service-lambda',
+        source: 'Flowex-otp-service-lambda/src/index.ts',
+        method: 'get',
+        path: '/otp/deliveries',
+        operationId: 'otp_get_deliveries',
+        tag: 'OTP & WhatsApp',
+        tags: ['OTP & WhatsApp'],
+        summary: 'Listar entregas y envíos OTP con paginación Importal y enmascaramiento PII',
+        roles: ['root', 'admin'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'otp-service-lambda',
+        source: 'Flowex-otp-service-lambda/src/index.ts',
+        method: 'post',
+        path: '/notifications/whatsapp',
+        operationId: 'notifications_post_whatsapp',
+        tag: 'OTP & WhatsApp',
+        tags: ['OTP & WhatsApp'],
+        summary: 'Despachar plantillas transaccionales de WhatsApp (Envíos, Tránsito, Incidentes)',
+        roles: [],
+        security: false,
+      }
+    )
+  }
+
+  // 5. Registration Admin Lambda
+  const regAdminFile = path.join(repoRoot, 'Flowex-registration-admin-lambda', 'src', 'index.ts')
+  if (fs.existsSync(regAdminFile)) {
+    allRoutes.push(
+      {
+        service: 'registration-admin-lambda',
+        source: 'Flowex-registration-admin-lambda/src/index.ts',
+        method: 'post',
+        path: '/admin/registration-requests/{email}/override-activate',
+        operationId: 'admin_post_override_activate_registration',
+        tag: 'Admin Overrides',
+        tags: ['Admin Overrides'],
+        summary: 'Aprobación manual y activación forzada de solicitud por administrador',
+        roles: ['root', 'admin'],
+        security: 'bearerAuth',
+      }
+    )
+  }
+
+  // 6. Payments API Lambda
+  const paymentsFile = path.join(repoRoot, 'Flowex-payments-api-lambda', 'src', 'index.ts')
+  if (fs.existsSync(paymentsFile)) {
+    allRoutes.push(
+      {
+        service: 'payments-api-lambda',
+        source: 'Flowex-payments-api-lambda/src/index.ts',
+        method: 'post',
+        path: '/payments/mercadopago/preference',
+        operationId: 'payments_post_mercadopago_preference',
+        tag: 'Payments',
+        tags: ['Payments'],
+        summary: 'Crear preferencia de pago Mercado Pago (Checkout Pro / WebPay)',
+        roles: ['client', 'admin'],
+        security: false,
+      },
+      {
+        service: 'payments-api-lambda',
+        source: 'Flowex-payments-api-lambda/src/index.ts',
+        method: 'post',
+        path: '/webhooks/mercadopago',
+        operationId: 'payments_post_webhook_mercadopago',
+        tag: 'Payments',
+        tags: ['Payments'],
+        summary: 'Webhook receptor de notificaciones IPN de Mercado Pago',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'payments-api-lambda',
+        source: 'Flowex-payments-api-lambda/src/index.ts',
+        method: 'post',
+        path: '/webhooks/fintoc',
+        operationId: 'payments_post_webhook_fintoc',
+        tag: 'Payments',
+        tags: ['Payments'],
+        summary: 'Webhook receptor de eventos de Fintoc con firma x-fintoc-signature',
+        roles: [],
+        security: false,
+      },
+    )
+  }
+
+  // 7. Notification Lambda
+  const notifFile = path.join(repoRoot, 'Flowex-notification-lambda', 'src', 'index.ts')
+  if (fs.existsSync(notifFile)) {
+    allRoutes.push(
+      {
+        service: 'notification-lambda',
+        source: 'Flowex-notification-lambda/src/index.ts',
+        method: 'post',
+        path: '/notifications/email/verify-account',
+        operationId: 'notifications_post_email_verify_account',
+        tag: 'Notifications',
+        tags: ['Notifications'],
+        summary: 'Enviar correo HTML de verificación con código OTP vía Amazon SES',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'notification-lambda',
+        source: 'Flowex-notification-lambda/src/index.ts',
+        method: 'post',
+        path: '/notifications/email/welcome',
+        operationId: 'notifications_post_email_welcome',
+        tag: 'Notifications',
+        tags: ['Notifications'],
+        summary: 'Enviar correo de bienvenida con enlace de acceso tras activación',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'notification-lambda',
+        source: 'Flowex-notification-lambda/src/index.ts',
+        method: 'post',
+        path: '/notifications/email/order-created',
+        operationId: 'notifications_post_email_order_created',
+        tag: 'Notifications',
+        tags: ['Notifications'],
+        summary: 'Enviar confirmación de despacho con número de tracking y PIN de entrega',
+        roles: [],
+        security: false,
+      },
+      {
+        service: 'notification-lambda',
+        source: 'Flowex-notification-lambda/src/index.ts',
+        method: 'post',
+        path: '/notifications/email/order-status-update',
+        operationId: 'notifications_post_email_order_status_update',
+        tag: 'Notifications',
+        tags: ['Notifications'],
+        summary: 'Enviar actualización de estado del envío al cliente destinatario',
+        roles: [],
+        security: false,
+      }
+    )
+  }
+
+  return allRoutes
+}

@@ -22,9 +22,9 @@ graph TB
     subgraph "Microservicios Serverless (AWS Lambdas)"
         AuthLambda["Flowex-auth-api-lambda<br>(Login, Refresh, Logout, Validate)"]
         RegPublicLambda["Flowex-registration-public-lambda<br>(RUT Módulo 11, S3 Comprobantes)"]
-        OtpLambda["Flowex-otp-service-lambda<br>(OTP, Meta WhatsApp Cloud API)"]
+        OtpLambda["Flowex-otp-service-lambda<br>(Código por correo, avisos WhatsApp)"]
         PaymentsLambda["Flowex-payments-api-lambda<br>(Mercado Pago & Fintoc Open Banking)"]
-        NotifLambda["Flowex-notification-lambda<br>(Amazon SES Emails, SMS)"]
+        NotifLambda["Flowex-notification-lambda<br>(Amazon SES, plantillas WhatsApp)"]
         AuthAdminLambda["Flowex-auth-admin-lambda<br>(Gestión Usuarios VPC)"]
         RegAdminLambda["Flowex-registration-admin-lambda<br>(Overrides & Activación Forzada)"]
         ConsentWorkerLambda["Flowex-consent-worker-lambda<br>(Node.js 24 ARM64 / SQS Batch Worker)"]
@@ -105,7 +105,7 @@ graph TB
 
 ### 4. Microservicios de Onboarding y Registro
 * **`Flowex-registration-public-lambda`:** Procesa solicitudes iniciales de clientes y choferes. Valida la complejidad de la contraseña, el RUT chileno y el teléfono celular E.164, sube comprobantes de domicilio o de empresa a Amazon S3 y encola el evento de consentimiento legal `RECORD_CONSENT`.
-* **`Flowex-otp-service-lambda`:** Genera códigos OTP numéricos de 6 dígitos con tiempo de expiración y los envía mediante Meta WhatsApp Cloud API o SMS. Al verificar el código, auto-activa la cuenta a estado `APPROVED` y despacha eventos a Amazon SQS.
+* **`Flowex-otp-service-lambda`:** Genera códigos de verificación de 6 dígitos (guarda solo su hash, vencen a los 10 minutos) y los envía **solo por correo**. Al verificar el código crea la cuenta en estado `APPROVED` y despacha eventos a Amazon SQS. También atiende `POST /notifications/whatsapp` y el código de entrega por WhatsApp.
 * **`Flowex-registration-admin-lambda`:** Permite a operadores de nivel `admin` y `root` realizar aprobaciones forzadas, rechazos o activaciones manuales de registros que requieran revisión humana, registrando auditorías PII.
 
 ### 5. Pasarelas de Pago (`Flowex-payments-api-lambda`)
@@ -116,7 +116,7 @@ graph TB
 ### 6. Notificaciones Transaccionales (`Flowex-notification-lambda`)
 * Soporta invocación HTTP directa y ejecución asíncrona como worker de Amazon SQS.
 * Envía correos HTML responsivos a través de Amazon SES (Verificación de cuenta, Bienvenida, Confirmación de orden con PIN de seguridad, y Actualizaciones de estado de envío).
-* Soporta notificaciones vía SMS.
+* Envía las plantillas de WhatsApp de los avisos de pedido. Sin credenciales de Meta responde `not_sent` y no registra uso de datos. Flowex no envía SMS.
 
 ### 7. Consentimientos y Auditoría PII (`Flowex-consent-worker-lambda`)
 * **8vo Microservicio Serverless:** Diseñado en **Node.js 24** sobre arquitectura **ARM64 (AWS Graviton2)** para maximizar eficiencia y reducir huella de cómputo.
@@ -187,10 +187,10 @@ Registra el otorgamiento explícito de finalidades de tratamiento de datos al re
 {
   "userId": "usr_9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
   "purposes": [
-    { "purpose": "terms_and_conditions", "granted": true, "policyVersion": "v2.4 (Ley N° 21.719)" },
-    { "purpose": "operational_notifications", "granted": true, "policyVersion": "v2.4 (Ley N° 21.719)" },
-    { "purpose": "sms_whatsapp_alerts", "granted": true, "policyVersion": "v2.4 (Ley N° 21.719)" },
-    { "purpose": "delivery_tracking", "granted": true, "policyVersion": "v2.4 (Ley N° 21.719)" }
+    { "purpose": "terms_and_conditions", "granted": true, "policyVersion": "v2.5" },
+    { "purpose": "operational_notifications", "granted": true, "policyVersion": "v2.5" },
+    { "purpose": "sms_whatsapp_alerts", "granted": true, "policyVersion": "v2.5" },
+    { "purpose": "delivery_tracking", "granted": true, "policyVersion": "v2.5" }
   ],
   "channel": "web_registration",
   "acceptedAt": "2026-08-24T12:00:00.000Z"
@@ -203,7 +203,7 @@ Registra la revocación o derecho de oposición del titular a una o varias final
 {
   "userId": "usr_9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
   "purposes": ["sms_whatsapp_alerts"],
-  "reason": "Solicitud expresa de cese de notificaciones push y alertas SMS/WhatsApp",
+  "reason": "Solicitud expresa de cese de alertas por WhatsApp",
   "revokedAt": "2026-08-24T14:30:00.000Z",
   "channel": "web_settings"
 }
@@ -227,12 +227,14 @@ Registra obligatoriamente cualquier consulta o exportación de datos personales 
 
 ### 🌐 Endpoints Sincrónicos de Revisión de Consentimiento & Auditoría
 
-Para el consumo directo desde las aplicaciones clientes (`Flowex-frontend` SPA y consola de administración), se implementan tres endpoints REST en API Gateway:
+Para el consumo directo desde las aplicaciones clientes (`Flowex-frontend` SPA y consola de administración), se implementan estos endpoints REST en API Gateway (las antiguas rutas `/users/me/*-consentimiento` respondían 404, porque `/users/*` va a `Flowex-auth-admin-lambda`):
 
 | Endpoint | Método | Microservicio Emisor | Rol Requerido | Descripción & Evento SQS |
 |---|---|---|---|---|
-| `/users/me/consentimiento` | `GET` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Consulta las finalidades vigentes y estado legal del usuario en sesión. |
-| `/users/me/revocar-consentimiento` | `POST` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Revoca finalidades accesorias (`sms_whatsapp_alerts`, `delivery_tracking`). Encola `REVOKE_CONSENT` a SQS. Rechaza revocación de finalidades esenciales (`400 Bad Request`). |
+| `/auth/consent` | `GET` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Consulta las finalidades vigentes y estado legal del usuario en sesión. |
+| `/auth/consent/revoke` | `POST` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Revoca finalidades accesorias (`sms_whatsapp_alerts`, `delivery_tracking`). Encola `REVOKE_CONSENT` a SQS. Rechaza revocación de finalidades esenciales (`400 Bad Request`). |
+| `/auth/consent/grant` | `POST` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Vuelve a otorgar finalidades accesorias revocadas. |
+| `/users/me/export` | `GET` | `Flowex-auth-admin-lambda` | Titular de la sesión | Portabilidad: todos los datos del titular en JSON. Registra `EXPORT_PERSONAL_DATA`. |
 | `/internal/users/{userId}/consents` | `GET` | `Flowex-auth-admin-lambda` | `admin`, `root` | Inspección forense de consentimientos de un tercero. Encola obligatoriamente `PII_ACCESS_AUDIT` a SQS. Si la cuenta está suspendida (`userIsActive = false`), añade custodia legal. |
 
 ---
@@ -259,11 +261,11 @@ Conforme al marco de la **Ley N° 21.719** y el estándar internacional GDPR:
 
 Flowex garantiza el ejercicio pleno de los derechos ARCOP para titulares de datos personales:
 
-* **Acceso (A):** Consulta en tiempo real de los datos y finalidades tratadas (`GET /users/me/consentimiento`).
+* **Acceso (A):** Consulta en tiempo real de los datos y finalidades tratadas (`GET /auth/consent`, `GET /users/me/export`).
 * **Rectificación (R):** Actualización de información de contacto y direcciones (`PUT /registration/requests/{email}/update-contact`).
 * **Cancelación / Supresión (C):** Eliminación de datos no esenciales una vez cumplidos los plazos legales de retención tributaria e historial de despachos.
-* **Oposición / Revocación (O):** Revocación selectiva de consentimientos para comunicaciones comerciales y alertas accesorias (`POST /users/me/revocar-consentimiento`).
-* **Portabilidad (P):** Extracción de datos en formatos legibles por máquina (JSON/CSV).
+* **Oposición / Revocación (O):** Revocación selectiva de alertas accesorias (`POST /auth/consent/revoke`) y nuevo otorgamiento (`POST /auth/consent/grant`).
+* **Portabilidad (P):** Expediente completo en JSON (`GET /users/me/export`), con la entrega registrada como uso de datos.
 
 ---
 

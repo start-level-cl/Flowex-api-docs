@@ -202,11 +202,9 @@ Para mitigar riesgos de robo de credenciales en cuentas con acceso a infraestruc
 
 ### Políticas de Aplicación por Rol
 * **Mandatorio (`root`, `admin`, `driver`):** Todo inicio de sesión requiere un desafío 2FA de 6 dígitos. No puede ser desactivado por el usuario.
-* **Opcional (`client`):** El cliente puede activar o desactivar 2FA desde su perfil de usuario (`PATCH /users/me/security`). Por defecto se mantiene desactivado para agilizar el checkout.
-* **Canales:**
-  * **Email (Principal):** Despachado vía SQS a `Flowex-notification-lambda` con plantilla SES y código con TTL de 5 minutos.
-  * **SMS (Respaldo):** Despachado a través de Amazon SNS hacia el teléfono móvil chileno registrado en formato E.164.
-* **Modo Sandbox / Develop:** En entornos de desarrollo (`STAGE === 'dev'`, `NODE_ENV === 'development'` o sandbox), la API devuelve `sandboxCode: "123456"` en la respuesta JSON para permitir testing automatizado e interactivo sin consultar buzones reales.
+* **Opcional (`client`):** El cliente puede activar o desactivar 2FA desde su perfil de usuario (`PATCH /auth/security`). Por defecto se mantiene desactivado para agilizar el checkout.
+* **Canal único: correo.** El código viaja por SQS a `Flowex-notification-lambda` y sale por Amazon SES; vence a los 5 minutos. Flowex no envía SMS: `supportedChannels` es siempre `["email"]`.
+* **Sandbox:** fuera de producción (`STAGE=dev`, `NODE_ENV=development`/`test` o `SANDBOX_MODE=true`) la respuesta trae `sandboxCode` con el código emitido, para probar sin revisar el correo. Con `STAGE=prod` o `NODE_ENV=production` nunca se activa.
 
 ---
 
@@ -219,15 +217,12 @@ Cuando el usuario tiene 2FA requerido o habilitado, `POST /auth/login` no emite 
   "mfaRequired": true,
   "mfaToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "channel": "email",
-  "destination": "r***t@flowex.cl",
   "maskedEmail": "r***t@flowex.cl",
   "maskedPhone": "+56 9 **** 7217",
-  "supportedChannels": ["email", "sms"],
+  "supportedChannels": ["email"],
   "expiresInSeconds": 300,
-  "resendCooldownSeconds": 60,
-  "sandboxCode": "123456",
-  "isSandbox": true,
-  "message": "Segundo paso de autenticación requerido. Código enviado por correo electrónico."
+  "sandboxCode": "481902",
+  "isSandbox": true
 }
 ```
 
@@ -265,26 +260,25 @@ Retorna los tokens definitivos (`accessToken`, `refreshToken`), establece las co
 
 ---
 
-### 8. Reenvío o Cambio de Canal 2FA (`POST /auth/login/resend-2fa`)
-Permite reenviar el código al correo electrónico o alternar al canal de SMS.
+### 8. Reenvío del código 2FA (`POST /auth/login/resend-2fa`)
+Reenvía un código nuevo al correo. No hay otro canal.
 
 * **Cuerpo de Solicitud:**
 ```json
 {
-  "mfaToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "channel": "sms"
+  "mfaToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 * **Respuesta Exitosa (`200 OK`):**
 ```json
 {
   "success": true,
-  "message": "Código de verificación reenviado exitosamente.",
+  "message": "Código de verificación reenviado exitosamente por correo.",
   "mfaToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "channel": "sms",
-  "maskedDestination": "+56 9 **** 7217",
+  "channel": "email",
+  "maskedDestination": "r***t@flowex.cl",
   "expiresInSeconds": 300,
-  "sandboxCode": "123456",
+  "sandboxCode": "730215",
   "isSandbox": true
 }
 ```
@@ -292,7 +286,7 @@ Permite reenviar el código al correo electrónico o alternar al canal de SMS.
 
 ---
 
-### 9. Configuración de Seguridad de Cuenta (`PATCH /users/me/security`)
+### 9. Configuración de Seguridad de Cuenta (`PATCH /auth/security`)
 Permite al usuario autenticado (rol `client`) activar o desactivar la exigencia de 2FA en sus inicios de sesión.
 
 * **Encabezados:** `Authorization: Bearer <access_token>`

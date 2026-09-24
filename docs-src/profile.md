@@ -17,7 +17,7 @@ graph TD
         PM --> SecB["B. Datos Personales<br>• RUT Validado Módulo 11<br>• Email Verificado OTP<br>• Teléfono E.164 +569"]
         PM --> SecC["C. Libreta de Direcciones<br>• Bodegas & Sucursales<br>• Dirección Principal (isDefault)<br>• Integración POST /orders"]
         PM --> SecD["D. Facturación DTE<br>• Razón Social & Giro<br>• RUT Empresa Módulo 11<br>• Dirección & Correo DTE"]
-        PM --> SecE["E. Notificaciones Multicanal<br>• Amazon SES (Email)<br>• Meta WhatsApp Cloud API<br>• Amazon SNS (SMS)"]
+        PM --> SecE["E. Notificaciones<br>• Amazon SES (Email)<br>• Meta WhatsApp Cloud API"]
         PM --> SecF["F. Consentimiento Legal<br>• Cumplimiento Ley N° 21.719<br>• Trazabilidad IP & Timestamp<br>• Suspensión Automática"]
     end
 
@@ -52,18 +52,19 @@ Configuración centralizada para la emisión automática de Facturas Electrónic
 * **Giro Comercial:** Actividad económica registrada en SII.
 * **Dirección Tributaria & Correo:** Destino oficial para el envío de los XML y PDF de facturación.
 
-### 5. Preferencias de Notificaciones Multicanal
-Panel de control granular para activar o desactivar alertas transaccionales:
-* **Amazon SES (Email):** Notificaciones transaccionales de órdenes, resúmenes y comprobantes PDF.
-* **Meta WhatsApp Cloud API:** Alertas instantáneas de entrega, fotos POD y código PIN de 4 dígitos.
-* **Amazon SNS (SMS):** Canal de respaldo para mensajes críticos de verificación.
+### 5. Preferencias de Notificaciones
+Panel para activar o desactivar los dos canales (`GET/PUT /users/me/notifications`):
+* **Amazon SES (Email):** Notificaciones transaccionales de órdenes y comprobantes. Es también el único canal de los códigos de verificación y del segundo factor.
+* **Meta WhatsApp Cloud API:** Avisos del pedido y código de entrega (PIN de 4 dígitos).
+
+Flowex no envía SMS. Una preferencia `smsSns` guardada antes se ignora.
 
 > [!IMPORTANT]
 > **Vinculación con Consentimiento:** Las notificaciones multicanal requieren que el consentimiento de tratamiento de datos personales esté activo. Si el usuario revoca su consentimiento, todos los canales externos se suspenden inmediatamente.
 
 ### 6. Consentimiento Legal y Cumplimiento Regulatorio (Ley N° 21.719)
 Flowex implementa un registro auditable e inmutable de consentimiento informado para el tratamiento de datos personales bajo la **Ley N° 21.719** de Chile y normativas internacionales (GDPR):
-* **Versión de Política:** Control de versiones contractuales (ej. `v2.4 (Ley N° 21.719)`).
+* **Versión de Política:** Control de versiones contractuales (vigente: `v2.5`).
 * **Trazabilidad & Huella:** Registro inmutable de fecha/hora (`timestamp` ISO), dirección IP de origen (`ipAddress`) y canal (`web_registration`, `web_settings`).
 * **Finalidades Granulares:** Separación explícita entre finalidades esenciales (contractuales) y accesorias/funcionales.
 * **Revocabilidad Potestativa:** Capacidad del titular de suspender o habilitar finalidades no esenciales en cualquier momento desde su perfil de usuario.
@@ -72,9 +73,15 @@ Flowex implementa un registro auditable e inmutable de consentimiento informado 
 
 ## 🔒 Endpoints de Revisión y Gestión de Consentimiento
 
-El módulo de perfil y autenticación expone las siguientes rutas REST para el autoservicio del titular y la inspección forense administrativa:
+El módulo de perfil y autenticación expone las siguientes rutas REST para el autoservicio del titular y la inspección forense administrativa.
 
-### 1. `GET /users/me/consentimiento` (o `/auth/consent`)
+> [!NOTE]
+> Las rutas del titular viven bajo `/auth/consent` (`Flowex-auth-api-lambda`). Las antiguas
+> `/users/me/consentimiento`, `/users/me/revocar-consentimiento` y
+> `/users/me/otorgar-consentimiento` respondían 404: API Gateway entrega `/users/*` a
+> `Flowex-auth-admin-lambda`, que no las tiene.
+
+### 1. `GET /auth/consent`
 Consulta el estado vigente del consentimiento otorgado y el desglose detallado de finalidades autorizadas para el usuario autenticado.
 
 * **Método:** `GET`
@@ -85,7 +92,7 @@ Consulta el estado vigente del consentimiento otorgado y el desglose detallado d
   "userId": "usr_client_1771344000",
   "appId": "flowex",
   "status": "GRANTED",
-  "policyVersion": "v2.4",
+  "policyVersion": "v2.5",
   "channel": "web_registration",
   "purposes": [
     {
@@ -104,8 +111,8 @@ Consulta el estado vigente del consentimiento otorgado y el desglose detallado d
     },
     {
       "purpose": "sms_whatsapp_alerts",
-      "name": "Alertas SMS y WhatsApp",
-      "description": "Notificaciones directas vía mensajería móvil instantánea",
+      "name": "Alertas por WhatsApp",
+      "description": "Avisos del pedido por WhatsApp",
       "granted": true,
       "essential": false
     },
@@ -125,7 +132,7 @@ Consulta el estado vigente del consentimiento otorgado y el desglose detallado d
 
 ---
 
-### 2. `POST /users/me/revocar-consentimiento` (o `/auth/consent/revoke`)
+### 2. `POST /auth/consent/revoke`
 Permite al titular ejercer su derecho de oposición/revocación sobre finalidades **no esenciales**. Al revocarse, se emite de forma asíncrona un evento `REVOKE_CONSENT` a Amazon SQS (`FlowexConsentQueue`).
 
 * **Método:** `POST`
@@ -136,7 +143,7 @@ Permite al titular ejercer su derecho de oposición/revocación sobre finalidade
   "purposes": [
     "sms_whatsapp_alerts"
   ],
-  "reason": "El titular solicita cese voluntario de alertas por mensajería móvil"
+  "reason": "El titular solicita dejar de recibir alertas por WhatsApp"
 }
 ```
 * **Respuesta Exitosa (`200 OK`):**
@@ -145,7 +152,7 @@ Permite al titular ejercer su derecho de oposición/revocación sobre finalidade
   "message": "Consentimiento revocado exitosamente para las finalidades seleccionadas",
   "userId": "usr_client_1771344000",
   "status": "PARTIALLY_REVOKED",
-  "policyVersion": "v2.4",
+  "policyVersion": "v2.5",
   "purposes": [
     {
       "purpose": "terms_and_conditions",
@@ -161,7 +168,7 @@ Permite al titular ejercer su derecho de oposición/revocación sobre finalidade
     },
     {
       "purpose": "sms_whatsapp_alerts",
-      "name": "Alertas SMS y WhatsApp",
+      "name": "Alertas por WhatsApp",
       "granted": false,
       "essential": false
     },
@@ -186,7 +193,56 @@ Permite al titular ejercer su derecho de oposición/revocación sobre finalidade
 
 ---
 
-### 3. `GET /internal/users/{userId}/consents`
+### 3. `POST /auth/consent/grant`
+Vuelve a otorgar finalidades accesorias revocadas. Mismo cuerpo que la revocación (sin `reason`):
+
+```json
+{ "purposes": ["sms_whatsapp_alerts"] }
+```
+
+La clave `sms_whatsapp_alerts` se conserva por compatibilidad con los registros existentes;
+hoy cubre solo WhatsApp.
+
+---
+
+### 4. `GET /users/me/export` — Portabilidad
+Entrega en JSON todo lo que la plataforma guarda **del titular de la sesión** (no recibe a
+quién exportar). La entrega queda registrada como uso de datos (`EXPORT_PERSONAL_DATA`).
+
+Incluye cuenta, perfil de cliente y de conductor, direcciones, libreta de contactos, pedidos
+como cliente (con historial de estados y bultos), pagos, cupones, consentimientos (locales y de
+la central) y el registro de qué consultó el personal, cuándo y con qué motivo. Excluye
+contraseñas, códigos y tokens, los pedidos repartidos como conductor, las fotos y firmas de
+entrega y la identidad del personal; la lista va en `export.excluded`.
+
+```json
+{
+  "success": true,
+  "complete": true,
+  "missingSections": [],
+  "export": {
+    "formatVersion": "1.0",
+    "generatedAt": "2026-09-24T12:00:00.000Z",
+    "legalBasis": "Derecho de portabilidad, Ley N° 21.719 (art. 9)",
+    "subject": { "id": "3c3c3c3c-…", "email": "cliente@flowex.cl" },
+    "account": { "name": "…", "rut": "…", "phone": "…" },
+    "addresses": [],
+    "contactBook": [],
+    "orders": [{ "tracking_number": "FLX-…", "statusHistory": [], "packages": [] }],
+    "payments": [],
+    "couponRedemptions": [],
+    "consents": { "records": [], "central": { "available": true, "consents": [], "history": [] } },
+    "dataAccessLog": [],
+    "excluded": ["…"]
+  }
+}
+```
+
+Si una sección no se pudo leer, `complete` es `false` y `missingSections` dice cuál.
+
+---
+
+### 5. `GET /internal/users/{userId}/consents`
 Endpoint interno (VPC / Consola Administrativa) para la inspección forense de consentimientos de un usuario específico. La consulta despacha obligatoriamente un evento de auditoría `PII_ACCESS_AUDIT` a la cola SQS.
 
 * **Método:** `GET`
@@ -198,7 +254,7 @@ Endpoint interno (VPC / Consola Administrativa) para la inspección forense de c
   "userId": "usr_1771345600000",
   "appId": "flowex",
   "status": "GRANTED",
-  "policyVersion": "v2.4",
+  "policyVersion": "v2.5",
   "channel": "web_registration",
   "purposes": [
     {
@@ -215,7 +271,7 @@ Endpoint interno (VPC / Consola Administrativa) para la inspección forense de c
     },
     {
       "purpose": "sms_whatsapp_alerts",
-      "name": "Alertas SMS y WhatsApp",
+      "name": "Alertas por WhatsApp",
       "granted": true,
       "essential": false
     },
@@ -262,11 +318,11 @@ Flowex estructura el cumplimiento del catálogo de derechos del titular conforme
 
 | Derecho ARCOP | Definición en Flowex | Mecanismo de Ejercicio en la Plataforma |
 |---|---|---|
-| **A**cceso | Derecho del titular a conocer qué datos personales han sido recolectados, con qué fines y a quiénes se transfieren. | `GET /users/me/consentimiento` y panel de perfil de usuario (`Flowex-frontend`). |
+| **A**cceso | Derecho del titular a conocer qué datos personales han sido recolectados, con qué fines y a quiénes se transfieren. | `GET /auth/consent`, `GET /users/me/export` y panel de perfil de usuario (`Flowex-frontend`). |
 | **R**ectificación | Derecho a modificar, corregir o actualizar datos inexactos, desactualizados o incompletos (RUT, teléfono, razón social DTE). | `PUT /registration/requests/{email}/update-contact`, libreta de direcciones y configuración de facturación DTE. |
 | **C**ancelación (Supresión) | Derecho a solicitar el borrado de datos cuando ha concluido la relación contractual y vencido el plazo legal de retención tributaria/logística. | Solicitud formal de derecho ARCOP procesada por el Oficial de Privacidad (DPO) y archivo final en S3 Glacier WORM. |
-| **O**posición / Revocación | Derecho a revocar total o parcialmente el consentimiento sobre finalidades accesorias (alertas WhatsApp, tracking publicitario). | `POST /users/me/revocar-consentimiento` (no aplica a finalidades esenciales del contrato de transporte). |
-| **P**ortabilidad | Derecho a recibir los datos personales en un formato estructurado, interoperable y de uso común. | Exportación estructurada JSON/CSV desde el perfil de usuario. |
+| **O**posición / Revocación | Derecho a revocar total o parcialmente el consentimiento sobre finalidades accesorias (alertas WhatsApp, seguimiento). | `POST /auth/consent/revoke` y `POST /auth/consent/grant` (no aplica a finalidades esenciales del contrato de transporte). |
+| **P**ortabilidad | Derecho a recibir los datos personales en un formato estructurado, interoperable y de uso común. | `GET /users/me/export` (JSON), botón "Exportar Datos" del perfil. |
 
 ---
 
@@ -299,7 +355,18 @@ export interface BillingInfo {
 export interface NotificationPreferences {
   emailSes: boolean;
   whatsappMeta: boolean;
-  smsSns: boolean;
+}
+
+/** Ficha del conductor: el hub es el del vehículo asignado; un dato inexistente llega null. */
+export interface DriverDetails {
+  licenseNumber: string | null;
+  licenseClass: string | null;
+  licenseExpiryDate: string | null;
+  vehicleType: string | null;
+  vehiclePlate: string | null;
+  vehicleLabel: string | null;
+  hubId: string | null;
+  hubName: string | null;
 }
 
 export interface ConsentPurpose {
@@ -347,7 +414,6 @@ export interface User {
   role: UserRole;
   roleTitle: string;
   avatar: string;
-  department: string;
   rut?: string;
   isVerified?: boolean;
   addresses?: SavedAddress[];

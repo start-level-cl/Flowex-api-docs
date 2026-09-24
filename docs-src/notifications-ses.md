@@ -1,12 +1,14 @@
 # Sistema Integral de Notificaciones Multicanal (Notifications)
 
-El sistema de notificaciones de **Flowex** es un motor distribuido y multicanal diseñado bajo arquitectura **Event-Driven**. Coordina y despacha comunicaciones automáticas en tiempo real hacia clientes remitentes, destinatarios de paquetes, conductores y personal operativo a través de cuatro canales principales:
+El sistema de notificaciones de **Flowex** es un motor distribuido diseñado bajo arquitectura **Event-Driven**. Coordina las comunicaciones hacia remitentes, destinatarios, conductores y personal operativo:
 
-1. **Meta WhatsApp Business Cloud API (Graph API v19.0)**: Mensajería instantánea oficial con plantillas aprobadas por Meta (`Flowex-otp-service-lambda`).
-2. **Amazon Simple Email Service (SES)**: Correos electrónicos transaccionales con diseño HTML corporativo responsivo (`Flowex-notification-lambda`).
-3. **Mensajería SMS (AWS SNS / Twilio Gateway)**: Canal de alta penetración para verificación rápida y segundo factor (2FA).
-4. **Bus de Eventos Asíncronos (Amazon SQS)**: Desacoplamiento de eventos de negocio mediante la cola `NotificationsQueue` y `FlowexConsentQueue`.
-5. **Observabilidad y Alertas Operativas (Discord Webhooks)**: Notificaciones internas de fallos y excepciones no controladas mediante el middleware `withSentinel`.
+1. **Amazon Simple Email Service (SES)**: Correos transaccionales en HTML (`Flowex-notification-lambda`). Es el **único canal de los códigos de verificación** y del segundo factor.
+2. **Meta WhatsApp Business Cloud API**: Avisos del pedido y código de entrega al destinatario, con plantillas aprobadas por Meta (`Flowex-otp-service-lambda` y `Flowex-notification-lambda`).
+3. **Bus de Eventos Asíncronos (Amazon SQS)**: Desacoplamiento mediante `NotificationsQueue` y `FlowexConsentQueue`.
+4. **Observabilidad (Discord Webhooks)**: Alertas internas de fallos mediante el middleware `withSentinel`.
+
+> [!NOTE]
+> Flowex **no envía SMS**. La ruta `/notifications/sms/verify-phone` y el canal SMS del segundo factor se eliminaron: solo escribían en el log y respondían «enviado».
 
 ---
 
@@ -29,14 +31,13 @@ graph TB
     end
 
     subgraph Microservicios de Notificación
-        OTPService[Flowex-otp-service-lambda<br>Motor OTP & Meta WhatsApp API]
+        OTPService[Flowex-otp-service-lambda<br>Código por correo & avisos WhatsApp]
         NotifWorker[Flowex-notification-lambda<br>Procesador SQS & Amazon SES Engine]
     end
 
     subgraph Canales de Salida
         MetaCloud[Meta WhatsApp Cloud API<br>Graph API v19.0]
         AmazonSES[Amazon SES<br>HTML Emails Transaccionales]
-        AmazonSNS[Amazon SNS / SMS Gateway<br>Mensajería Celular]
         DiscordWebhook[Discord Webhook<br>Alertas Sentinel de Monitoreo]
     end
 
@@ -47,12 +48,12 @@ graph TB
     Frontend -->|POST /notifications/whatsapp| OTPService
     Consent -->|SQS CONTACT_ERASURE_NOTICE| SQSNotif
 
-    OTPService -->|Direct Send| MetaCloud
-    OTPService -->|Enqueue Backup OTP| SQSNotif
+    OTPService -->|Avisos de pedido| MetaCloud
+    OTPService -->|CLIENT_REG_OTP código por correo| SQSNotif
 
     SQSNotif -->|Batch Processing| NotifWorker
     NotifWorker -->|SendEmailCommand| AmazonSES
-    NotifWorker -->|SMS Notification| AmazonSNS
+    NotifWorker -->|Plantillas de pedido| MetaCloud
     NotifWorker -->|reportErrorToDiscord| DiscordWebhook
 ```
 
@@ -66,14 +67,18 @@ Todas las plantillas de WhatsApp están tipadas en [`whatsapp-templates.ts`](fil
 
 | Evento del Sistema | Plantilla Oficial Meta | Categoría | Variables Dinámicas | Destinatario Principal |
 | :--- | :--- | :--- | :--- | :--- |
-| **Emisión de Código OTP** | `flowex_otp_code` | `AUTHENTICATION` | `{{1}}` Código OTP numérico (6 dígitos) | Solicitante de Registro / Inicio de Sesión |
 | **Envío Creado y Pagado** | `flowex_order_created_v2` | `UTILITY` (con Header de Imagen) | `{{1}}` Tracking, `{{2}}` PIN de entrega (4 dígitos), `{{3}}` Nombre Destinatario, `{{4}}` Comuna, `{{5}}` Dirección, `{{6}}` Nombre Remitente | Destinatario del Paquete |
 | **Paquete en Salida Hoy** | `flowex_order_out_today` | `UTILITY` | `{{1}}` Tracking, `{{2}}` Nombre Chofer, `{{3}}` Destinatario, `{{4}}` PIN de Entrega | Destinatario del Paquete |
 | **Alerta de Parada Próxima** | `flowex_order_next_stop` | `UTILITY` | `{{1}}` Tracking, `{{2}}` Nombre Chofer, `{{3}}` Destinatario, `{{4}}` PIN, `{{5}}` Dirección de Entrega | Destinatario del Paquete |
-| **Actualización en Tránsito** | `flowex_order_in_transit` | `UTILITY` | `{{1}}` Tracking, `{{2}}` Estado / Hub Logístico, `{{3}}` Destinatario | Remitente y Destinatario |
+| **Actualización en Tránsito** | `flowex_order_in_transit` | `UTILITY` | `{{1}}` Tracking, `{{2}}` Estado / hub donde está el pedido, `{{3}}` Destinatario | Remitente y Destinatario |
 | **Confirmación de Entrega (POD)** | `flowex_order_delivered` | `UTILITY` | `{{1}}` Tracking, `{{2}}` Fecha y Hora de Entrega, `{{3}}` Nombre Destinatario | Remitente y Destinatario |
 | **Incidencia / Fallo de Entrega** | `flowex_delivery_incident` | `UTILITY` | `{{1}}` Tracking, `{{2}}` Motivo del Fallo, `{{3}}` Destinatario | Destinatario y Remitente |
 | **Notificación de Contingencia** | `flowex_general_notification` | `UTILITY` (Fallback) | `{{1}}` Texto del aviso general | Usuarios de la plataforma |
+
+> [!WARNING]
+> **Sin credenciales de Meta no sale nada.** El envío responde `status: "not_sent"` y
+> `delivered: false`, y no se registra como uso del teléfono del destinatario. Antes se
+> simulaba (`mock_sent`), se contaba como entregado y quedaba auditado un envío que no ocurrió.
 
 > [!IMPORTANT]
 > **Seguridad del PIN de Entrega:** El PIN de 4 dígitos generado aleatoriamente con `crypto.randomInt` viaja exclusivamente en las plantillas directas al destinatario (`flowex_order_created_v2`, `flowex_order_out_today`, `flowex_order_next_stop`). Los conductores **no** tienen acceso visual al PIN en su interfaz móvil y solo pueden registrar la entrega cuando el receptor se lo proporciona verbalmente.
@@ -104,15 +109,15 @@ Los correos emitidos por Amazon SES utilizan plantillas HTML con la identidad co
 * **Destinatario:** Remitente y/o pagador del envío.
 * **Contenido:** Número de seguimiento oficial `FLX-YYYY-XXXX`, PIN de seguridad de 4 dígitos, monto total pagado en CLP y botón con enlace directo a rastreo en vivo (`/tracking?code=FLX-...`).
 
-#### E. Actualización del Estado del Envío (`/notifications/email/order-status-update` o evento `ORDER_STATUS_UPDATE`)
+#### E. Entrega fallida (`/notifications/email/order-status-update` o evento `ORDER_STATUS_UPDATE`)
 * **Asunto:** `Flowex: Estado de tu pedido {trackingNumber} en {ESTADO}`
-* **Destinatario:** Remitente y destinatario.
-* **Contenido:** Banner informativo con el nuevo estado operativo (`EN TRÁNSITO`, `EN HUB QUILICURA`, `EN REPARTO`, `ENTREGADO`, `INCIDENCIA`), observaciones y enlace al tracking público.
+* **Destinatario:** El **remitente**, solo cuando el estado es `delivery_failed` (matriz aprobada el 16-09-2026). Los demás estados no envían correo; la salida a reparto se avisa al destinatario por WhatsApp.
+* **Contenido:** Estado, observaciones y enlace al rastreo público, que muestra el nombre del hub donde está el pedido.
 
 #### F. Retención por Discrepancia de Bultos (`/notifications/email/package-discrepancy` o evento `ORDER_PACKAGE_DISCREPANCY`)
 * **Asunto:** `Flowex: tu pedido {trackingNumber} requiere pagar una diferencia para ser entregado`
 * **Destinatario:** Cliente remitente.
-* **Contenido:** Cuadro comparativo con la categoría de bulto declarada vs. la categoría verificada en la báscula de bodega Quilicura, el monto de la diferencia tarifaria en CLP, las observaciones del operador de bodega y la explicación de que el paquete queda retenido sin costo para el destinatario hasta que el remitente regularice el pago.
+* **Contenido:** Cuadro comparativo con la categoría de bulto declarada vs. la categoría verificada en la báscula del hub, el monto de la diferencia tarifaria en CLP, las observaciones del operador de bodega y la explicación de que el paquete queda retenido sin costo para el destinatario hasta que el remitente regularice el pago.
 
 #### G. Solicitud de Supresión de Contacto de Libreta (`CONTACT_ERASURE_NOTICE` - Ley N° 21.719)
 * **Asunto:** `Flowex: solicitud de supresión de un contacto de tu libreta ({ticket})`
@@ -121,18 +126,7 @@ Los correos emitidos por Amazon SES utilizan plantillas HTML con la identidad co
 
 ---
 
-### 3. Canal Mensajería SMS (AWS SNS / SMS Gateway)
-
-Utilizado como respaldo inmediato o cuando el usuario prefiere mensajería de texto estándar:
-
-* **Validación de Número Móvil (`/notifications/sms/verify-phone`):**
-  * Mensaje: `Flowex: Tu código SMS para validar tu número celular es: {code}`
-* **Código de Inicio de Sesión 2FA (`AUTH_MFA_OTP` con canal SMS):**
-  * Mensaje: `FlowEx: Tu código de verificación de inicio de sesión es {otpCode}. Válido por 5 minutos.`
-
----
-
-### 4. Canal de Alertas Operativas y de Monitoreo (Discord Webhooks)
+### 3. Canal de Alertas Operativas y de Monitoreo (Discord Webhooks)
 
 A través del middleware transversal `withSentinel` (`reportErrorToDiscord`):
 
@@ -149,10 +143,11 @@ En conformidad con los estándares de privacidad y la **Ley N° 21.719**, cada p
 ```json
 {
   "emailSes": true,
-  "whatsappMeta": true,
-  "smsSns": false
+  "whatsappMeta": true
 }
 ```
+
+Una preferencia `smsSns` guardada antes se ignora.
 
 * **Actualización:** Mediante `PUT /users/me/notifications`.
 * **Revocación:** Si el usuario desmarca un canal, el sistema omite el despacho de comunicaciones no esenciales a través de dicho medio, manteniendo únicamente aquellas estrictamente requeridas para la ejecución contractual del servicio de transporte.
@@ -171,4 +166,4 @@ Para evitar el envío accidental de correos o mensajes a destinatarios reales du
     Destinatario que corresponde en producción: destinatario.real@ejemplo.cl
   </div>
   ```
-* **Simulación Local (`NODE_ENV=development`):** Si no hay credenciales SES configuradas en local, las funciones emiten un log estructurado con `status: 'mock_sent'` sin arrojar error.
+* **Sin SES configurado (`NODE_ENV=development` sin `DEV_REDIRECT_EMAIL`):** el correo no sale; queda solo el registro en el log y no se audita como uso de datos.

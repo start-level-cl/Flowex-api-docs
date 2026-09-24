@@ -1,5 +1,201 @@
 {
+  "registration-admin-lambda": [
+    {
+      "path": "/admin/registration-requests/{email}/override-activate",
+      "method": "post",
+      "operationId": "admin_post_override_activate_registration",
+      "summary": "Aprobación manual y activación forzada de solicitud por administrador",
+      "tags": [
+        "Admin Overrides"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Cuenta activada manualmente por administrador.",
+          "schema": {
+            "$ref": "#/components/schemas/AdminOverrideActivateResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Requiere rol admin o root.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/admin/registration/requests/{requestId}/approve",
+      "method": "post",
+      "operationId": "admin_post_registration_requests_requestId_approve",
+      "summary": "Aprobar una solicitud de registro pendiente",
+      "tags": [
+        "Registration Admin"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/admin/tariffs",
+      "method": "get",
+      "operationId": "admin_get_tariffs",
+      "summary": "Listar tarifas por tamaño de bulto (panel de administración)",
+      "tags": [
+        "Registration Admin"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/admin/tariffs/{tariffId}",
+      "method": "put",
+      "operationId": "admin_put_tariffs_tariffId",
+      "summary": "Actualizar una tarifa por tamaño de bulto, con auditoría",
+      "tags": [
+        "Registration Admin"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    }
+  ],
   "auth-api-lambda": [
+    {
+      "path": "/auth/change-password",
+      "method": "post",
+      "operationId": "auth_post_change_password",
+      "summary": "Cambio y actualización de contraseña de usuario",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Contraseña actualizada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Campos requeridos faltantes.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "401": {
+          "description": "Token inválido o expirado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/auth/consent",
+      "method": "get",
+      "operationId": "auth_get_user_consent",
+      "summary": "Consultar estado vigente de consentimiento informado y finalidades del usuario",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Estado de consentimiento y finalidades autorizadas del usuario autenticado.",
+          "schema": {
+            "$ref": "#/components/schemas/UserConsent"
+          },
+          "example": null
+        },
+        "401": {
+          "description": "Token no provisto o inválido.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/auth/consent/grant",
+      "method": "post",
+      "operationId": "auth_post_consent_grant",
+      "summary": "Otorgar finalidades accesorias de consentimiento (Ley N° 21.719)",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/auth/consent/revoke",
+      "method": "post",
+      "operationId": "auth_post_revoke_consent",
+      "summary": "Revocar consentimiento sobre finalidades accesorias (Ley N° 21.719)",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Consentimiento revocado exitosamente para las finalidades seleccionadas.",
+          "schema": {
+            "$ref": "#/components/schemas/UserConsent"
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Intento de revocación de finalidades esenciales o lista vacía.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "401": {
+          "description": "Token no provisto o inválido.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
     {
       "path": "/auth/login",
       "method": "post",
@@ -21,6 +217,44 @@
           "description": "Credenciales incompletas o inválidas.",
           "schema": {
             "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/auth/login/resend-2fa",
+      "method": "post",
+      "operationId": "auth_post_login_resend_2fa",
+      "summary": "Reenviar el código del segundo factor al correo",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/auth/login/verify-2fa",
+      "method": "post",
+      "operationId": "auth_post_login_verify_2fa",
+      "summary": "Verificar el código del segundo factor y emitir la sesión",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
           },
           "example": null
         }
@@ -79,6 +313,25 @@
       }
     },
     {
+      "path": "/auth/security",
+      "method": "patch",
+      "operationId": "auth_patch_security",
+      "summary": "Activar o desactivar el segundo factor de la cuenta",
+      "tags": [
+        "Auth"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
       "path": "/auth/validate",
       "method": "get",
       "operationId": "auth_get_validate",
@@ -103,42 +356,1973 @@
           "example": null
         }
       }
-    },
+    }
+  ],
+  "auth-admin-lambda": [
     {
-      "path": "/auth/change-password",
-      "method": "post",
-      "operationId": "auth_post_change_password",
-      "summary": "Cambio y actualización de contraseña de usuario",
+      "path": "/internal/capacity/availability",
+      "method": "get",
+      "operationId": "internal_get_capacity_availability",
+      "summary": "Capacidad disponible de la flota para el día",
       "tags": [
-        "Auth"
+        "Fleet"
       ],
       "parameters": [],
       "responses": {
         "200": {
-          "description": "Contraseña actualizada exitosamente.",
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/communes",
+      "method": "get",
+      "operationId": "internal_get_communes",
+      "summary": "Listar comunas con cobertura, zona y días de servicio",
+      "tags": [
+        "Communes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/communes",
+      "method": "post",
+      "operationId": "internal_post_communes",
+      "summary": "Crear una comuna con evaluación de factibilidad desde el hub más cercano",
+      "tags": [
+        "Communes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/communes/{communeId}",
+      "method": "patch",
+      "operationId": "internal_patch_communes_communeId",
+      "summary": "Actualizar cobertura o días de servicio de una comuna",
+      "tags": [
+        "Communes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/communes/{communeId}",
+      "method": "put",
+      "operationId": "internal_put_communes_communeId",
+      "summary": "Actualizar cobertura o días de servicio de una comuna",
+      "tags": [
+        "Communes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/communes/{communeId}/change-request",
+      "method": "post",
+      "operationId": "internal_post_communes_communeId_change_request",
+      "summary": "Solicitar confirmación para un cambio de cobertura con impacto",
+      "tags": [
+        "Communes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/communes/{communeId}/feasibility",
+      "method": "get",
+      "operationId": "internal_get_communes_communeId_feasibility",
+      "summary": "Evaluar si la flota alcanza la comuna desde un hub",
+      "tags": [
+        "Communes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/communes/{communeId}/history",
+      "method": "get",
+      "operationId": "internal_get_communes_communeId_history",
+      "summary": "Bitácora de cambios de una comuna (acepta id o nombre)",
+      "tags": [
+        "Communes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/contacts",
+      "method": "get",
+      "operationId": "internal_get_contacts",
+      "summary": "Listar la libreta de contactos del remitente",
+      "tags": [
+        "Contacts"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/contacts",
+      "method": "post",
+      "operationId": "internal_post_contacts",
+      "summary": "Guardar un contacto con declaración de licitud (Ley N° 21.719)",
+      "tags": [
+        "Contacts"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/contacts/{contactId}",
+      "method": "delete",
+      "operationId": "internal_delete_contacts_contactId",
+      "summary": "Suprimir un contacto de la libreta",
+      "tags": [
+        "Contacts"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/contacts/{contactId}",
+      "method": "put",
+      "operationId": "internal_put_contacts_contactId",
+      "summary": "Editar un contacto de la libreta",
+      "tags": [
+        "Contacts"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/contacts/erasure-requests",
+      "method": "get",
+      "operationId": "internal_get_contacts_erasure_requests",
+      "summary": "Listar solicitudes de supresión de titulares sin cuenta",
+      "tags": [
+        "Contacts"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/contacts/erasure-requests",
+      "method": "post",
+      "operationId": "internal_post_contacts_erasure_requests",
+      "summary": "Registrar la solicitud de supresión de un titular sin cuenta",
+      "tags": [
+        "Contacts"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/contacts/erasure-requests/{erasureRequestId}/identify",
+      "method": "post",
+      "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_identify",
+      "summary": "Identificar los contactos afectados por una solicitud de supresión",
+      "tags": [
+        "Contacts"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/contacts/erasure-requests/{erasureRequestId}/notify",
+      "method": "post",
+      "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_notify",
+      "summary": "Avisar a los remitentes afectados por una supresión",
+      "tags": [
+        "Contacts"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/contacts/erasure-requests/{erasureRequestId}/purge",
+      "method": "post",
+      "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_purge",
+      "summary": "Ejecutar la supresión de los contactos del titular",
+      "tags": [
+        "Contacts"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/contacts/erasure-requests/{erasureRequestId}/reject",
+      "method": "post",
+      "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_reject",
+      "summary": "Rechazar una solicitud de supresión con motivo",
+      "tags": [
+        "Contacts"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/contacts/lawful-basis",
+      "method": "get",
+      "operationId": "internal_get_contacts_lawful_basis",
+      "summary": "Texto y versión vigentes de la declaración de licitud",
+      "tags": [
+        "Contacts"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/coupons/release",
+      "method": "post",
+      "operationId": "coupons_post_release",
+      "summary": "Liberar cupón reservado por cancelación o abandono (Exclusivo rol client)",
+      "tags": [
+        "Coupons"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Reserva de cupón liberada exitosamente.",
           "schema": {
             "$ref": "#/components/schemas/StandardSuccessResponse"
           },
           "example": null
         },
         "400": {
-          "description": "Campos requeridos faltantes.",
+          "description": "Falta orderId u orden no posee reserva.",
           "schema": {
             "$ref": "#/components/schemas/StandardErrorResponse"
           },
           "example": null
         },
-        "401": {
-          "description": "Token inválido o expirado.",
+        "403": {
+          "description": "Acceso denegado: Exclusivo para rol client.",
           "schema": {
             "$ref": "#/components/schemas/StandardErrorResponse"
           },
           "example": null
         }
       }
-    }
-  ],
-  "auth-admin-lambda": [
+    },
+    {
+      "path": "/internal/coupons/validate",
+      "method": "post",
+      "operationId": "coupons_post_validate",
+      "summary": "Validar y pre-aplicar cupón promocional en checkout (Exclusivo rol client)",
+      "tags": [
+        "Coupons"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Cupón válido y descuento calculado.",
+          "schema": {
+            "$ref": "#/components/schemas/CouponValidationResponse"
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Cupón no válido, expirado o agotado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Exclusivo para rol client.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/drivers/{driverId}/shift",
+      "method": "patch",
+      "operationId": "internal_patch_drivers_driverId_shift",
+      "summary": "Actualizar la jornada de un conductor",
+      "tags": [
+        "Fleet"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/drivers/{driverId}/shift",
+      "method": "put",
+      "operationId": "internal_put_drivers_driverId_shift",
+      "summary": "Actualizar la jornada de un conductor",
+      "tags": [
+        "Fleet"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/drivers/shifts",
+      "method": "get",
+      "operationId": "internal_get_drivers_shifts",
+      "summary": "Jornadas configuradas de los conductores",
+      "tags": [
+        "Fleet"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/geo/commune-at",
+      "method": "get",
+      "operationId": "internal_get_geo_commune_at",
+      "summary": "Comuna que contiene un punto (latitud y longitud)",
+      "tags": [
+        "General"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/hubs",
+      "method": "get",
+      "operationId": "internal_get_hubs",
+      "summary": "Listar hubs (incluye inactivos con ?includeInactive=true)",
+      "tags": [
+        "Hubs"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/hubs",
+      "method": "post",
+      "operationId": "internal_post_hubs",
+      "summary": "Crear un hub; la dirección se geocodifica en el servidor (root)",
+      "tags": [
+        "Hubs"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/hubs/{hubId}",
+      "method": "delete",
+      "operationId": "internal_delete_hubs_hubId",
+      "summary": "Dar de baja un hub sin vehículos activos (root)",
+      "tags": [
+        "Hubs"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/hubs/{hubId}",
+      "method": "patch",
+      "operationId": "internal_patch_hubs_hubId",
+      "summary": "Actualizar un hub; un nombre nuevo se propaga a pedidos y rutas (root)",
+      "tags": [
+        "Hubs"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/hubs/{hubId}",
+      "method": "put",
+      "operationId": "internal_put_hubs_hubId",
+      "summary": "Actualizar un hub; un nombre nuevo se propaga a pedidos y rutas (root)",
+      "tags": [
+        "Hubs"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/invites",
+      "method": "get",
+      "operationId": "internal_get_invites",
+      "summary": "Listar invitaciones emitidas",
+      "tags": [
+        "Invitations"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/invites",
+      "method": "post",
+      "operationId": "internal_post_invites",
+      "summary": "Invitar a un administrador o conductor (root)",
+      "tags": [
+        "Invitations"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/invites/{inviteId}",
+      "method": "delete",
+      "operationId": "internal_delete_invites_inviteId",
+      "summary": "Revocar una invitación",
+      "tags": [
+        "Invitations"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/invites/{inviteId}/verify",
+      "method": "get",
+      "operationId": "internal_get_invites_inviteId_verify",
+      "summary": "Verificar una invitación antes del registro",
+      "tags": [
+        "Invitations"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders",
+      "method": "get",
+      "operationId": "internal_get_orders",
+      "summary": "Listar todas las órdenes operativas con paginación Importal",
+      "tags": [
+        "Orders & Dispatch"
+      ],
+      "parameters": [
+        {
+          "name": "page",
+          "description": "Número de página actual (1-indexed)",
+          "schema": {
+            "type": "integer",
+            "default": 1
+          },
+          "required": false
+        },
+        {
+          "name": "limit",
+          "description": "Cantidad máxima de órdenes por página (máximo 100)",
+          "schema": {
+            "type": "integer",
+            "default": 20
+          },
+          "required": false
+        },
+        {
+          "name": "status",
+          "description": "Filtrar por estado del pedido",
+          "schema": {
+            "type": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "driverId",
+          "description": "Filtrar por ID de conductor asignado",
+          "schema": {
+            "type": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "customerId",
+          "description": "Filtrar por ID o RUT de cliente",
+          "schema": {
+            "type": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "search",
+          "description": "Búsqueda por tracking, remitente, destinatario o comuna",
+          "schema": {
+            "type": "string"
+          },
+          "required": false
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Listado completo de órdenes paginadas para operaciones internas.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/OrderSummary"
+                }
+              },
+              "orders": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/OrderSummary"
+                }
+              },
+              "total": {
+                "type": "integer",
+                "example": 340
+              },
+              "meta": {
+                "$ref": "#/components/schemas/PaginationMeta"
+              }
+            }
+          },
+          "example": null
+        },
+        "401": {
+          "description": "No autenticado o token ausente/inválido.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Requiere rol admin o root.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders",
+      "method": "post",
+      "operationId": "internal_post_orders",
+      "summary": "Crear un pedido",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}",
+      "method": "get",
+      "operationId": "internal_get_orders_orderId",
+      "summary": "Detalle de un pedido; sin sesión devuelve solo la vista pública de rastreo",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/client-modifications",
+      "method": "patch",
+      "operationId": "internal_patch_orders_orderId_client_modifications",
+      "summary": "Modificaciones del cliente antes del retiro",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/coupon",
+      "method": "delete",
+      "operationId": "internal_delete_orders_orderId_coupon",
+      "summary": "Quitar el cupón de un pedido",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/coupon",
+      "method": "post",
+      "operationId": "internal_post_orders_orderId_coupon",
+      "summary": "Aplicar un cupón a un pedido",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/coupon/remove",
+      "method": "delete",
+      "operationId": "internal_delete_orders_orderId_coupon_remove",
+      "summary": "Quitar el cupón de un pedido",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/coupon/remove",
+      "method": "post",
+      "operationId": "internal_post_orders_orderId_coupon_remove",
+      "summary": "Quitar el cupón de un pedido",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/delivery-code/regenerate",
+      "method": "post",
+      "operationId": "internal_post_orders_orderId_delivery_code_regenerate",
+      "summary": "Regenerar el código de entrega (root)",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/discrepancy",
+      "method": "post",
+      "operationId": "internal_post_orders_orderId_discrepancy",
+      "summary": "Registrar diferencia de bulto detectada en bodega",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/discrepancy/settle",
+      "method": "post",
+      "operationId": "internal_post_orders_orderId_discrepancy_settle",
+      "summary": "Liberar un pedido retenido tras pagar la diferencia",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/evidence",
+      "method": "get",
+      "operationId": "internal_get_orders_orderId_evidence",
+      "summary": "Fotografías de retiro y entrega con URL firmada",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/evidence",
+      "method": "post",
+      "operationId": "internal_post_orders_orderId_evidence",
+      "summary": "Subir las dos fotografías de un hito (retiro o entrega)",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/invoice",
+      "method": "patch",
+      "operationId": "internal_patch_orders_orderId_invoice",
+      "summary": "Registrar el folio SII de la factura (root)",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/{orderId}/status",
+      "method": "patch",
+      "operationId": "internal_patch_orders_orderId_status",
+      "summary": "Cambiar el estado de un pedido; al pasar a in_hub fija el hub donde se recibe",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/orders/batch",
+      "method": "post",
+      "operationId": "internal_post_orders_batch",
+      "summary": "Crear pedidos en lote",
+      "tags": [
+        "Orders"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/planner-settings",
+      "method": "get",
+      "operationId": "internal_get_planner_settings",
+      "summary": "Parámetros vigentes del planificador",
+      "tags": [
+        "Planner Settings"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/planner-settings/{plannerSettingId}",
+      "method": "patch",
+      "operationId": "internal_patch_planner_settings_plannerSettingId",
+      "summary": "Cambiar un parámetro del planificador con confirmación",
+      "tags": [
+        "Planner Settings"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/planner-settings/{plannerSettingId}",
+      "method": "put",
+      "operationId": "internal_put_planner_settings_plannerSettingId",
+      "summary": "Cambiar un parámetro del planificador con confirmación",
+      "tags": [
+        "Planner Settings"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/planner-settings/{plannerSettingId}/change-request",
+      "method": "post",
+      "operationId": "internal_post_planner_settings_plannerSettingId_change_request",
+      "summary": "Solicitar el token de confirmación y el impacto de un cambio",
+      "tags": [
+        "Planner Settings"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/planner-settings/{plannerSettingId}/history",
+      "method": "get",
+      "operationId": "internal_get_planner_settings_plannerSettingId_history",
+      "summary": "Bitácora de cambios de un parámetro",
+      "tags": [
+        "Planner Settings"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/root/coupons",
+      "method": "get",
+      "operationId": "root_get_coupons",
+      "summary": "Listar cupones y KPIs de rendimiento (Exclusivo rol root)",
+      "tags": [
+        "Coupons"
+      ],
+      "parameters": [
+        {
+          "name": "page",
+          "description": "Número de página actual (1-indexed)",
+          "schema": {
+            "type": "integer",
+            "default": 1
+          },
+          "required": false
+        },
+        {
+          "name": "isActive",
+          "description": "Filtrar por estado activo/inactivo",
+          "schema": {
+            "type": "boolean"
+          },
+          "required": false
+        },
+        {
+          "name": "creator",
+          "description": "Filtrar por nombre o atribución de creador",
+          "schema": {
+            "type": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "limit",
+          "description": null,
+          "schema": {
+            "type": "integer",
+            "default": 50
+          },
+          "required": false
+        },
+        {
+          "name": "offset",
+          "description": null,
+          "schema": {
+            "type": "integer",
+            "default": 0
+          },
+          "required": false
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Listado de cupones y métricas de campaña.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Coupon"
+                }
+              },
+              "total": {
+                "type": "integer",
+                "example": 120
+              },
+              "coupons": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Coupon"
+                }
+              },
+              "meta": {
+                "$ref": "#/components/schemas/PaginationMeta"
+              },
+              "metrics": {
+                "type": "object",
+                "properties": {
+                  "totalCoupons": {
+                    "type": "integer",
+                    "example": 120
+                  },
+                  "activeCoupons": {
+                    "type": "integer",
+                    "example": 110
+                  },
+                  "totalRedemptions": {
+                    "type": "integer",
+                    "example": 840
+                  },
+                  "totalDiscountGranted": {
+                    "type": "number",
+                    "example": 2520000
+                  }
+                }
+              }
+            }
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Exclusivo para rol root.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/root/coupons",
+      "method": "post",
+      "operationId": "root_post_coupons",
+      "summary": "Crear cupón promocional individual (Exclusivo rol root)",
+      "tags": [
+        "Coupons"
+      ],
+      "parameters": [],
+      "responses": {
+        "201": {
+          "description": "Cupón creado exitosamente.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "coupon": {
+                "$ref": "#/components/schemas/Coupon"
+              }
+            }
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Parámetros inválidos o superación de topes (máx 15%, máx $30.000 CLP).",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Exclusivo para rol root.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/root/coupons/{id}",
+      "method": "patch",
+      "operationId": "root_patch_coupon_by_id",
+      "summary": "Actualizar cupón o prorrogar vigencia (Exclusivo rol root)",
+      "tags": [
+        "Coupons"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Cupón actualizado exitosamente.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "coupon": {
+                "$ref": "#/components/schemas/Coupon"
+              }
+            }
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Datos de actualización inválidos.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Exclusivo para rol root.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/root/coupons/batch",
+      "method": "post",
+      "operationId": "root_post_coupons_batch",
+      "summary": "Generación masiva de cupones con prefijo (Exclusivo rol root)",
+      "tags": [
+        "Coupons"
+      ],
+      "parameters": [],
+      "responses": {
+        "201": {
+          "description": "Lote de cupones generado exitosamente.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "count": {
+                "type": "integer",
+                "example": 50
+              },
+              "coupons": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Coupon"
+                }
+              }
+            }
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Parámetros de lote inválidos.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Exclusivo para rol root.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/root/coupons/import-csv",
+      "method": "post",
+      "operationId": "root_post_coupons_import_csv",
+      "summary": "Importar cupones de creadores vía CSV (Exclusivo rol root)",
+      "tags": [
+        "Coupons"
+      ],
+      "parameters": [],
+      "responses": {
+        "201": {
+          "description": "Importación de cupones completada.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "importedCount": {
+                "type": "integer",
+                "example": 25
+              },
+              "coupons": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Coupon"
+                }
+              }
+            }
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Formato CSV o datos de cupones inválidos.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Exclusivo para rol root.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/route-assignments",
+      "method": "get",
+      "operationId": "internal_get_route_assignments",
+      "summary": "Asignaciones de ruta, conductor y vehículo",
+      "tags": [
+        "General"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes",
+      "method": "get",
+      "operationId": "internal_get_routes",
+      "summary": "Listar rutas operativas con paradas ordenadas y paginación Importal",
+      "tags": [
+        "Route Planning"
+      ],
+      "parameters": [
+        {
+          "name": "page",
+          "description": "Número de página actual (1-indexed)",
+          "schema": {
+            "type": "integer",
+            "default": 1
+          },
+          "required": false
+        },
+        {
+          "name": "limit",
+          "description": "Cantidad máxima de rutas por página (máximo 100)",
+          "schema": {
+            "type": "integer",
+            "default": 20
+          },
+          "required": false
+        },
+        {
+          "name": "type",
+          "description": "Filtrar por tipo de ruta",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "pickup",
+              "delivery",
+              "transfer"
+            ]
+          },
+          "required": false
+        },
+        {
+          "name": "driverId",
+          "description": "Filtrar por conductor asignado",
+          "schema": {
+            "type": "string"
+          },
+          "required": false
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Listado operativo de rutas con paradas y métricas de optimización.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RouteSummary"
+                }
+              },
+              "routes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RouteSummary"
+                }
+              },
+              "total": {
+                "type": "integer",
+                "example": 15
+              },
+              "meta": {
+                "$ref": "#/components/schemas/PaginationMeta"
+              }
+            }
+          },
+          "example": null
+        },
+        "401": {
+          "description": "No autenticado o token ausente/inválido.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Requiere rol admin o root.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/{routeId}",
+      "method": "get",
+      "operationId": "internal_get_routes_routeId",
+      "summary": "Detalle de una ruta con sus paradas",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/{routeId}/close",
+      "method": "post",
+      "operationId": "internal_post_routes_routeId_close",
+      "summary": "Cerrar una ruta y registrar distancia y duración reales",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/{routeId}/directions",
+      "method": "get",
+      "operationId": "internal_get_routes_routeId_directions",
+      "summary": "Google Maps Routes via AWS Secrets Manager",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/{routeId}/directions",
+      "method": "post",
+      "operationId": "internal_post_routes_routeId_directions",
+      "summary": "Google Maps Routes via AWS Secrets Manager",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/{routeId}/orders",
+      "method": "post",
+      "operationId": "internal_post_routes_routeId_orders",
+      "summary": "Agregar pedidos a una ruta existente",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/directions",
+      "method": "post",
+      "operationId": "internal_post_routes_directions",
+      "summary": "Generic Route Directions from coordinates",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/insertion-candidates",
+      "method": "get",
+      "operationId": "internal_get_routes_insertion_candidates",
+      "summary": "Rutas candidatas para insertar un pedido",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/insertion-queue",
+      "method": "get",
+      "operationId": "internal_get_routes_insertion_queue",
+      "summary": "Pedidos en espera de inserción en ruta",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/plan-daily",
+      "method": "post",
+      "operationId": "internal_post_routes_plan_daily",
+      "summary": "Planificar las rutas del día (o simular con dryRun)",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/plan-daily/confirm",
+      "method": "post",
+      "operationId": "internal_post_routes_plan_daily_confirm",
+      "summary": "Confirmar una simulación y replanificar",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/plan-daily/simulation",
+      "method": "get",
+      "operationId": "internal_get_routes_plan_daily_simulation",
+      "summary": "Última simulación sin confirmar",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/planning-quota",
+      "method": "get",
+      "operationId": "internal_get_routes_planning_quota",
+      "summary": "Corridas de planificación que quedan hoy",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/settings",
+      "method": "get",
+      "operationId": "internal_get_routes_settings",
+      "summary": "Estado de la planificación automática diaria (planner_settings)",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/routes/settings",
+      "method": "patch",
+      "operationId": "internal_patch_routes_settings",
+      "summary": "Activar o desactivar la planificación automática diaria (root)",
+      "tags": [
+        "Routes"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/users",
+      "method": "get",
+      "operationId": "internal_get_users",
+      "summary": "Listar usuarios internos del sistema con paginación Importal y filtros",
+      "tags": [
+        "Users Administration"
+      ],
+      "parameters": [
+        {
+          "name": "page",
+          "description": "Número de página actual (1-indexed)",
+          "schema": {
+            "type": "integer",
+            "default": 1
+          },
+          "required": false
+        },
+        {
+          "name": "limit",
+          "description": "Cantidad máxima de registros por página (máximo 100)",
+          "schema": {
+            "type": "integer",
+            "default": 50
+          },
+          "required": false
+        },
+        {
+          "name": "offset",
+          "description": "Desplazamiento alternativo para compatibilidad hacia atrás",
+          "schema": {
+            "type": "integer",
+            "default": 0
+          },
+          "required": false
+        },
+        {
+          "name": "role",
+          "description": "Filtrar por rol de usuario dentro de la plataforma",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "all",
+              "root",
+              "admin",
+              "driver",
+              "client"
+            ],
+            "default": "all"
+          },
+          "required": false
+        },
+        {
+          "name": "status",
+          "description": "Filtrar por estado activo o inactivo/bloqueado",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "all",
+              "active",
+              "blocked"
+            ],
+            "default": "all"
+          },
+          "required": false
+        },
+        {
+          "name": "search",
+          "description": "Término de búsqueda libre por nombre, correo electrónico, teléfono o RUT",
+          "schema": {
+            "type": "string"
+          },
+          "required": false
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Lista paginada de usuarios internos con compatibilidad dual data/users.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/InternalUserSummary"
+                }
+              },
+              "users": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/InternalUserSummary"
+                }
+              },
+              "total": {
+                "type": "integer",
+                "example": 45
+              },
+              "limit": {
+                "type": "integer",
+                "example": 50
+              },
+              "offset": {
+                "type": "integer",
+                "example": 0
+              },
+              "meta": {
+                "$ref": "#/components/schemas/PaginationMeta"
+              }
+            }
+          },
+          "example": null
+        },
+        "401": {
+          "description": "No autenticado o token ausente/expirado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Requiere privilegios de rol root o admin.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
     {
       "path": "/internal/users",
       "method": "post",
@@ -160,6 +2344,25 @@
           "description": "Error de validación en los campos o rol desconocido.",
           "schema": {
             "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/users/{userId}",
+      "method": "delete",
+      "operationId": "internal_delete_user_by_id",
+      "summary": "Eliminar o desactivar usuario interno",
+      "tags": [
+        "Users Administration"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Usuario eliminado del sistema.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
           },
           "example": null
         }
@@ -204,17 +2407,544 @@
       }
     },
     {
-      "path": "/internal/users/{userId}",
-      "method": "delete",
-      "operationId": "internal_delete_user_by_id",
-      "summary": "Eliminar o desactivar usuario interno",
+      "path": "/internal/users/{userId}/addresses",
+      "method": "get",
+      "operationId": "internal_get_users_userId_addresses",
+      "summary": "Direcciones guardadas de un usuario",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/users/{userId}/addresses",
+      "method": "post",
+      "operationId": "internal_post_users_userId_addresses",
+      "summary": "Agregar una dirección a un usuario",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/users/{userId}/consents",
+      "method": "get",
+      "operationId": "internal_get_user_consents",
+      "summary": "Inspección forense de consentimientos de usuario por administrador (Ley N° 21.719)",
       "tags": [
         "Users Administration"
       ],
       "parameters": [],
       "responses": {
         "200": {
-          "description": "Usuario eliminado del sistema.",
+          "description": "Registro forense de consentimientos y estado de custodia legal.",
+          "schema": {
+            "$ref": "#/components/schemas/UserConsent"
+          },
+          "example": null
+        },
+        "401": {
+          "description": "Token no provisto o inválido.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Requiere rol admin o root.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/users/{userId}/orders",
+      "method": "get",
+      "operationId": "internal_get_users_userId_orders",
+      "summary": "Pedidos de un usuario (como cliente o conductor)",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/users/{userId}/status",
+      "method": "patch",
+      "operationId": "internal_patch_users_userId_status",
+      "summary": "Bloquear o reactivar una cuenta",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/users/{userId}/status",
+      "method": "put",
+      "operationId": "internal_put_users_userId_status",
+      "summary": "Bloquear o reactivar una cuenta",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/vehicles",
+      "method": "get",
+      "operationId": "internal_get_vehicles",
+      "summary": "Listar vehículos de la flota con su hub",
+      "tags": [
+        "Fleet"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/vehicles",
+      "method": "post",
+      "operationId": "internal_post_vehicles",
+      "summary": "Registrar un vehículo con límites de carga y hub",
+      "tags": [
+        "Fleet"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/vehicles/{vehicleId}",
+      "method": "delete",
+      "operationId": "internal_delete_vehicles_vehicleId",
+      "summary": "Dar de baja un vehículo",
+      "tags": [
+        "Fleet"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/vehicles/{vehicleId}",
+      "method": "patch",
+      "operationId": "internal_patch_vehicles_vehicleId",
+      "summary": "Actualizar un vehículo",
+      "tags": [
+        "Fleet"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/vehicles/{vehicleId}",
+      "method": "put",
+      "operationId": "internal_put_vehicles_vehicleId",
+      "summary": "Actualizar un vehículo",
+      "tags": [
+        "Fleet"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/vehicles/available",
+      "method": "get",
+      "operationId": "internal_get_vehicles_available",
+      "summary": "Vehículos disponibles para asignar a una ruta",
+      "tags": [
+        "Fleet"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/internal/vehicles/presets",
+      "method": "get",
+      "operationId": "internal_get_vehicles_presets",
+      "summary": "Tipos de vehículo con capacidades sugeridas",
+      "tags": [
+        "Fleet"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/addresses",
+      "method": "get",
+      "operationId": "internal_get_users_me_addresses",
+      "summary": "Mis direcciones guardadas",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/addresses",
+      "method": "post",
+      "operationId": "internal_post_users_me_addresses",
+      "summary": "Agregar una dirección",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/addresses/{addressId}",
+      "method": "delete",
+      "operationId": "internal_delete_users_me_addresses_addressId",
+      "summary": "Eliminar una dirección",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/addresses/{addressId}",
+      "method": "put",
+      "operationId": "internal_put_users_me_addresses_addressId",
+      "summary": "Editar una dirección",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/addresses/{addressId}/default",
+      "method": "patch",
+      "operationId": "internal_patch_users_me_addresses_addressId_default",
+      "summary": "Marcar una dirección como predeterminada",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/addresses/{addressId}/default",
+      "method": "put",
+      "operationId": "internal_put_users_me_addresses_addressId_default",
+      "summary": "Marcar una dirección como predeterminada",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/avatar",
+      "method": "get",
+      "operationId": "internal_get_users_me_avatar",
+      "summary": "Obtener una URL firmada vigente",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/avatar",
+      "method": "post",
+      "operationId": "internal_post_users_me_avatar",
+      "summary": "Subir foto de perfil",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/billing",
+      "method": "get",
+      "operationId": "internal_get_users_me_billing",
+      "summary": "Mis datos de facturación",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/billing",
+      "method": "put",
+      "operationId": "internal_put_users_me_billing",
+      "summary": "Actualizar mis datos de facturación",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/driver-profile",
+      "method": "get",
+      "operationId": "internal_get_users_me_driver_profile",
+      "summary": "Mi ficha de conductor con vehículo asignado y hub",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/driver-profile",
+      "method": "put",
+      "operationId": "internal_put_users_me_driver_profile",
+      "summary": "Actualizar licencia y vehículo declarados",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/export",
+      "method": "get",
+      "operationId": "internal_get_users_me_export",
+      "summary": "Exportar todos mis datos personales en JSON (portabilidad, Ley N° 21.719)",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/notifications",
+      "method": "get",
+      "operationId": "internal_get_users_me_notifications",
+      "summary": "Mis preferencias de notificación (correo y WhatsApp)",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/users/me/notifications",
+      "method": "put",
+      "operationId": "internal_put_users_me_notifications",
+      "summary": "Actualizar mis preferencias de notificación",
+      "tags": [
+        "Users"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
           "schema": {
             "$ref": "#/components/schemas/StandardSuccessResponse"
           },
@@ -223,7 +2953,450 @@
       }
     }
   ],
+  "notification-lambda": [
+    {
+      "path": "/notifications/email/order-created",
+      "method": "post",
+      "operationId": "notifications_post_email_order_created",
+      "summary": "Enviar confirmación de despacho con número de tracking y PIN de entrega",
+      "tags": [
+        "Notifications"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Comprobante de envío con tracking y PIN de entrega despachado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/notifications/email/order-status-update",
+      "method": "post",
+      "operationId": "notifications_post_email_order_status_update",
+      "summary": "Enviar actualización de estado del envío al cliente destinatario",
+      "tags": [
+        "Notifications"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Actualización de tracking despachada al cliente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/notifications/email/package-discrepancy",
+      "method": "post",
+      "operationId": "notifications_post_email_package_discrepancy",
+      "summary": "Avisar al remitente una diferencia de bulto",
+      "tags": [
+        "Notifications"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/notifications/email/verify-account",
+      "method": "post",
+      "operationId": "notifications_post_email_verify_account",
+      "summary": "Enviar correo HTML de verificación con código OTP vía Amazon SES",
+      "tags": [
+        "Notifications"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Correo HTML de verificación despachado por Amazon SES.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/notifications/email/welcome",
+      "method": "post",
+      "operationId": "notifications_post_email_welcome",
+      "summary": "Enviar correo de bienvenida con enlace de acceso tras activación",
+      "tags": [
+        "Notifications"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Correo de bienvenida enviado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    }
+  ],
+  "otp-service-lambda": [
+    {
+      "path": "/notifications/whatsapp",
+      "method": "post",
+      "operationId": "notifications_post_whatsapp",
+      "summary": "Despachar plantillas transaccionales de WhatsApp (Envíos, Tránsito, Incidentes)",
+      "tags": [
+        "OTP & WhatsApp"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Notificación de plantilla WhatsApp enviada al destinatario.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/otp/deliveries",
+      "method": "get",
+      "operationId": "otp_get_deliveries",
+      "summary": "Listar entregas y envíos OTP con paginación Importal y enmascaramiento PII",
+      "tags": [
+        "OTP & WhatsApp"
+      ],
+      "parameters": [
+        {
+          "name": "page",
+          "description": "Número de página actual (1-indexed)",
+          "schema": {
+            "type": "integer",
+            "default": 1
+          },
+          "required": false
+        },
+        {
+          "name": "limit",
+          "description": "Cantidad máxima de entregas por página (máximo 100)",
+          "schema": {
+            "type": "integer",
+            "default": 20
+          },
+          "required": false
+        },
+        {
+          "name": "q",
+          "description": "Búsqueda por identificador, correo o dígitos telefónicos",
+          "schema": {
+            "type": "string"
+          },
+          "required": false
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Historial de entregas OTP con métricas de fallos y paginación Importal.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/OtpDeliveryItem"
+                }
+              },
+              "deliveries": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/OtpDeliveryItem"
+                }
+              },
+              "total": {
+                "type": "integer",
+                "example": 88
+              },
+              "meta": {
+                "$ref": "#/components/schemas/PaginationMeta"
+              },
+              "fallidos": {
+                "type": "integer",
+                "example": 2,
+                "description": "Cantidad de envíos en estado fallido en la página actual"
+              },
+              "ttlMinutos": {
+                "type": "integer",
+                "example": 10,
+                "description": "Vigencia de los códigos OTP en minutos"
+              },
+              "intentosMaximos": {
+                "type": "integer",
+                "example": 5,
+                "description": "Máximo de intentos de verificación permitidos"
+              }
+            }
+          },
+          "example": null
+        },
+        "401": {
+          "description": "No autenticado o token ausente/inválido.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        },
+        "403": {
+          "description": "Acceso denegado: Reservado a operaciones (roles root o admin).",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/otp/deliveries/{deliveryId}/resend",
+      "method": "post",
+      "operationId": "otp_post_deliveries_deliveryId_resend",
+      "summary": "Reenviar un código de verificación por correo (operaciones)",
+      "tags": [
+        "OTP & WhatsApp"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/otp/send",
+      "method": "post",
+      "operationId": "otp_post_send",
+      "summary": "Emitir y enviar el código de verificación por correo (único canal)",
+      "tags": [
+        "OTP & WhatsApp"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Código emitido y enviado al correo.",
+          "schema": {
+            "$ref": "#/components/schemas/SendOtpResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/otp/send-delivery-code",
+      "method": "post",
+      "operationId": "otp_post_send_delivery_code",
+      "summary": "Enviar al destinatario el código de entrega por WhatsApp (operaciones)",
+      "tags": [
+        "OTP & WhatsApp"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/otp/verify",
+      "method": "post",
+      "operationId": "otp_post_verify",
+      "summary": "Verificar código OTP, auto-activar registro y generar Status Token HMAC",
+      "tags": [
+        "OTP & WhatsApp"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "OTP validado con éxito. Cuenta activada y Status Token generado.",
+          "schema": {
+            "$ref": "#/components/schemas/VerifyOtpResponse"
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Código OTP erróneo o expirado.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    }
+  ],
+  "payments-api-lambda": [
+    {
+      "path": "/payments/fintoc/checkout-session",
+      "method": "post",
+      "operationId": "payments_post_fintoc_checkout_session",
+      "summary": "Crear sesión de pago Fintoc",
+      "tags": [
+        "Payments"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/payments/fintoc/status",
+      "method": "get",
+      "operationId": "payments_get_fintoc_status",
+      "summary": "Estado de una sesión de pago Fintoc",
+      "tags": [
+        "Payments"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/payments/mercadopago/preference",
+      "method": "post",
+      "operationId": "payments_post_mercadopago_preference",
+      "summary": "Crear preferencia de pago Mercado Pago (Checkout Pro / WebPay)",
+      "tags": [
+        "Payments"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Preferencia de Checkout Pro generada.",
+          "schema": {
+            "$ref": "#/components/schemas/MercadoPagoPreferenceResponse"
+          },
+          "example": null
+        },
+        "400": {
+          "description": "Monto, email o identificador de orden faltantes.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/payments/mercadopago/status",
+      "method": "get",
+      "operationId": "payments_get_mercadopago_status",
+      "summary": "Estado de un pago de Mercado Pago",
+      "tags": [
+        "Payments"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/webhooks/fintoc",
+      "method": "post",
+      "operationId": "payments_post_webhook_fintoc",
+      "summary": "Webhook receptor de eventos de Fintoc con firma x-fintoc-signature",
+      "tags": [
+        "Payments"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Evento de Fintoc procesado con verificación de firma.",
+          "schema": {
+            "$ref": "#/components/schemas/WebhookFintocResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/webhooks/mercadopago",
+      "method": "post",
+      "operationId": "payments_post_webhook_mercadopago",
+      "summary": "Webhook receptor de notificaciones IPN de Mercado Pago",
+      "tags": [
+        "Payments"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Notificación IPN recibida y procesada.",
+          "schema": {
+            "$ref": "#/components/schemas/WebhookMercadoPagoResponse"
+          },
+          "example": null
+        }
+      }
+    }
+  ],
   "registration-public-lambda": [
+    {
+      "path": "/registration/calculate-sla",
+      "method": "post",
+      "operationId": "registration_post_calculate_sla",
+      "summary": "Calcular el plazo de entrega entre dos comunas",
+      "tags": [
+        "Registration"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
     {
       "path": "/registration/client",
       "method": "post",
@@ -265,6 +3438,25 @@
           "description": "Consentimiento no otorgado.",
           "schema": {
             "$ref": "#/components/schemas/StandardErrorResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
+      "path": "/registration/communes",
+      "method": "get",
+      "operationId": "registration_get_communes",
+      "summary": "Comunas con cobertura (público)",
+      "tags": [
+        "Registration"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Operación ejecutada exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
           },
           "example": null
         }
@@ -363,6 +3555,25 @@
       }
     },
     {
+      "path": "/registration/requests/{email}/reupload-comprobante",
+      "method": "put",
+      "operationId": "registration_put_reupload_comprobante",
+      "summary": "Subir o reemplazar comprobante en S3 para solicitud pendiente",
+      "tags": [
+        "Registration"
+      ],
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Comprobante almacenado en S3 exitosamente.",
+          "schema": {
+            "$ref": "#/components/schemas/StandardSuccessResponse"
+          },
+          "example": null
+        }
+      }
+    },
+    {
       "path": "/registration/requests/{email}/status",
       "method": "get",
       "operationId": "registration_get_request_status",
@@ -401,319 +3612,17 @@
       }
     },
     {
-      "path": "/registration/requests/{email}/reupload-comprobante",
-      "method": "put",
-      "operationId": "registration_put_reupload_comprobante",
-      "summary": "Subir o reemplazar comprobante en S3 para solicitud pendiente",
+      "path": "/registration/tariffs",
+      "method": "get",
+      "operationId": "registration_get_tariffs",
+      "summary": "Tarifas vigentes por tamaño de bulto (público)",
       "tags": [
         "Registration"
       ],
       "parameters": [],
       "responses": {
         "200": {
-          "description": "Comprobante almacenado en S3 exitosamente.",
-          "schema": {
-            "$ref": "#/components/schemas/StandardSuccessResponse"
-          },
-          "example": null
-        }
-      }
-    }
-  ],
-  "otp-service-lambda": [
-    {
-      "path": "/otp/send",
-      "method": "post",
-      "operationId": "otp_post_send",
-      "summary": "Generar y despachar código OTP multicanal (SMS, WhatsApp, SQS/Email)",
-      "tags": [
-        "OTP & WhatsApp"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "OTP despachado por SMS/WhatsApp/Email.",
-          "schema": {
-            "$ref": "#/components/schemas/SendOtpResponse"
-          },
-          "example": null
-        }
-      }
-    },
-    {
-      "path": "/otp/send-whatsapp",
-      "method": "post",
-      "operationId": "otp_post_send_whatsapp",
-      "summary": "Enviar código OTP vía Meta WhatsApp Cloud API (Template flowex_otp_code)",
-      "tags": [
-        "OTP & WhatsApp"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "OTP enviado por Meta WhatsApp Cloud API.",
-          "schema": {
-            "$ref": "#/components/schemas/SendWhatsAppOtpResponse"
-          },
-          "example": null
-        }
-      }
-    },
-    {
-      "path": "/otp/verify",
-      "method": "post",
-      "operationId": "otp_post_verify",
-      "summary": "Verificar código OTP, auto-activar registro y generar Status Token HMAC",
-      "tags": [
-        "OTP & WhatsApp"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "OTP validado con éxito. Cuenta activada y Status Token generado.",
-          "schema": {
-            "$ref": "#/components/schemas/VerifyOtpResponse"
-          },
-          "example": null
-        },
-        "400": {
-          "description": "Código OTP erróneo o expirado.",
-          "schema": {
-            "$ref": "#/components/schemas/StandardErrorResponse"
-          },
-          "example": null
-        }
-      }
-    },
-    {
-      "path": "/notifications/whatsapp",
-      "method": "post",
-      "operationId": "notifications_post_whatsapp",
-      "summary": "Despachar plantillas transaccionales de WhatsApp (Envíos, Tránsito, Incidentes)",
-      "tags": [
-        "OTP & WhatsApp"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "Notificación de plantilla WhatsApp enviada al destinatario.",
-          "schema": {
-            "$ref": "#/components/schemas/StandardSuccessResponse"
-          },
-          "example": null
-        }
-      }
-    }
-  ],
-  "registration-admin-lambda": [
-    {
-      "path": "/admin/registration-requests/{email}/override-activate",
-      "method": "post",
-      "operationId": "admin_post_override_activate_registration",
-      "summary": "Aprobación manual y activación forzada de solicitud por administrador",
-      "tags": [
-        "Admin Overrides"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "Cuenta activada manualmente por administrador.",
-          "schema": {
-            "$ref": "#/components/schemas/AdminOverrideActivateResponse"
-          },
-          "example": null
-        },
-        "403": {
-          "description": "Acceso denegado: Requiere rol admin o root.",
-          "schema": {
-            "$ref": "#/components/schemas/StandardErrorResponse"
-          },
-          "example": null
-        }
-      }
-    }
-  ],
-  "payments-api-lambda": [
-    {
-      "path": "/payments/mercadopago/preference",
-      "method": "post",
-      "operationId": "payments_post_mercadopago_preference",
-      "summary": "Crear preferencia de pago Mercado Pago (Checkout Pro / WebPay)",
-      "tags": [
-        "Payments"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "Preferencia de Checkout Pro generada.",
-          "schema": {
-            "$ref": "#/components/schemas/MercadoPagoPreferenceResponse"
-          },
-          "example": null
-        },
-        "400": {
-          "description": "Monto, email o identificador de orden faltantes.",
-          "schema": {
-            "$ref": "#/components/schemas/StandardErrorResponse"
-          },
-          "example": null
-        }
-      }
-    },
-    {
-      "path": "/payments/fintoc/payment-intent",
-      "method": "post",
-      "operationId": "payments_post_fintoc_payment_intent",
-      "summary": "Crear intención de pago Fintoc (Transferencia bancaria A2A Open Banking)",
-      "tags": [
-        "Payments"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "Intención de pago Fintoc A2A generada.",
-          "schema": {
-            "$ref": "#/components/schemas/FintocPaymentIntentResponse"
-          },
-          "example": null
-        },
-        "400": {
-          "description": "Parámetros obligatorios ausentes.",
-          "schema": {
-            "$ref": "#/components/schemas/StandardErrorResponse"
-          },
-          "example": null
-        }
-      }
-    },
-    {
-      "path": "/webhooks/mercadopago",
-      "method": "post",
-      "operationId": "payments_post_webhook_mercadopago",
-      "summary": "Webhook receptor de notificaciones IPN de Mercado Pago",
-      "tags": [
-        "Payments"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "Notificación IPN recibida y procesada.",
-          "schema": {
-            "$ref": "#/components/schemas/WebhookMercadoPagoResponse"
-          },
-          "example": null
-        }
-      }
-    },
-    {
-      "path": "/webhooks/fintoc",
-      "method": "post",
-      "operationId": "payments_post_webhook_fintoc",
-      "summary": "Webhook receptor de eventos de Fintoc con firma x-fintoc-signature",
-      "tags": [
-        "Payments"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "Evento de Fintoc procesado con verificación de firma.",
-          "schema": {
-            "$ref": "#/components/schemas/WebhookFintocResponse"
-          },
-          "example": null
-        }
-      }
-    }
-  ],
-  "notification-lambda": [
-    {
-      "path": "/notifications/email/verify-account",
-      "method": "post",
-      "operationId": "notifications_post_email_verify_account",
-      "summary": "Enviar correo HTML de verificación con código OTP vía Amazon SES",
-      "tags": [
-        "Notifications"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "Correo HTML de verificación despachado por Amazon SES.",
-          "schema": {
-            "$ref": "#/components/schemas/StandardSuccessResponse"
-          },
-          "example": null
-        }
-      }
-    },
-    {
-      "path": "/notifications/sms/verify-phone",
-      "method": "post",
-      "operationId": "notifications_post_sms_verify_phone",
-      "summary": "Enviar SMS de verificación a número telefónico E.164",
-      "tags": [
-        "Notifications"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "Mensaje de texto SMS despachado.",
-          "schema": {
-            "$ref": "#/components/schemas/StandardSuccessResponse"
-          },
-          "example": null
-        }
-      }
-    },
-    {
-      "path": "/notifications/email/welcome",
-      "method": "post",
-      "operationId": "notifications_post_email_welcome",
-      "summary": "Enviar correo de bienvenida con enlace de acceso tras activación",
-      "tags": [
-        "Notifications"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "Correo de bienvenida enviado.",
-          "schema": {
-            "$ref": "#/components/schemas/StandardSuccessResponse"
-          },
-          "example": null
-        }
-      }
-    },
-    {
-      "path": "/notifications/email/order-created",
-      "method": "post",
-      "operationId": "notifications_post_email_order_created",
-      "summary": "Enviar confirmación de despacho con número de tracking y PIN de entrega",
-      "tags": [
-        "Notifications"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "Comprobante de envío con tracking y PIN de entrega despachado.",
-          "schema": {
-            "$ref": "#/components/schemas/StandardSuccessResponse"
-          },
-          "example": null
-        }
-      }
-    },
-    {
-      "path": "/notifications/email/order-status-update",
-      "method": "post",
-      "operationId": "notifications_post_email_order_status_update",
-      "summary": "Enviar actualización de estado del envío al cliente destinatario",
-      "tags": [
-        "Notifications"
-      ],
-      "parameters": [],
-      "responses": {
-        "200": {
-          "description": "Actualización de tracking despachada al cliente.",
+          "description": "Operación ejecutada exitosamente.",
           "schema": {
             "$ref": "#/components/schemas/StandardSuccessResponse"
           },

@@ -207,40 +207,10 @@ Receptor de eventos emitidos por Fintoc tras el éxito, rechazo o requerimiento 
 
 ---
 
-### 5. Simulador Interno de Pagos (`POST /payments/simulate`)
-Endpoint utilitario de Flowex para pruebas automatizadas (CI/CD, tests de UI y desarrollo local) que simula el procesamiento completo de cobro y conciliación sin requerir interacción con pasarelas externas.
-
-* **Cuerpo de Solicitud:**
-```json
-{
-  "orderId": "ord_1771344928",
-  "scenario": "success",
-  "amount": 14500,
-  "couponId": "coup_desc_10pct",
-  "provider": "mercadopago"
-}
-```
-
-* **Valores de `scenario`:**
-  * `"success"`: Marca la orden como pagada (`status: 'paid'`), genera ID de transacción ficticio y consolida los cupones (`applied`).
-  * `"failure"`: Marca la orden como pago fallido (`status: 'payment_failed'`) y libera inmediatamente los cupones (`cancelled`) para reintento.
-  * `"abandon"`: Devuelve la orden a estado creado (`status: 'created'`) y cancela la reserva de cupones.
-
-* **Respuesta Exitosa (`200 OK`):**
-```json
-{
-  "success": true,
-  "scenario": "success",
-  "status": "approved",
-  "orderId": "ord_1771344928",
-  "orderStatus": "paid",
-  "transactionId": "TX-MERCADOPAGO-A1B2C3D4E5F6",
-  "couponReleased": false,
-  "couponStatus": "applied",
-  "message": "Pago simulado con éxito. El cupón ha sido aplicado definitivamente a la orden.",
-  "timestamp": "2026-09-15T12:00:00.000Z"
-}
-```
+> [!NOTE]
+> El antiguo `POST /payments/simulate` se eliminó: respondía «pago aprobado, la orden queda
+> pagada» sin pasarela ni base de datos. Los pagos de prueba se hacen por el flujo real con las
+> credenciales de prueba de Mercado Pago y Fintoc (ver la guía siguiente).
 
 ---
 

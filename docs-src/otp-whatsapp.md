@@ -1,244 +1,188 @@
-# Motor OTP y Meta WhatsApp Business Cloud API
+# Códigos de verificación y WhatsApp Business
 
-El microservicio `Flowex-otp-service-lambda` gestiona la emisión, envío multicanal y verificación de contraseñas de un solo uso (**One-Time Passwords / OTP**) de 6 dígitos, integrando directamente la API oficial en la nube de WhatsApp de Meta (Graph API v19.0).
+El microservicio `Flowex-otp-service-lambda` hace dos cosas distintas, con canales distintos:
 
----
-
-## 📱 Integración con Meta WhatsApp Cloud API
-
-Para envíos a números móviles en Chile, el servicio normaliza automáticamente los prefijos telefónicos:
-* Formato internacional: `+56 9 8765 4321` $\rightarrow$ `56987654321`.
-
-### Endpoint de Meta Graph API
-```http
-POST https://graph.facebook.com/v19.0/{WHATSAPP_PHONE_NUMBER_ID}/messages
-Authorization: Bearer {WHATSAPP_API_TOKEN}
-Content-Type: application/json
-```
-
-### Plantillas Oficiales de WhatsApp Utilizadas
-
-| Plantilla | Propósito | Variables Dinámicas |
+| Qué | Canal | Rutas |
 | :--- | :--- | :--- |
-| `flowex_otp_code` | Envío de código OTP de 6 dígitos | `{{1}}` (Código OTP) |
-| `flowex_order_created` | Confirmación de nuevo pedido registrado | `{{1}}` (Tracking), `{{2}}` (PIN de entrega) |
-| `flowex_order_in_transit` | Notificación de envío en ruta | `{{1}}` (Tracking), `{{2}}` (Nombre Chofer) |
-| `flowex_order_delivered` | Confirmación de entrega exitosa | `{{1}}` (Tracking), `{{2}}` (Receptor) |
-| `flowex_delivery_incident` | Notificación de problema en entrega | `{{1}}` (Tracking), `{{2}}` (Motivo) |
+| **Código de verificación** (registro, invitaciones) | **Solo correo** (Amazon SES vía la cola de notificaciones) | `POST /otp/send`, `POST /otp/verify`, `GET /otp/deliveries`, `POST /otp/deliveries/{deliveryId}/resend` |
+| **Avisos del pedido** y **código de entrega** al destinatario | Meta WhatsApp Cloud API | `POST /notifications/whatsapp`, `POST /otp/send-delivery-code` |
+
+> [!IMPORTANT]
+> El código de verificación tiene **un único canal: el correo**. `POST /otp/send` ignora un
+> `phone` o un `channel: "whatsapp"` en el cuerpo, y sin correo responde `400`. La antigua
+> ruta `POST /otp/send-whatsapp` ya no existe, y Flowex no envía SMS.
 
 ---
 
-## 🔄 Flujo de Verificación y Auto-Activación de Cuenta
+## 🔄 Verificación del correo y activación de la cuenta
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Usuario as Solicitante
     participant Frontend as Flowex Frontend
+    participant Registro as Flowex-registration-public-lambda
     participant OTPService as Flowex-otp-service-lambda
-    participant MetaWA as Meta WhatsApp Cloud API
-    participant SQS as Amazon SQS Queue
+    participant SQS as Amazon SQS
     participant NotifWorker as Flowex-notification-lambda
 
-    Usuario->>Frontend: Solicita código OTP
-    Frontend->>OTPService: POST /otp/send { phone, email, channel: "whatsapp" }
-    Note over OTPService: Genera código de 6 dígitos numéricos
-    OTPService->>MetaWA: Envía plantilla 'flowex_otp_code'
-    MetaWA-->>Usuario: Mensaje de WhatsApp con código (Ej: 482910)
-    OTPService->>SQS: Publica evento 'CLIENT_REG_OTP'
-    SQS->>NotifWorker: Envía respaldo por Email (Amazon SES)
-
-    Usuario->>Frontend: Ingresa código recibido (482910)
-    Frontend->>OTPService: POST /otp/verify { email, code: "482910" }
-    Note over OTPService: Valida código, activa cuenta a 'APPROVED' y firma Status Token
-    OTPService->>SQS: Publica evento 'USER_REGISTRATION_ACTIVATED'
-    SQS->>NotifWorker: Despacha correo de bienvenida SES
-    OTPService-->>Frontend: 200 OK (status: APPROVED, statusToken: eyJ...)
-    Frontend->>Frontend: Redirige automáticamente al Dashboard
+    Usuario->>Frontend: Completa el registro
+    Frontend->>Registro: POST /registration/client
+    Registro-->>Frontend: registrationId
+    Frontend->>OTPService: POST /otp/send { email }
+    Note over OTPService: Genera 6 dígitos con crypto, guarda solo el hash
+    OTPService->>SQS: CLIENT_REG_OTP
+    SQS->>NotifWorker: Correo con el código (SES)
+    Usuario->>Frontend: Ingresa el código
+    Frontend->>OTPService: POST /otp/verify { email, code, registrationId }
+    Note over OTPService: Compara con el hash y crea la cuenta
+    OTPService->>SQS: USER_REGISTRATION_ACTIVATED (bienvenida)
+    OTPService-->>Frontend: 200 { status: APPROVED, statusToken }
 ```
+
+* El código vence a los **10 minutos** y admite **5 intentos**.
+* Por destinatario se pueden pedir **5 códigos cada 15 minutos**; después responde `429`.
+* Fuera de producción, y solo con activación explícita, la respuesta de `/otp/send` trae
+  `devOtpCode` para probar el registro sin revisar el correo. En producción ese campo no existe.
 
 ---
 
-## 📡 Endpoints del Módulo OTP
+## 📡 Endpoints
 
-### 1. Enviar OTP Multicanal (`POST /otp/send`)
-Genera y despacha el código por SMS, WhatsApp, Email o ambos.
+### 1. Enviar el código (`POST /otp/send`)
 
-* **Cuerpo de Solicitud:**
+```json
+{ "email": "cliente@flowex.cl" }
+```
+
+Respuesta (`200 OK`). `delivered` dice si el correo salió de verdad; si el proveedor falla
+responde `200` con `delivered: false` y `success: false`, no un `5xx`:
+
 ```json
 {
+  "success": true,
+  "message": "Código enviado. Vence en 10 minutos.",
+  "deliveryId": "otp_1771344928000",
   "email": "cliente@flowex.cl",
-  "phone": "+56991234567",
-  "channel": "whatsapp"
-}
-```
-* **Respuesta Exitosa (`200 OK`):**
-```json
-{
-  "message": "OTP generado y enviado por SMS/WhatsApp/Email correctamente",
-  "email": "cliente@flowex.cl",
-  "phone": "+56991234567",
-  "channel": "whatsapp",
-  "mockOtpCode": "482910"
+  "channel": "email",
+  "delivered": true,
+  "error": null
 }
 ```
 
----
+### 2. Verificar el código (`POST /otp/verify`)
 
-### 2. Enviar OTP Exclusivo WhatsApp (`POST /otp/send-whatsapp`)
-Llamada optimizada para envíos directos mediante Meta Cloud API.
-
-* **Cuerpo de Solicitud:**
 ```json
-{
-  "phone": "+56987654321"
-}
-```
-* **Respuesta Exitosa (`200 OK`):**
-```json
-{
-  "message": "Código OTP enviado por WhatsApp exitosamente",
-  "phone": "+56987654321",
-  "channel": "whatsapp",
-  "otp": "654321",
-  "whatsappResponse": {
-    "status": "sent",
-    "messageId": "wamid.HBgLMNTY5ODc2NTQzMjEVAgARGBIwRjN...",
-    "to": "56987654321",
-    "template": "flowex_otp_code"
-  }
-}
+{ "email": "cliente@flowex.cl", "code": "482910", "registrationId": "reg_1771344928000" }
 ```
 
----
+* Sin `registrationId` solo confirma el código: `{ "status": "VERIFIED", "verified": true, "statusToken": "…" }`.
+* Con `registrationId` crea la cuenta en ese momento:
 
-### 3. Verificar OTP y Auto-Activar Cuenta (`POST /otp/verify`)
-Valida el código de 6 dígitos ingresado por el usuario. Al validar correctamente, la cuenta pasa inmediatamente a estado `APPROVED` y se emite un **Status Token**.
-
-* **Cuerpo de Solicitud:**
 ```json
 {
-  "email": "cliente@flowex.cl",
-  "code": "482910"
-}
-```
-* **Respuesta Exitosa (`200 OK`):**
-```json
-{
-  "message": "Información validada por OTP. Registro aprobado y cuenta activada exitosamente.",
+  "message": "Correo verificado. Tu cuenta quedó activa.",
   "status": "APPROVED",
   "account": {
+    "userId": "3c3c3c3c-1111-4222-8333-444455556666",
     "email": "cliente@flowex.cl",
+    "role": "client",
     "status": "APPROVED",
     "isActive": true,
-    "is_verified": true,
-    "is_email_verified": true,
-    "is_phone_verified": true,
-    "activatedAt": "2026-08-19T10:30:00.000Z"
+    "is_email_verified": true
   },
-  "statusToken": "eyJwYXlsb2FkIjoie1wiZW1haWxcIjpcImNsaWVudGVAZmxvd2V4LmNsXCIsXCJleHBpcmVzQXRcIjoxNzcxNDMwNDAwMDAwLFwicHVycG9zZVwiOlwic3RhdHVzX2FjY2Vzc1wifSIsImhtYWMiOiIzOGIzYTI..."
+  "statusToken": "eyJ…"
 }
 ```
 
----
+Errores: `401` código incorrecto, `410` código vencido o solicitud que ya no está vigente,
+`409` invitación ya usada o correo/RUT ya registrado.
 
-### 4. Despachar Plantillas de WhatsApp (`POST /notifications/whatsapp`)
-Permite enviar notificaciones logísticas personalizadas a los clientes destinatarios.
+### 3. Historial de envíos (`GET /otp/deliveries`)
 
-* **Cuerpo de Solicitud:**
-```json
-{
-  "phone": "+56991234567",
-  "notificationType": "ORDER_CREATED",
-  "parameters": [
-    "FLX-2026-8492",
-    "4920"
-  ]
-}
-```
-* **Respuesta (`200 OK`):**
-```json
-{
-  "message": "Notificación de WhatsApp enviada correctamente",
-  "phone": "+56991234567",
-  "notificationType": "ORDER_CREATED",
-  "templateName": "flowex_order_created",
-  "whatsappResponse": {
-    "status": "sent"
-  }
-}
-```
+Para operaciones (`root`, `admin`): qué códigos se emitieron y cuáles no llegaron. Los
+contactos van enmascarados y el código nunca se guarda en claro.
 
----
+* Query: `page` (desde 1), `limit` (máx. 100), `q` (correo o dígitos del teléfono).
 
-### 5. Historial de Entregas y Envíos OTP (`GET /otp/deliveries`)
-Permite a roles de operaciones (`root` y `admin`) auditar el ciclo de vida de los códigos de verificación emitidos y despachados (SMS, WhatsApp, Email). Facilita la resolución de incidencias ("no me llegó el código") con trazabilidad técnica real en lugar de suposiciones.
-
-> [!IMPORTANT]
-> **Enmascaramiento de Datos Personales (Ley N° 21.719):**
-> En cumplimiento estricto del principio de minimización de datos personales, los campos de contacto (`identifier`, `email`, `phone`) se entregan enmascarados (ej: `c***@flowex.cl`, `+569****4321`) directamente desde la capa del servicio. El código numérico OTP nunca se almacena en texto plano (se resguarda exclusivamente su hash criptográfico SHA-256).
-
-* **Requisitos de Seguridad:** Autenticación `Bearer <token>` con rol `root` o `admin`.
-* **Parámetros Query:**
-  - `page`: (Opcional, default `1`, 1-indexed) Número de página actual solicitada.
-  - `limit`: (Opcional, default `20`, máx `100`) Límite de entregas por página.
-  - `q`: (Opcional) Filtro de búsqueda por identificador de cuenta, correo electrónico o dígitos telefónicos.
-
-* **Respuesta Exitosa (`200 OK`):**
 ```json
 {
   "success": true,
   "data": [
     {
-      "id": "del_1771344928000",
+      "id": "otp_1771344928000",
       "identifier": "c***@flowex.cl",
       "email": "c***@flowex.cl",
-      "phone": "+569****4321",
-      "channel": "whatsapp",
+      "phone": null,
+      "channel": "email",
       "status": "entregado",
-      "statusLabel": "Entregado vía Meta WhatsApp Cloud API",
-      "providerMessageId": "wamid.HBgLMNTY5ODc2NTQzMjEVAgARGBIwRjN...",
-      "lastError": null,
       "sendCount": 1,
       "verifyAttempts": 1,
       "expiresAt": "2026-09-21T10:40:00.000Z",
-      "lastSentAt": "2026-09-21T10:30:00.000Z",
       "consumedAt": "2026-09-21T10:32:15.000Z",
       "resentBy": null,
-      "createdAt": "2026-09-21T10:30:00.000Z",
       "vigente": false
     }
   ],
-  "deliveries": [
-    {
-      "id": "del_1771344928000",
-      "identifier": "c***@flowex.cl",
-      "email": "c***@flowex.cl",
-      "phone": "+569****4321",
-      "channel": "whatsapp",
-      "status": "entregado",
-      "statusLabel": "Entregado vía Meta WhatsApp Cloud API",
-      "providerMessageId": "wamid.HBgLMNTY5ODc2NTQzMjEVAgARGBIwRjN...",
-      "lastError": null,
-      "sendCount": 1,
-      "verifyAttempts": 1,
-      "expiresAt": "2026-09-21T10:40:00.000Z",
-      "lastSentAt": "2026-09-21T10:30:00.000Z",
-      "consumedAt": "2026-09-21T10:32:15.000Z",
-      "resentBy": null,
-      "createdAt": "2026-09-21T10:30:00.000Z",
-      "vigente": false
-    }
-  ],
-  "total": 88,
-  "meta": {
-    "total": 88,
-    "page": 1,
-    "limit": 20,
-    "last_page": 5
-  },
+  "meta": { "total": 88, "page": 1, "limit": 20, "last_page": 5 },
   "fallidos": 0,
   "ttlMinutos": 10,
   "intentosMaximos": 5
 }
 ```
+
+Los envíos antiguos pueden mostrar `channel: "whatsapp"`: son de antes de que el correo
+fuera el único canal.
+
+### 4. Reenviar un código (`POST /otp/deliveries/{deliveryId}/resend`)
+
+Operaciones emite un código nuevo para el mismo correo (el anterior se guardó con hash y no
+se puede releer). Si el envío original no tiene correo responde `409`.
+
+---
+
+## 📱 WhatsApp: avisos del pedido
+
+### Plantillas
+
+| Tipo (`notificationType`) | Plantilla | Uso |
+| :--- | :--- | :--- |
+| `ORDER_CREATED` | `flowex_order_created_v2` | Pedido registrado, con PIN de entrega, razón social del remitente e imagen de cabecera |
+| `ORDER_OUT_TODAY` | `flowex_order_out_today` | El pedido sale hoy a reparto |
+| `ORDER_NEXT_STOP` | `flowex_order_next_stop` | El destinatario es la siguiente parada |
+| `ORDER_IN_TRANSIT` | `flowex_order_in_transit` | En tránsito |
+| `ORDER_DELIVERED` | `flowex_order_delivered` | Entregado |
+| `DELIVERY_INCIDENT` | `flowex_delivery_incident` | Incidencia en la entrega |
+| (otro) | `flowex_general_notification` | Respaldo de utilidad |
+
+### `POST /notifications/whatsapp`
+
+Requiere sesión. API Gateway entrega esta ruta a `otp-service`, no a `notification-lambda`.
+
+```json
+{
+  "phone": "+56991234567",
+  "notificationType": "ORDER_OUT_TODAY",
+  "parameters": ["FLX-2026-8492", "Carla Conductora", "María", "4920"]
+}
+```
+
+```json
+{
+  "message": "Notificación de WhatsApp enviada correctamente",
+  "notificationType": "ORDER_OUT_TODAY",
+  "templateName": "flowex_order_out_today",
+  "delivered": true,
+  "whatsappResponse": { "messages": [{ "id": "wamid.…" }] }
+}
+```
+
+> [!WARNING]
+> Sin credenciales de Meta **no sale ningún mensaje**, y la respuesta lo dice:
+> `delivered: false` y `whatsappResponse.status: "not_sent"`. Antes respondía `mock_sent`
+> con un id inventado y se contaba como entregado.
+
+### `POST /otp/send-delivery-code`
+
+Solo operaciones (`root`, `admin`, `driver`): envía al destinatario el código de entrega
+del pedido por WhatsApp. El texto es el canónico del servicio, no el del cuerpo.

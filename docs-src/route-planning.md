@@ -15,7 +15,8 @@ Este documento describe el algoritmo, el contrato de los endpoints y los código
 | **Rutas de un solo tipo** | Cada ruta es de recogida o de entrega. Un conductor puede encadenar una de recogida detrás de una de entrega en la misma zona; el vehículo se vacía en el hub entre ambas, así que las capacidades no se acumulan. |
 | **Los no entregados vuelven al hub** | Un pedido con intento fallido regresa al hub e ingresa de primero en la siguiente generación. |
 | **La jornada es configurable** | El planificador lee el turno de cada conductor desde la base en cada corrida. No existe ninguna jornada fija en el código. |
-| **Corte diario a las 12:00** | Una regla de EventBridge dispara la planificación sobre los pedidos ingresados hasta ese momento. La re-generación bajo demanda queda reservada al rol `root`. |
+| **Corte diario a las 12:00** | Una regla de EventBridge dispara la planificación sobre los pedidos ingresados hasta ese momento, **solo si la planificación automática está activada**. La re-generación bajo demanda queda reservada al rol `root`. |
+| **Un solo interruptor, guardado en la base** | La planificación automática se activa o desactiva en `planner_settings.auto_routing_enabled` (con auditoría). `GET/PATCH /internal/routes/settings` y el panel de parámetros leen y escriben esa misma fila, y la corrida programada la consulta en cada disparo. Antes era una variable en memoria: cada contenedor tenía la suya y el corte caía casi siempre en uno que la tenía apagada. Solo `root` puede cambiarla; si no se puede guardar, responde `503`. |
 
 ---
 

@@ -9,7 +9,7 @@ El proceso de registro en Flowex (`Flowex-registration-public-lambda`) implement
 > [!IMPORTANT]
 > **No se requieren direcciones fijas ni comprobantes en el registro de clientes:**
 > 1. En la arquitectura logística de Flowex, los clientes finales (`client`) **no están obligados a registrar una dirección física fija** (`streetAndNumber`, `housingType`, `region`, `comuna`). Las direcciones de recolección (pickup) y de entrega (delivery) se ingresan de forma **100% dinámica e individual en cada pedido mediante el endpoint `POST /orders`**.
-> 2. Los clientes finales (`client`) **no requieren adjuntar comprobantes** (`comprobante`, `comprobanteFileName`). El onboarding de clientes es 100% digital y validado automáticamente vía RUT (Módulo 11) y verificación OTP (WhatsApp/SMS).
+> 2. Los clientes finales (`client`) **no requieren adjuntar comprobantes** (`comprobante`, `comprobanteFileName`). El onboarding de clientes es 100% digital y validado automáticamente vía RUT (Módulo 11) y un código de verificación enviado al correo (único canal).
 
 ---
 
@@ -65,8 +65,8 @@ sequenceDiagram
     end
     RegLambda-->>WebApp: 201 Created (status: PENDING_VERIFICATION, requires_otp: true)
     
-    WebApp->>OTPService: POST /otp/send { email, phone }
-    OTPService-->>Solicitante: Envío de OTP vía WhatsApp / SMS
+    WebApp->>OTPService: POST /otp/send { email }
+    OTPService-->>Solicitante: Código de verificación por correo (único canal)
 ```
 
 ---
