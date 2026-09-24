@@ -154,7 +154,7 @@ Una preferencia `smsSns` guardada antes se ignora.
 
 ---
 
-## 🧪 Ambiente de Desarrollo y Desvío Seguro (`DEV_REDIRECT_EMAIL`)
+## 🧪 Ambiente de Desarrollo y Desvío Seguro (`DEV_REDIRECT_EMAIL`, `DEV_REDIRECT_WHATSAPP_PHONE`)
 
 Para evitar el envío accidental de correos o mensajes a destinatarios reales durante pruebas de desarrollo y control de calidad (QA):
 
@@ -167,3 +167,26 @@ Para evitar el envío accidental de correos o mensajes a destinatarios reales du
   </div>
   ```
 * **Sin SES configurado (`NODE_ENV=development` sin `DEV_REDIRECT_EMAIL`):** el correo no sale; queda solo el registro en el log y no se audita como uso de datos.
+
+* **Variable `DEV_REDIRECT_WHATSAPP_PHONE`**: dev tiene credenciales reales de Meta
+  (`flowex/dev/meta/whatsapp`), así que sin desvío un pedido de prueba le escribe de verdad
+  al número que se le ponga. Con esta variable, todo WhatsApp (`Flowex-otp-service-lambda` y
+  `Flowex-notification-lambda`) sale igual, pero al número de pruebas indicado — nunca al
+  del pedido. El número tiene que estar dado de alta como *tester* en la app de Meta. En
+  dev por defecto es el número de pruebas `+56982257217`.
+* **Aviso en el mensaje:** solo en los envíos de texto libre (la respuesta de utilidad
+  cuando una plantilla falla, o el mensaje sin plantilla); una plantilla aprobada por Meta
+  no admite texto fuera de sus variables declaradas:
+  ```
+  🧪 DEV — habría sido para +5691 **** 5678
+
+  📦 FlowEx: Notificación de entrega y seguimiento.
+  ```
+  Para una plantilla que sí se envía (por ejemplo `flowex_order_out_today`), el mensaje
+  llega intacto al número de pruebas; el desvío solo cambia el destinatario, no el
+  contenido de la plantilla.
+* **Registro de uso de datos:** el envío queda registrado igual, con el número real del
+  pedido, tal como `sendSesEmail` lo hace con el correo — el dato se usó para armar y
+  disparar el envío, aunque haya terminado en el número de pruebas.
+* **Nunca en producción:** el desvío se apaga si `STAGE=prod` o `NODE_ENV=production`,
+  aunque la variable quedara puesta por error.
