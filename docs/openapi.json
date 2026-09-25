@@ -2073,18 +2073,70 @@
       },
       "post": {
         "tags": [
-          "Orders"
+          "Orders & Dispatch"
         ],
-        "summary": "Crear un pedido",
+        "summary": "Crear un pedido para el cliente autenticado",
         "operationId": "internal_post_orders",
         "responses": {
-          "200": {
-            "description": "Operación ejecutada exitosamente.",
+          "201": {
+            "description": "Pedido creado o respuesta idempotente reproducida.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                  "$ref": "#/components/schemas/OrderCreateResponse"
                 }
+              }
+            }
+          },
+          "400": {
+            "description": "JSON, clave, comunas, direcciones, peso o bultos inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente o inválido."
+          },
+          "403": {
+            "description": "Solo clientes pueden crear pedidos."
+          },
+          "409": {
+            "description": "IDEMPOTENCY_KEY_REUSED: la clave ya corresponde a otro contenido."
+          },
+          "503": {
+            "description": "COVERAGE_UNAVAILABLE, TARIFF_UNAVAILABLE u ORDER_PERSISTENCE_UNAVAILABLE; el lote no se creó."
+          }
+        },
+        "description": "Acepta un pedido o {orders:[...]}. Requiere comunas cubiertas y tarifas vigentes; persiste el lote de forma atómica. El servidor calcula precio, tracking y PIN; el pedido nace sin pagar.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "description": "Clave por cliente y operación orders.create, compartida por /orders y /orders/batch. Se conserva 30 días; mismo contenido devuelve el mismo 201."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCreateRequest"
               }
             }
           }
@@ -2093,11 +2145,6 @@
         "x-source": "Flowex-auth-admin-lambda/src/index.ts",
         "x-aliases": [
           "/orders"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
         ]
       }
     },
@@ -2325,6 +2372,50 @@
         "x-source": "Flowex-auth-admin-lambda/src/index.ts",
         "x-aliases": [
           "/orders/{orderId}/coupon/remove"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/internal/orders/{orderId}/delivery-code": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Solo root",
+        "operationId": "internal_get_orders_orderId_delivery_code",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root"
+        ],
+        "x-aliases": [
+          "/orders/{orderId}/delivery-code"
         ],
         "parameters": [
           {
@@ -2647,17 +2738,73 @@
     "/internal/orders/batch": {
       "post": {
         "tags": [
-          "Orders"
+          "Orders & Dispatch"
         ],
-        "summary": "Crear pedidos en lote",
+        "summary": "Crear pedidos en lote para el cliente autenticado",
         "operationId": "internal_post_orders_batch",
         "responses": {
-          "200": {
-            "description": "Operación ejecutada exitosamente.",
+          "201": {
+            "description": "Lote creado o respuesta idempotente reproducida.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                  "$ref": "#/components/schemas/OrderCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Contenido inválido o fuera de cobertura."
+          },
+          "401": {
+            "description": "Token ausente o inválido."
+          },
+          "403": {
+            "description": "Solo clientes."
+          },
+          "409": {
+            "description": "IDEMPOTENCY_KEY_REUSED."
+          },
+          "503": {
+            "description": "Cobertura, tarifas o persistencia no disponibles; ningún pedido creado."
+          }
+        },
+        "description": "Mismo contrato e idempotencia que POST /orders. Todos los pedidos se confirman o ninguno.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "orders"
+                ],
+                "properties": {
+                  "orders": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "#/components/schemas/OrderCreateRequest"
+                    }
+                  }
                 }
               }
             }
@@ -2667,11 +2814,6 @@
         "x-source": "Flowex-auth-admin-lambda/src/index.ts",
         "x-aliases": [
           "/orders/batch"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
         ]
       }
     },
@@ -3640,6 +3782,96 @@
         ]
       }
     },
+    "/internal/routes/{routeId}/driver": {
+      "post": {
+        "tags": [
+          "Routes"
+        ],
+        "summary": "[] root admin",
+        "operationId": "internal_post_routes_routeId_driver",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root",
+          "admin"
+        ],
+        "x-aliases": [
+          "/routes/{routeId}/driver"
+        ],
+        "parameters": [
+          {
+            "name": "routeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/internal/routes/{routeId}/driver/preview": {
+      "post": {
+        "tags": [
+          "Routes"
+        ],
+        "summary": "[] root admin",
+        "operationId": "internal_post_routes_routeId_driver_preview",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root",
+          "admin"
+        ],
+        "x-aliases": [
+          "/routes/{routeId}/driver/preview"
+        ],
+        "parameters": [
+          {
+            "name": "routeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/internal/routes/{routeId}/orders": {
       "post": {
         "tags": [
@@ -3786,6 +4018,41 @@
         ]
       }
     },
+    "/internal/routes/leftovers": {
+      "post": {
+        "tags": [
+          "Routes"
+        ],
+        "summary": "Root admin",
+        "operationId": "internal_post_routes_leftovers",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root",
+          "admin"
+        ],
+        "x-aliases": [
+          "/routes/leftovers"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/internal/routes/plan-daily": {
       "post": {
         "tags": [
@@ -3912,10 +4179,6 @@
         },
         "x-service": "auth-admin-lambda",
         "x-source": "Flowex-auth-admin-lambda/src/index.ts",
-        "x-roles": [
-          "root",
-          "admin"
-        ],
         "x-aliases": [
           "/routes/planning-quota"
         ],
@@ -5853,18 +6116,21 @@
         "tags": [
           "Registration"
         ],
-        "summary": "Tarifas vigentes por tamaño de bulto (público)",
+        "summary": "Tarifas oficiales vigentes de la base de datos",
         "operationId": "registration_get_tariffs",
         "responses": {
           "200": {
-            "description": "Operación ejecutada exitosamente.",
+            "description": "Tarifas activas con precio, peso y volumen máximos.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                  "$ref": "#/components/schemas/OfficialTariffResponse"
                 }
               }
             }
+          },
+          "503": {
+            "description": "TARIFF_UNAVAILABLE: tarifario vacío, incompleto o base de datos no disponible."
           }
         },
         "x-service": "registration-public-lambda",
@@ -6588,6 +6854,256 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "OrderCreateRequest": {
+        "type": "object",
+        "required": [
+          "senderName",
+          "senderPhone",
+          "senderAddress",
+          "senderCommune",
+          "recipientName",
+          "recipientPhone",
+          "recipientAddress",
+          "recipientCommune",
+          "packagesCount",
+          "packageType",
+          "weightKg",
+          "declaredValue",
+          "shippingType"
+        ],
+        "description": "Contrato para creación dinámica de órdenes y envíos (POST /orders). Las direcciones de recolección/origen y entrega/destino se configuran individualmente por pedido en este endpoint, eliminando la necesidad de direcciones fijas en el registro de cliente.",
+        "properties": {
+          "senderName": {
+            "type": "string",
+            "example": "Juan Pérez Silva"
+          },
+          "senderPhone": {
+            "type": "string",
+            "example": "+56991234567"
+          },
+          "senderEmail": {
+            "type": "string",
+            "format": "email",
+            "example": "juan.cliente@gmail.com"
+          },
+          "senderAddress": {
+            "type": "string",
+            "description": "Dirección física dinámica de retiro (calle, número)",
+            "example": "Av. Providencia 1234"
+          },
+          "senderDeptOrOffice": {
+            "type": "string",
+            "example": "Oficina 502"
+          },
+          "senderCommune": {
+            "type": "string",
+            "description": "Comuna de recolección",
+            "example": "Providencia"
+          },
+          "senderRegion": {
+            "type": "string",
+            "description": "Región de recolección",
+            "example": "Región Metropolitana"
+          },
+          "senderReference": {
+            "type": "string",
+            "example": "Frente a estación Metro Manuel Montt"
+          },
+          "recipientName": {
+            "type": "string",
+            "example": "María López González"
+          },
+          "recipientPhone": {
+            "type": "string",
+            "example": "+56987654321"
+          },
+          "recipientEmail": {
+            "type": "string",
+            "format": "email",
+            "example": "maria.destinatario@gmail.com"
+          },
+          "recipientAddress": {
+            "type": "string",
+            "description": "Dirección física dinámica de entrega (calle, número)",
+            "example": "Av. Las Condes 10200"
+          },
+          "recipientDeptOrOffice": {
+            "type": "string",
+            "example": "Depto 401"
+          },
+          "recipientCommune": {
+            "type": "string",
+            "description": "Comuna de entrega",
+            "example": "Las Condes"
+          },
+          "recipientRegion": {
+            "type": "string",
+            "description": "Región de entrega",
+            "example": "Región Metropolitana"
+          },
+          "recipientReference": {
+            "type": "string",
+            "example": "Condominio Los Alerces, Torre B"
+          },
+          "packagesCount": {
+            "type": "integer",
+            "example": 1
+          },
+          "packageType": {
+            "type": "string",
+            "example": "caja_mediana"
+          },
+          "weightKg": {
+            "type": "number",
+            "example": 2.5
+          },
+          "declaredValue": {
+            "type": "number",
+            "example": 45000
+          },
+          "shippingType": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "express",
+              "same_day"
+            ],
+            "example": "express"
+          },
+          "enteredBy": {
+            "type": "string",
+            "enum": [
+              "cliente",
+              "vendedor"
+            ],
+            "default": "cliente"
+          }
+        }
+      },
+      "OrderCreateResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "count",
+          "orders"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "Pedido creado para el cliente. No incluye deliveryCode/PIN.",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "trackingNumber": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "created"
+                },
+                "isPaid": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "totalCost": {
+                  "type": "number"
+                },
+                "weightKg": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "OfficialTariffResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "source",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "database"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "name",
+                "dimensions",
+                "maxWeightKg",
+                "maxVolumeM3",
+                "priceIvaIncluded",
+                "isActive"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "enum": [
+                    "S",
+                    "M",
+                    "L"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "dimensions": {
+                  "type": "string"
+                },
+                "maxWeightKg": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "maxVolumeM3": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "priceIvaIncluded": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "description": {
+                  "type": "string"
+                },
+                "isActive": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "notice": {
+            "type": "string"
           }
         }
       },
@@ -8186,132 +8702,6 @@
           "details": {
             "type": "string",
             "example": "El paquete se encuentra en el vehículo de reparto rumbo a su domicilio"
-          }
-        }
-      },
-      "OrderCreateRequest": {
-        "type": "object",
-        "required": [
-          "senderName",
-          "senderPhone",
-          "senderAddress",
-          "senderCommune",
-          "recipientName",
-          "recipientPhone",
-          "recipientAddress",
-          "recipientCommune",
-          "packagesCount",
-          "packageType",
-          "weightKg",
-          "declaredValue",
-          "shippingType"
-        ],
-        "description": "Contrato para creación dinámica de órdenes y envíos (POST /orders). Las direcciones de recolección/origen y entrega/destino se configuran individualmente por pedido en este endpoint, eliminando la necesidad de direcciones fijas en el registro de cliente.",
-        "properties": {
-          "senderName": {
-            "type": "string",
-            "example": "Juan Pérez Silva"
-          },
-          "senderPhone": {
-            "type": "string",
-            "example": "+56991234567"
-          },
-          "senderEmail": {
-            "type": "string",
-            "format": "email",
-            "example": "juan.cliente@gmail.com"
-          },
-          "senderAddress": {
-            "type": "string",
-            "description": "Dirección física dinámica de retiro (calle, número)",
-            "example": "Av. Providencia 1234"
-          },
-          "senderDeptOrOffice": {
-            "type": "string",
-            "example": "Oficina 502"
-          },
-          "senderCommune": {
-            "type": "string",
-            "description": "Comuna de recolección",
-            "example": "Providencia"
-          },
-          "senderRegion": {
-            "type": "string",
-            "description": "Región de recolección",
-            "example": "Región Metropolitana"
-          },
-          "senderReference": {
-            "type": "string",
-            "example": "Frente a estación Metro Manuel Montt"
-          },
-          "recipientName": {
-            "type": "string",
-            "example": "María López González"
-          },
-          "recipientPhone": {
-            "type": "string",
-            "example": "+56987654321"
-          },
-          "recipientEmail": {
-            "type": "string",
-            "format": "email",
-            "example": "maria.destinatario@gmail.com"
-          },
-          "recipientAddress": {
-            "type": "string",
-            "description": "Dirección física dinámica de entrega (calle, número)",
-            "example": "Av. Las Condes 10200"
-          },
-          "recipientDeptOrOffice": {
-            "type": "string",
-            "example": "Depto 401"
-          },
-          "recipientCommune": {
-            "type": "string",
-            "description": "Comuna de entrega",
-            "example": "Las Condes"
-          },
-          "recipientRegion": {
-            "type": "string",
-            "description": "Región de entrega",
-            "example": "Región Metropolitana"
-          },
-          "recipientReference": {
-            "type": "string",
-            "example": "Condominio Los Alerces, Torre B"
-          },
-          "packagesCount": {
-            "type": "integer",
-            "example": 1
-          },
-          "packageType": {
-            "type": "string",
-            "example": "caja_mediana"
-          },
-          "weightKg": {
-            "type": "number",
-            "example": 2.5
-          },
-          "declaredValue": {
-            "type": "number",
-            "example": 45000
-          },
-          "shippingType": {
-            "type": "string",
-            "enum": [
-              "normal",
-              "express",
-              "same_day"
-            ],
-            "example": "express"
-          },
-          "enteredBy": {
-            "type": "string",
-            "enum": [
-              "cliente",
-              "vendedor"
-            ],
-            "default": "cliente"
           }
         }
       },
