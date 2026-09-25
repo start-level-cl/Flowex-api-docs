@@ -916,6 +916,25 @@
   {
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/orders/{orderId}/delivery-code",
+    "operationId": "internal_get_orders_orderId_delivery_code",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Solo root",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/delivery-code"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "post",
     "path": "/internal/orders/{orderId}/delivery-code/regenerate",
     "operationId": "internal_post_orders_orderId_delivery_code_regenerate",
@@ -1351,6 +1370,46 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "post",
+    "path": "/internal/routes/{routeId}/driver",
+    "operationId": "internal_post_routes_routeId_driver",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "[] root admin",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/{routeId}/driver"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/routes/{routeId}/driver/preview",
+    "operationId": "internal_post_routes_routeId_driver_preview",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "[] root admin",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/{routeId}/driver/preview"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
     "path": "/internal/routes/{routeId}/orders",
     "operationId": "internal_post_routes_routeId_orders",
     "tag": "Routes",
@@ -1427,6 +1486,26 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "post",
+    "path": "/internal/routes/leftovers",
+    "operationId": "internal_post_routes_leftovers",
+    "tag": "Routes",
+    "tags": [
+      "Routes"
+    ],
+    "summary": "Root admin",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/routes/leftovers"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
     "path": "/internal/routes/plan-daily",
     "operationId": "internal_post_routes_plan_daily",
     "tag": "Routes",
@@ -1494,10 +1573,7 @@
       "Routes"
     ],
     "summary": "Corridas de planificación que quedan hoy",
-    "roles": [
-      "root",
-      "admin"
-    ],
+    "roles": [],
     "security": "bearerAuth",
     "aliases": [
       "/routes/planning-quota"

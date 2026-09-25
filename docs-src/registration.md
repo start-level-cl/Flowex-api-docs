@@ -237,6 +237,7 @@ Permite reemplazar un documento rechazado o ilegible (aplicable a conductores o 
   "comprobanteFileName": "nuevo_comprobante.pdf"
 }
 ```
+
 * **Respuesta (`200 OK`):**
 ```json
 {
@@ -245,4 +246,15 @@ Permite reemplazar un documento rechazado o ilegible (aplicable a conductores o 
   "status": "PENDING_VERIFICATION"
 }
 ```
+
+---
+
+## Tarifas oficiales (`GET /registration/tariffs`)
+
+La ruta pública (también `/registration/coverage/tariffs`) lee las tarifas activas desde
+`package_tariffs`. Cada elemento de `data` incluye `id` (`S`, `M` o `L`), `name`,
+`dimensions`, `maxWeightKg`, `maxVolumeM3`, `priceIvaIncluded`, `description` e
+`isActive`. El frontend debe usar el precio y los límites publicados, sin valores de
+respaldo propios. Si no hay tarifas o alguna carece de volumen máximo positivo, la API
+responde `503 TARIFF_UNAVAILABLE` y no presenta un catálogo incompleto.
 

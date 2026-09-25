@@ -153,6 +153,37 @@ export const schemas = {
       createdAt: { type: 'string', format: 'date-time' },
     },
   },
+  OrderCreateRequest: {
+    type: 'object',
+    required: ['senderName', 'senderPhone', 'senderAddress', 'senderCommune', 'senderLatitude', 'senderLongitude', 'recipientName', 'recipientPhone', 'recipientAddress', 'recipientCommune', 'recipientLatitude', 'recipientLongitude', 'packages'],
+    properties: {
+      senderName: { type: 'string' }, senderPhone: { type: 'string' },
+      senderAddress: { type: 'string' }, senderCommune: { type: 'string' },
+      senderLatitude: { type: 'number' }, senderLongitude: { type: 'number' },
+      recipientName: { type: 'string' }, recipientPhone: { type: 'string' },
+      recipientAddress: { type: 'string' }, recipientCommune: { type: 'string' },
+      recipientLatitude: { type: 'number' }, recipientLongitude: { type: 'number' },
+      packages: { type: 'array', minItems: 1, items: { type: 'object', required: ['size', 'count'], properties: { size: { type: 'string', enum: ['S', 'M', 'L'] }, count: { type: 'integer', minimum: 1 } } } },
+      weightKg: { type: 'number', minimum: 0, description: 'Opcional; si falta o vale 0 se estima sumando maxWeightKg de los bultos declarados.' },
+      couponCode: { type: 'string' },
+    },
+  },
+  OrderCreateResponse: {
+    type: 'object', required: ['success', 'message', 'count', 'orders'],
+    properties: {
+      success: { type: 'boolean', example: true }, message: { type: 'string' },
+      count: { type: 'integer', minimum: 1 },
+      orders: { type: 'array', items: { type: 'object', description: 'Pedido creado para el cliente. No incluye deliveryCode/PIN.', properties: { id: { type: 'string', format: 'uuid' }, trackingNumber: { type: 'string' }, status: { type: 'string', example: 'created' }, isPaid: { type: 'boolean', example: false }, totalCost: { type: 'number' }, weightKg: { type: 'number' } } } },
+    },
+  },
+  OfficialTariffResponse: {
+    type: 'object', required: ['success', 'source', 'data'],
+    properties: {
+      success: { type: 'boolean', example: true }, source: { type: 'string', enum: ['database'] },
+      data: { type: 'array', items: { type: 'object', required: ['id', 'name', 'dimensions', 'maxWeightKg', 'maxVolumeM3', 'priceIvaIncluded', 'isActive'], properties: { id: { type: 'string', enum: ['S', 'M', 'L'] }, name: { type: 'string' }, dimensions: { type: 'string' }, maxWeightKg: { type: 'number', exclusiveMinimum: 0 }, maxVolumeM3: { type: 'number', exclusiveMinimum: 0 }, priceIvaIncluded: { type: 'number', exclusiveMinimum: 0 }, description: { type: 'string' }, isActive: { type: 'boolean' } } } },
+      notice: { type: 'string' },
+    },
+  },
   RouteSummary: {
     type: 'object',
     properties: {
@@ -953,6 +984,40 @@ export const schemas = {
 }
 
 export const operationOverrides = {
+  internal_post_orders: {
+    tags: ['Orders & Dispatch'],
+    summary: 'Crear un pedido para el cliente autenticado',
+    description: 'Acepta un pedido o {orders:[...]}. Requiere comunas cubiertas y tarifas vigentes; persiste el lote de forma atómica. El servidor calcula precio, tracking y PIN; el pedido nace sin pagar.',
+    security: [{ bearerAuth: [] }],
+    parameters: [{ name: 'Idempotency-Key', in: 'header', required: false, schema: { type: 'string', minLength: 1, maxLength: 128, pattern: '^[A-Za-z0-9._:-]+$' }, description: 'Clave por cliente y operación orders.create, compartida por /orders y /orders/batch. Se conserva 30 días; mismo contenido devuelve el mismo 201.' }],
+    requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/OrderCreateRequest' } } } },
+    responses: {
+      201: { description: 'Pedido creado o respuesta idempotente reproducida.', content: { 'application/json': { schema: { $ref: '#/components/schemas/OrderCreateResponse' } } } },
+      400: { description: 'JSON, clave, comunas, direcciones, peso o bultos inválidos.', content: { 'application/json': { schema: { $ref: '#/components/schemas/StandardErrorResponse' } } } },
+      401: { description: 'Token ausente o inválido.' }, 403: { description: 'Solo clientes pueden crear pedidos.' },
+      409: { description: 'IDEMPOTENCY_KEY_REUSED: la clave ya corresponde a otro contenido.' },
+      503: { description: 'COVERAGE_UNAVAILABLE, TARIFF_UNAVAILABLE u ORDER_PERSISTENCE_UNAVAILABLE; el lote no se creó.' },
+    },
+  },
+  internal_post_orders_batch: {
+    tags: ['Orders & Dispatch'], summary: 'Crear pedidos en lote para el cliente autenticado',
+    description: 'Mismo contrato e idempotencia que POST /orders. Todos los pedidos se confirman o ninguno.',
+    security: [{ bearerAuth: [] }],
+    parameters: [{ name: 'Idempotency-Key', in: 'header', required: false, schema: { type: 'string', minLength: 1, maxLength: 128, pattern: '^[A-Za-z0-9._:-]+$' } }],
+    requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['orders'], properties: { orders: { type: 'array', minItems: 1, items: { $ref: '#/components/schemas/OrderCreateRequest' } } } } } } },
+    responses: {
+      201: { description: 'Lote creado o respuesta idempotente reproducida.', content: { 'application/json': { schema: { $ref: '#/components/schemas/OrderCreateResponse' } } } },
+      400: { description: 'Contenido inválido o fuera de cobertura.' }, 401: { description: 'Token ausente o inválido.' }, 403: { description: 'Solo clientes.' },
+      409: { description: 'IDEMPOTENCY_KEY_REUSED.' }, 503: { description: 'Cobertura, tarifas o persistencia no disponibles; ningún pedido creado.' },
+    },
+  },
+  registration_get_tariffs: {
+    tags: ['Registration'], summary: 'Tarifas oficiales vigentes de la base de datos',
+    responses: {
+      200: { description: 'Tarifas activas con precio, peso y volumen máximos.', content: { 'application/json': { schema: { $ref: '#/components/schemas/OfficialTariffResponse' } } } },
+      503: { description: 'TARIFF_UNAVAILABLE: tarifario vacío, incompleto o base de datos no disponible.' },
+    },
+  },
   // ── Auth API Lambda
   auth_post_login: {
     requestBody: {

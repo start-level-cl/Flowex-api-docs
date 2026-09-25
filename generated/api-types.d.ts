@@ -47,6 +47,61 @@ export type OrderSummary = {
   createdAt?: string
 }
 
+export type OrderCreateRequest = {
+  senderName: string
+  senderPhone: string
+  senderEmail?: string
+  senderAddress: string
+  senderDeptOrOffice?: string
+  senderCommune: string
+  senderRegion?: string
+  senderReference?: string
+  recipientName: string
+  recipientPhone: string
+  recipientEmail?: string
+  recipientAddress: string
+  recipientDeptOrOffice?: string
+  recipientCommune: string
+  recipientRegion?: string
+  recipientReference?: string
+  packagesCount: number
+  packageType: string
+  weightKg: number
+  declaredValue: number
+  shippingType: "normal" | "express" | "same_day"
+  enteredBy?: "cliente" | "vendedor"
+}
+
+export type OrderCreateResponse = {
+  success: boolean
+  message: string
+  count: number
+  orders: ({
+    id?: string
+    trackingNumber?: string
+    status?: string
+    isPaid?: boolean
+    totalCost?: number
+    weightKg?: number
+  })[]
+}
+
+export type OfficialTariffResponse = {
+  success: boolean
+  source: "database"
+  data: ({
+    id: "S" | "M" | "L"
+    name: string
+    dimensions: string
+    maxWeightKg: number
+    maxVolumeM3: number
+    priceIvaIncluded: number
+    description?: string
+    isActive: boolean
+  })[]
+  notice?: string
+}
+
 export type RouteSummary = {
   id?: string
   code?: string
@@ -449,31 +504,6 @@ export type EmailOrderStatusUpdateRequest = {
   trackingNumber: string
   newStatus: OrderStatus
   details?: string
-}
-
-export type OrderCreateRequest = {
-  senderName: string
-  senderPhone: string
-  senderEmail?: string
-  senderAddress: string
-  senderDeptOrOffice?: string
-  senderCommune: string
-  senderRegion?: string
-  senderReference?: string
-  recipientName: string
-  recipientPhone: string
-  recipientEmail?: string
-  recipientAddress: string
-  recipientDeptOrOffice?: string
-  recipientCommune: string
-  recipientRegion?: string
-  recipientReference?: string
-  packagesCount: number
-  packageType: string
-  weightKg: number
-  declaredValue: number
-  shippingType: "normal" | "express" | "same_day"
-  enteredBy?: "cliente" | "vendedor"
 }
 
 export type CouponAudience = "first_time_only" | "everyone" | "exclusive"
@@ -995,9 +1025,14 @@ export interface Operations {
   "internal_post_orders": {
     method: "POST"
     path: "/internal/orders"
-    requestBody: undefined
+    requestBody: OrderCreateRequest
     responses: {
-      "200": StandardSuccessResponse
+      "201": OrderCreateResponse
+      "400": StandardErrorResponse
+      "401": undefined
+      "403": undefined
+      "409": undefined
+      "503": undefined
     }
   }
   "internal_get_orders_orderId": {
@@ -1043,6 +1078,14 @@ export interface Operations {
   "internal_post_orders_orderId_coupon_remove": {
     method: "POST"
     path: "/internal/orders/{orderId}/coupon/remove"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_orders_orderId_delivery_code": {
+    method: "GET"
+    path: "/internal/orders/{orderId}/delivery-code"
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
@@ -1107,9 +1150,16 @@ export interface Operations {
   "internal_post_orders_batch": {
     method: "POST"
     path: "/internal/orders/batch"
-    requestBody: undefined
+    requestBody: {
+      orders: (OrderCreateRequest)[]
+    }
     responses: {
-      "200": StandardSuccessResponse
+      "201": OrderCreateResponse
+      "400": undefined
+      "401": undefined
+      "403": undefined
+      "409": undefined
+      "503": undefined
     }
   }
   "internal_get_planner_settings": {
@@ -1282,6 +1332,22 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
+  "internal_post_routes_routeId_driver": {
+    method: "POST"
+    path: "/internal/routes/{routeId}/driver"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_routes_routeId_driver_preview": {
+    method: "POST"
+    path: "/internal/routes/{routeId}/driver/preview"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "internal_post_routes_routeId_orders": {
     method: "POST"
     path: "/internal/routes/{routeId}/orders"
@@ -1309,6 +1375,14 @@ export interface Operations {
   "internal_get_routes_insertion_queue": {
     method: "GET"
     path: "/internal/routes/insertion-queue"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_routes_leftovers": {
+    method: "POST"
+    path: "/internal/routes/leftovers"
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
@@ -1738,7 +1812,8 @@ export interface Operations {
     path: "/registration/tariffs"
     requestBody: undefined
     responses: {
-      "200": StandardSuccessResponse
+      "200": OfficialTariffResponse
+      "503": undefined
     }
   }
   "internal_get_users_me_addresses": {

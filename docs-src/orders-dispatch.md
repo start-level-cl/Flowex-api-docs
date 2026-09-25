@@ -175,24 +175,25 @@ export interface Order {
 
 ```json
 {
-  "enteredBy": "cliente",
   "senderName": "Juan Pérez Silva",
   "senderPhone": "+56991234567",
   "senderEmail": "juan.cliente@gmail.com",
   "senderAddress": "Av. Providencia 1234, Of. 502",
   "senderCommune": "Providencia",
+  "senderLatitude": -33.4263,
+  "senderLongitude": -70.617,
   "senderRegion": "Región Metropolitana",
   "recipientName": "María López González",
   "recipientPhone": "+56987654321",
   "recipientEmail": "maria.destinatario@gmail.com",
   "recipientAddress": "Av. Las Condes 10200, Depto 401",
   "recipientCommune": "Las Condes",
+  "recipientLatitude": -33.4103,
+  "recipientLongitude": -70.5677,
   "recipientRegion": "Región Metropolitana",
-  "packagesCount": 1,
-  "packageType": "caja_mediana",
-  "weightKg": 2.5,
+  "packages": [{ "size": "M", "count": 1 }],
   "declaredValue": 45000,
-  "shippingType": "express"
+  "shippingType": "normal"
 }
 ```
 
@@ -200,17 +201,32 @@ export interface Order {
 
 ```json
 {
-  "message": "Orden creada exitosamente. Pendiente de pago.",
-  "order": {
-    "id": "ord_1771344928000",
-    "trackingNumber": "FLX-2026-8492",
-    "status": "pending",
+  "success": true,
+  "message": "1 pedido(s) creado(s) exitosamente",
+  "count": 1,
+  "orders": [{
+    "id": "99999999-9999-4999-8999-999999999999",
+    "trackingNumber": "FLX-2026-1234567890",
+    "status": "created",
     "isPaid": false,
-    "totalCost": 8900,
-    "createdAt": "2026-08-24T14:35:00.000Z"
-  }
+    "totalCost": 2990,
+    "weightKg": 10
+  }]
 }
 ```
+
+Solo un cliente autenticado puede crear pedidos. El servidor verifica ambas comunas contra
+la cobertura y calcula el precio con las tarifas activas; ignora importes, PIN, ruta y estado
+de pago enviados por el cliente. `weightKg` es opcional: si falta o vale `0`, se estima con
+la suma de `maxWeightKg` de los bultos declarados. El PIN nunca aparece en esta respuesta.
+
+`POST /orders/batch` (también `/internal/orders/batch`) recibe `{ "orders": [ ... ] }`.
+El lote se confirma completo en PostgreSQL o no se crea ningún pedido. Puede enviarse
+`Idempotency-Key: checkout-123` (1–128 caracteres ASCII: letras, números, `.`, `_`, `:`, `-`)
+en ambos endpoints; la clave se comparte por cliente y operación durante 30 días. Un
+reintento con el mismo contenido reproduce el `201` original; otro contenido devuelve
+`409 IDEMPOTENCY_KEY_REUSED`. Errores de cobertura, tarifario o persistencia devuelven
+`503`, sin confirmar el lote.
 
 ---
 
