@@ -209,7 +209,7 @@ export interface Order {
     "trackingNumber": "FLX-2026-1234567890",
     "status": "created",
     "isPaid": false,
-    "totalCost": 2990,
+    "totalCost": 3490,
     "weightKg": 10
   }]
 }
