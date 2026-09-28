@@ -1001,7 +1001,7 @@ export const operationOverrides = {
           type: 'object', required: ['success', 'data', 'total', 'meta'],
           properties: {
             success: { type: 'boolean', example: true },
-            data: { type: 'array', items: { type: 'object', required: ['orderId', 'trackingNumber', 'orderStatus', 'recipientName', 'deliveryCodeAvailable', 'deliveryCodeLocked', 'resendAllowed'], properties: {
+            data: { type: 'array', items: { type: 'object', required: ['orderId', 'trackingNumber', 'orderStatus', 'recipientName', 'deliveryCodeAvailable', 'deliveryCodeLocked', 'resendAllowed', 'reissueAllowed'], properties: {
               orderId: { type: 'string', format: 'uuid' },
               trackingNumber: { type: 'string', example: 'FLX-2026-8492' },
               orderStatus: { type: 'string', enum: ['out_for_delivery'] },
@@ -1013,6 +1013,8 @@ export const operationOverrides = {
               resendStatus: { type: 'string', enum: ['processing', 'accepted', 'failed'], nullable: true },
               resendAllowed: { type: 'boolean' },
               resendReason: { type: 'string', enum: ['pin_locked', 'pin_unavailable', 'destination_unavailable', 'cooldown'], nullable: true },
+              reissueAllowed: { type: 'boolean' },
+              reissueReason: { type: 'string', enum: ['destination_unavailable', 'cooldown', 'pin_service_unavailable'], nullable: true },
             } } },
             total: { type: 'integer', example: 21 },
             meta: { $ref: '#/components/schemas/PaginationMeta' },
@@ -1040,6 +1042,24 @@ export const operationOverrides = {
       409: { description: 'El pedido ya no está en reparto, el PIN está bloqueado o no se puede recuperar, o el teléfono del destinatario no es válido.' },
       429: { description: 'Límite de un reenvío por pedido cada 60 segundos.', content: { 'application/json': { schema: { type: 'object', properties: { error: { type: 'string', example: 'cooldown' }, retryAfterSeconds: { type: 'integer' }, message: { type: 'string' } } } } } },
       503: { description: 'WhatsApp no aceptó el mensaje o el servicio no está disponible.' },
+    },
+  },
+  internal_post_orders_orderId_delivery_code_reissue: {
+    tags: ['Orders & Dispatch'],
+    summary: 'Emitir y enviar un PIN nuevo por WhatsApp',
+    description: 'Genera un PIN nuevo solo para pedidos out_for_delivery, invalida el anterior, reinicia intentos fallidos y lo envía al teléfono registrado. La respuesta nunca incluye el PIN. Si WhatsApp no acepta el envío, el nuevo PIN ya queda vigente y el endpoint informa ese estado para permitir un reintento controlado.',
+    security: [{ bearerAuth: [] }],
+    parameters: [{ name: 'orderId', in: 'path', required: true, schema: { type: 'string' } }],
+    responses: {
+      200: { description: 'Meta aceptó el envío del PIN nuevo.', content: { 'application/json': { schema: { type: 'object', required: ['success', 'requestId', 'status', 'message'], properties: {
+        success: { type: 'boolean', example: true }, requestId: { type: 'string', format: 'uuid' }, status: { type: 'string', enum: ['accepted'] }, message: { type: 'string' },
+      } } } } },
+      401: { description: 'Token ausente o inválido.' },
+      403: { description: 'Solo root y admin pueden emitir un PIN nuevo.' },
+      404: { description: 'Pedido no encontrado.' },
+      409: { description: 'Pedido fuera de reparto o teléfono registrado inválido.' },
+      429: { description: 'Límite de una acción de PIN por pedido cada 60 segundos.' },
+      503: { description: 'Clave de cifrado o servicio de WhatsApp no disponible; un fallo de WhatsApp se informa con new_pin_issued_send_failed.' },
     },
   },
   otp_post_send_delivery_code: {

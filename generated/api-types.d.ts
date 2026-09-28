@@ -1115,6 +1115,25 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
+  "internal_post_orders_orderId_delivery_code_reissue": {
+    method: "POST"
+    path: "/internal/orders/{orderId}/delivery-code/reissue"
+    requestBody: undefined
+    responses: {
+      "200": {
+        success: boolean
+        requestId: string
+        status: "accepted"
+        message: string
+      }
+      "401": undefined
+      "403": undefined
+      "404": undefined
+      "409": undefined
+      "429": undefined
+      "503": undefined
+    }
+  }
   "internal_post_orders_orderId_delivery_code_resend": {
     method: "POST"
     path: "/internal/orders/{orderId}/delivery-code/resend"
@@ -1220,6 +1239,8 @@ export interface Operations {
           resendStatus?: "processing" | "accepted" | "failed"
           resendAllowed: boolean
           resendReason?: "pin_locked" | "pin_unavailable" | "destination_unavailable" | "cooldown"
+          reissueAllowed: boolean
+          reissueReason?: "destination_unavailable" | "cooldown" | "pin_service_unavailable"
         })[]
         total: number
         meta: PaginationMeta

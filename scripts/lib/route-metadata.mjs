@@ -183,6 +183,18 @@ export function catalogMetadata({ repoRoot }) {
       {
         service: 'auth-admin-lambda',
         source: 'Flowex-auth-admin-lambda/src/index.ts',
+        method: 'post',
+        path: '/internal/orders/{orderId}/delivery-code/reissue',
+        operationId: 'internal_post_orders_orderId_delivery_code_reissue',
+        tag: 'Orders & Dispatch',
+        tags: ['Orders & Dispatch'],
+        summary: 'Emitir y enviar por WhatsApp un PIN nuevo para el pedido',
+        roles: ['admin', 'root'],
+        security: 'bearerAuth',
+      },
+      {
+        service: 'auth-admin-lambda',
+        source: 'Flowex-auth-admin-lambda/src/index.ts',
         method: 'get',
         path: '/routes',
         operationId: 'routes_get_routes',

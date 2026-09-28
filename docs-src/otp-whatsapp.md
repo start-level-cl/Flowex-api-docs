@@ -5,7 +5,7 @@ El microservicio `Flowex-otp-service-lambda` hace dos cosas distintas, con canal
 | Qué | Canal | Rutas |
 | :--- | :--- | :--- |
 | **Código de verificación** (registro, invitaciones) | **Solo correo** (Amazon SES vía la cola de notificaciones) | `POST /otp/send`, `POST /otp/verify`, `GET /otp/deliveries`, `POST /otp/deliveries/{deliveryId}/resend` |
-| **Avisos del pedido** y **código de entrega** al destinatario | Meta WhatsApp Cloud API | `POST /notifications/whatsapp`, `GET /internal/orders/delivery-codes y POST /internal/orders/{orderId}/delivery-code/resend` |
+| **Avisos del pedido** y **código de entrega** al destinatario | Meta WhatsApp Cloud API | `POST /notifications/whatsapp`, `GET /internal/orders/delivery-codes`, `POST /internal/orders/{orderId}/delivery-code/resend`, `POST /internal/orders/{orderId}/delivery-code/reissue` |
 
 > [!IMPORTANT]
 > El código de verificación tiene **un único canal: el correo**. `POST /otp/send` ignora un
@@ -187,7 +187,7 @@ Requiere sesión. API Gateway entrega esta ruta a `otp-service`, no a `notificat
 La ruta responde `410 ENDPOINT_RETIRED`: aceptaba teléfonos y PIN arbitrarios del llamador.
 El envío operativo ahora se resuelve desde el pedido y el teléfono actual registrado del destinatario.
 
-### Reenvío del PIN de entrega
+### Gestión del PIN de entrega
 
 La vista `/admin/otp-deliveries` está reservada a `root` y `admin`. Solo lista pedidos cuyo
 estado actual es `out_for_delivery`; los entregados y los pedidos con otros estados no aparecen.
@@ -212,7 +212,9 @@ de pila y el teléfono enmascarado, nunca el PIN ni el teléfono completo.
       "lastResendAt": null,
       "resendStatus": null,
       "resendAllowed": true,
-      "resendReason": null
+      "resendReason": null,
+      "reissueAllowed": true,
+      "reissueReason": null
     }
   ],
   "total": 1,
@@ -235,3 +237,17 @@ o del servicio de notificaciones.
 
 Los intentos guardan actor, estado, fecha, teléfono enmascarado y el identificador de Meta.
 El PIN y el texto enviado no se guardan en la tabla de auditoría ni en la respuesta.
+
+#### `POST /internal/orders/{orderId}/delivery-code/reissue`
+
+También está disponible desde la misma vista la acción **Emitir PIN nuevo**. El cuerpo está vacío.
+El servidor genera un PIN aleatorio, invalida el anterior, reinicia los intentos fallidos y lo envía
+por WhatsApp al teléfono del pedido. Solo aplica mientras el pedido siga en `out_for_delivery`;
+la acción vuelve a comprobar el estado dentro de la transacción. El PIN nuevo nunca se devuelve a
+la interfaz.
+
+`200` significa que Meta aceptó el envío. Si Meta no acepta el mensaje, la API devuelve `503`
+con `error: "new_pin_issued_send_failed"`: el PIN nuevo ya quedó vigente y el anterior dejó de
+servir, por lo que se debe esperar el enfriamiento antes de reintentar. La emisión también reinicia
+el bloqueo por intentos y queda auditada con el actor, sin registrar el PIN. Esta acción comparte
+el límite de una operación de PIN por pedido cada 60 segundos.
