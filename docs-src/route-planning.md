@@ -414,6 +414,9 @@ Consulta el listado de rutas planificadas y operativas con el estándar unificad
 | `limit` | `integer` | No | Cantidad de rutas por página (mínimo `1`, máximo `100`, por defecto `20`). |
 | `type` | `string` | No | Filtrar por modalidad logística (`pickup` \| `delivery` \| `transfer`). |
 | `driverId` | `string` | No | Filtrar por UUID del chofer asignado (reservado a roles operativos). |
+| `activeOnly` | `boolean` | No | Si es `true` (o `status=active`), excluye rutas finalizadas (`completed`) y canceladas (`cancelled`) para paneles operativos de despacho. |
+| `includeCancelled` | `boolean` | No | Si es `true`, incluye rutas anuladas por replanificaciones previas. Por defecto `false`. |
+| `date` | `string` | No | Filtrar por fecha planificada de la ruta en formato ISO (`YYYY-MM-DD`). |
 
 ### Respuesta Dual y Metadatos de Paginación (`200 OK`)
 
