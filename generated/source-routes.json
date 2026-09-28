@@ -1051,13 +1051,30 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "post",
+    "path": "/internal/orders/{orderId}/discrepancy/revert",
+    "operationId": "internal_post_orders_orderId_discrepancy_revert",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Revertir una diferencia de bulto registrada por error",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/discrepancy/revert"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
     "path": "/internal/orders/{orderId}/discrepancy/settle",
     "operationId": "internal_post_orders_orderId_discrepancy_settle",
     "tag": "Orders",
     "tags": [
       "Orders"
     ],
-    "summary": "Liberar un pedido retenido tras pagar la diferencia",
+    "summary": "Retirada: la diferencia se paga por la pasarela o se revierte",
     "roles": [],
     "security": "bearerAuth",
     "aliases": [
@@ -1119,6 +1136,23 @@
     "security": "bearerAuth",
     "aliases": [
       "/orders/{orderId}/invoice"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/orders/{orderId}/return/complete",
+    "operationId": "internal_post_orders_orderId_return_complete",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "Cerrar la devolución al remitente de un pedido con la diferencia vencida",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}/return/complete"
     ]
   },
   {
@@ -1531,7 +1565,7 @@
     "tags": [
       "Routes"
     ],
-    "summary": "Agregar pedidos a una ruta existente",
+    "summary": "Agregar pedidos a una ruta existente, con la opción de sobrepasar sus límites",
     "roles": [
       "root"
     ],

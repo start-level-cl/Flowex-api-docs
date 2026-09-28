@@ -193,7 +193,10 @@ La vista `/admin/otp-deliveries` está reservada a `root` y `admin`. Solo lista 
 estado actual es `out_for_delivery`; los entregados y los pedidos con otros estados no aparecen.
 La lista se pagina en servidor con `page` (inicia en 1), `limit` (20 por defecto, máximo 100)
 y `q` (seguimiento, nombre del destinatario o dígitos del teléfono). `data` contiene el nombre
-de pila y el teléfono enmascarado, nunca el PIN ni el teléfono completo.
+de pila y el teléfono enmascarado, nunca el PIN ni el teléfono completo. Para `root`, cada
+pedido tiene además un botón **Ver PIN** que consulta `GET /internal/orders/{orderId}/delivery-code`;
+cada consulta queda en el historial del pedido. Desde la tabla de pedidos, "Gestionar PIN" lleva
+a esta vista filtrada por el pedido.
 
 #### `GET /internal/orders/delivery-codes`
 

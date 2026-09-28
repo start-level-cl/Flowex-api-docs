@@ -1258,7 +1258,7 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
-      description: "Endpoint administrativo y de despacho para supervisión global de pedidos en VPC, con filtros combinados por estado, conductor o cliente y metadatos estándar de paginación."
+      description: "Endpoint administrativo y de despacho para supervisión global de pedidos en VPC, con filtros combinados por estado, conductor o cliente y metadatos estándar de paginación. Para root cada pedido incluye deliveryCode cuando el PIN está guardado cifrado (los pedidos anteriores al cifrado traen solo deliveryCodeAvailable y se consultan con GET /internal/orders/{orderId}/delivery-code); la página queda en el registro de uso de datos como VIEW_DELIVERY_CODES_IN_ORDER_LIST. assignedRouteId es siempre el código de la ruta."
       security:
         - bearerAuth: []
       parameters:
@@ -1359,16 +1359,38 @@ paths:
   /internal/orders/{orderId}:
     delete:
       tags:
-        - Orders
-      summary: "DELETE /internal/orders/{orderId}"
+        - "Orders & Dispatch"
+      summary: "Descartar un pedido impago"
       operationId: internal_delete_orders_orderId
       responses:
         200:
-          description: "Operación ejecutada exitosamente."
+          description: "Pedido descartado."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/StandardSuccessResponse
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  deletedOrderId:
+                    type: string
+        400:
+          description: "El pedido ya está pagado, no está en created o ya tiene ruta (ORDER_ASSIGNED_TO_ROUTE)."
+        401:
+          description: "Token ausente o inválido."
+        403:
+          description: "El pedido no es del cliente."
+        404:
+          description: "Pedido no encontrado."
+        409:
+          description: "code ORDER_HAS_PAYMENT: tiene un pago registrado en la pasarela."
+        503:
+          description: "No se pudo descartar."
+      description: "El cliente dueño, admin o root descartan un pedido en created sin pagar y sin ruta. Los intentos de pago que nunca cobraron se borran con él; un pedido con un pago que movió dinero (aprobado, en proceso, devuelto o por devolver) no se descarta, porque ese pago es un registro contable y puede tener una devolución en curso. La purga automática de impagos de más de 7 días aplica la misma regla."
+      security:
+        - bearerAuth: []
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -1379,8 +1401,6 @@ paths:
           required: true
           schema:
             type: string
-      security:
-        - bearerAuth: []
     get:
       tags:
         - Orders
@@ -1711,16 +1731,95 @@ paths:
   /internal/orders/{orderId}/discrepancy:
     post:
       tags:
-        - Orders
+        - "Orders & Dispatch"
       summary: "Registrar diferencia de bulto detectada en bodega"
       operationId: internal_post_orders_orderId_discrepancy
       responses:
         200:
-          description: "Operación ejecutada exitosamente."
+          description: "Diferencia registrada; el pedido queda retenido."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/StandardSuccessResponse
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                  discrepancy:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum:
+                          - pending_payment
+                      declaredType:
+                        type: string
+                        example: S
+                      actualType:
+                        type: string
+                        example: L
+                      affectedPackages:
+                        type: integer
+                        example: 1
+                      packageBarcodes:
+                        type: array
+                        nullable: true
+                        items:
+                          type: string
+                      amount:
+                        type: number
+                        example: 3000
+                      dueAt:
+                        type: string
+                        format: date-time
+                      notes:
+                        type: string
+                        nullable: true
+        400:
+          description: "Falta marcar los bultos (la respuesta trae packageBarcodes con los subcódigos del pedido), un subcódigo no es del pedido, o el tamaño real no excede al declarado."
+        401:
+          description: "Token ausente o inválido."
+        403:
+          description: "Solo bodega (admin o root); el conductor queda fuera a propósito."
+        404:
+          description: "Pedido no encontrado."
+        409:
+          description: "Ya tiene una diferencia pendiente, ya se entregó o se está devolviendo al remitente."
+        503:
+          description: "No se pudo consultar o registrar."
+      description: "Solo bodega (admin o root), con el pedido en picked_up o in_hub. Se marcan los subcódigos exactos de los bultos que no corresponden y se cobra la diferencia de tarifa solo por esos, pero se retiene el pedido completo. El monto y la fecha límite (planner_settings.discrepancy_return_days, 7 días por omisión) se congelan al registrar. El remitente recibe un correo con los bultos, el monto y el plazo, y paga por la pasarela desde sus envíos. Si no paga en el plazo, el pedido pasa a return_pending."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - actualPackageType
+                - packageBarcodes
+              properties:
+                actualPackageType:
+                  type: string
+                  enum:
+                    - S
+                    - M
+                    - L
+                  description: "Tamaño real verificado; debe ser mayor al declarado."
+                packageBarcodes:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                  description: "Subcódigos del pedido que no corresponden. Obligatorio cuando el pedido tiene subcódigos."
+                  example:
+                    - FLX-2026-8492-B02
+                notes:
+                  type: string
+                  description: "Observación de bodega; va en el correo al remitente."
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -1731,21 +1830,76 @@ paths:
           required: true
           schema:
             type: string
-      security:
-        - bearerAuth: []
-  /internal/orders/{orderId}/discrepancy/settle:
+  /internal/orders/{orderId}/discrepancy/revert:
     post:
       tags:
-        - Orders
-      summary: "Liberar un pedido retenido tras pagar la diferencia"
-      operationId: internal_post_orders_orderId_discrepancy_settle
+        - "Orders & Dispatch"
+      summary: "Revertir una diferencia de bulto registrada por error"
+      operationId: internal_post_orders_orderId_discrepancy_revert
       responses:
         200:
-          description: "Operación ejecutada exitosamente."
+          description: "Diferencia revertida."
           content:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        400:
+          description: "Falta el motivo, o code CONFIRMATION_MISMATCH si el número de seguimiento no coincide."
+        401:
+          description: "Token ausente o inválido."
+        403:
+          description: "Solo bodega (admin o root)."
+        404:
+          description: "Pedido no encontrado."
+        409:
+          description: "La diferencia ya se pagó (se devuelve por la pasarela) o el pedido no tiene una diferencia pendiente."
+        503:
+          description: "No se pudo consultar o revertir."
+      description: "Solo bodega (admin o root) y solo con la diferencia en pending_payment. Tiene doble confirmación: un motivo y el número de seguimiento escrito, que el servidor compara sin distinguir mayúsculas. Borra la diferencia como si no se hubiera registrado, el pedido vuelve a la cola, el remitente recibe un correo avisando que el cobro se anuló, y el historial del pedido registra quién la revirtió y por qué. Un pago que llegue después lo devuelve la pasarela como duplicado."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+                - confirmTrackingNumber
+              properties:
+                reason:
+                  type: string
+                  minLength: 4
+                  example: "Se midió la caja equivocada."
+                confirmTrackingNumber:
+                  type: string
+                  description: "El número de seguimiento del pedido, escrito por el operador."
+                  example: FLX-2026-8492
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}/discrepancy/revert"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+  /internal/orders/{orderId}/discrepancy/settle:
+    post:
+      tags:
+        - "Orders & Dispatch"
+      summary: "Retirada: la diferencia se paga por la pasarela o se revierte"
+      operationId: internal_post_orders_orderId_discrepancy_settle
+      responses:
+        403:
+          description: "Solo bodega (admin o root)."
+        409:
+          description: "code DISCREPANCY_PAID_BY_GATEWAY (marcar pagada a mano) o DISCREPANCY_WAIVE_REMOVED (condonar)."
+      description: "Ya no libera pedidos. La diferencia se da por pagada solo cuando la pasarela confirma el cobro, y condonar se retiró el 28-09-2026: si la diferencia se registró por error, se usa POST /internal/orders/{orderId}/discrepancy/revert."
+      security:
+        - bearerAuth: []
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -1756,8 +1910,6 @@ paths:
           required: true
           schema:
             type: string
-      security:
-        - bearerAuth: []
   /internal/orders/{orderId}/evidence:
     get:
       tags:
@@ -1838,6 +1990,50 @@ paths:
             type: string
       security:
         - bearerAuth: []
+  /internal/orders/{orderId}/return/complete:
+    post:
+      tags:
+        - "Orders & Dispatch"
+      summary: "Cerrar la devolución al remitente de un pedido con la diferencia vencida"
+      operationId: internal_post_orders_orderId_return_complete
+      responses:
+        200:
+          description: "Devolución cerrada."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+        401:
+          description: "Token ausente o inválido."
+        403:
+          description: "Solo bodega (admin o root)."
+        409:
+          description: "El pedido no está pendiente de devolución."
+        503:
+          description: "No se pudo cerrar la devolución."
+      description: "Solo bodega (admin o root). Pasa de return_pending a returned cuando el pedido se entregó de vuelta al remitente. El paso a return_pending lo hace la corrida programada (EventBridge, cada 15 minutos) cuando vence discrepancyDueAt sin pago: el cobro pasa a expired y el remitente recibe un correo."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: string
+                  description: "Observación para el historial."
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}/return/complete"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
   /internal/orders/{orderId}/status:
     patch:
       tags:
@@ -2741,16 +2937,130 @@ paths:
   /internal/routes/{routeId}/orders:
     post:
       tags:
-        - Routes
-      summary: "Agregar pedidos a una ruta existente"
+        - "Route Planning"
+      summary: "Agregar pedidos a una ruta existente, con la opción de sobrepasar sus límites"
       operationId: internal_post_routes_routeId_orders
       responses:
         200:
-          description: "Operación ejecutada exitosamente."
+          description: "Pedidos agregados."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/StandardSuccessResponse
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "1 pedido(s) sumado(s) exitosamente a la ruta RUT-ENT-20260928-001. Se agregó sobre los límites: Bultos 36 supera 34."
+                  route:
+                    $ref: #/components/schemas/RouteSummary
+                  addedOrdersCount:
+                    type: integer
+                  addedOrders:
+                    type: array
+                    items:
+                      type: string
+                  estimateSource:
+                    type: string
+                    enum:
+                      - google
+                      - fallback
+                      - own
+                  overLimits:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: #/components/schemas/LimitBlock
+                        - type: object
+                          properties:
+                            trackingNumber:
+                              type: string
+        400:
+          description: "orderIds vacío, pedidos sin pagar (ORDER_NOT_PAID) o retenidos por una diferencia (DISCREPANCY_PENDING_PAYMENT)."
+        401:
+          description: "Token ausente o inválido."
+        403:
+          description: "Solo admin o root."
+        404:
+          description: "Ruta o pedidos no encontrados."
+        409:
+          description: "ROUTE_NOT_OPEN (ruta cerrada o anulada), ROUTE_CAPACITY_EXCEEDED o ROUTE_INSERTION_BLOCKED (con canOverride, overLimits y details por pedido), o ROUTE_LIMITS_CHANGED."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    enum:
+                      - ROUTE_NOT_OPEN
+                      - ROUTE_CAPACITY_EXCEEDED
+                      - ROUTE_INSERTION_BLOCKED
+                      - ROUTE_LIMITS_CHANGED
+                  message:
+                    type: string
+                  canOverride:
+                    type: boolean
+                    description: "true si todo lo que bloquea son límites: se puede reintentar con allowOverLimits."
+                  overLimits:
+                    type: array
+                    items:
+                      $ref: #/components/schemas/LimitBlock
+                  details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        trackingNumber:
+                          type: string
+                        blocks:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              code:
+                                type: string
+                              message:
+                                type: string
+                        overLimits:
+                          type: array
+                          items:
+                            $ref: #/components/schemas/LimitBlock
+                        canOverride:
+                          type: boolean
+      description: "Solo admin o root. El {routeId} acepta el código, el app_id o el UUID de la ruta. Cada pedido se evalúa con las reglas de la corrida y se inserta donde agrega menos desvío; varios pedidos se evalúan en cadena. Si solo se pasan de límites (jornada, peso, volumen, bultos o paradas) se pueden agregar con allowOverLimits: true; las reglas bloquean siempre y el lote entra completo o no entra. Con acknowledgedBlocks el operador indica qué límites vio: si al volver a evaluar aparece otro, la respuesta es 409 ROUTE_LIMITS_CHANGED. Sobre los límites no se reordena con Google (se conserva el orden de la inserción) y el override queda en el log con el usuario y los límites. Solo root recalcula la distancia con Google."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - orderIds
+              properties:
+                orderIds:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                  description: "UUID, app_id o número de seguimiento."
+                allowOverLimits:
+                  type: boolean
+                  default: false
+                acknowledgedBlocks:
+                  type: array
+                  items:
+                    type: string
+                  description: "Códigos de los límites que el operador aceptó."
+                  example:
+                    - packages_exceeded
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2763,8 +3073,6 @@ paths:
           required: true
           schema:
             type: string
-      security:
-        - bearerAuth: []
   /internal/routes/directions:
     post:
       tags:
@@ -2789,24 +3097,105 @@ paths:
   /internal/routes/insertion-candidates:
     get:
       tags:
-        - Routes
+        - "Route Planning"
       summary: "Rutas candidatas para insertar un pedido"
       operationId: internal_get_routes_insertion_candidates
       responses:
         200:
-          description: "Operación ejecutada exitosamente."
+          description: "Rutas evaluadas, las que caben primero, luego las que caben sobre los límites."
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/StandardSuccessResponse
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  date:
+                    type: string
+                    format: date
+                  order:
+                    type: object
+                    properties:
+                      trackingNumber:
+                        type: string
+                      kind:
+                        type: string
+                        enum:
+                          - pickup
+                          - delivery
+                      currentRouteCode:
+                        type: string
+                        nullable: true
+                  recommendedRouteCode:
+                    type: string
+                    nullable: true
+                  candidates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        routeCode:
+                          type: string
+                        feasible:
+                          type: boolean
+                        canOverride:
+                          type: boolean
+                        blocks:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              code:
+                                type: string
+                              message:
+                                type: string
+                        overLimits:
+                          type: array
+                          items:
+                            $ref: #/components/schemas/LimitBlock
+                        warnings:
+                          type: array
+                          items:
+                            type: string
+                        insertAtPosition:
+                          type: integer
+                        detourKm:
+                          type: number
+                        extraMinutes:
+                          type: integer
+                  message:
+                    type: string
+        400:
+          description: "Falta orderId."
+        401:
+          description: "Token ausente o inválido."
+        403:
+          description: "Solo admin o root."
+        404:
+          description: "Pedido no encontrado."
+      description: "Solo admin o root. Evalúa cada ruta abierta de la fecha con las reglas de la corrida (capacidad, paradas, zona, día de servicio y jornada) y el desvío que agrega. feasible: cabe sin romper nada. canOverride: no cabe, pero solo por límites, así que se puede agregar con allowOverLimits. recommendedRouteCode apunta solo a rutas feasible. Solo lee; la inserción la hace POST /internal/routes/{routeId}/orders, que vuelve a validar."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "UUID, app_id o número de seguimiento."
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: "Fecha de las rutas; hoy en Santiago por omisión."
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - root
       x-aliases:
         - /routes/insertion-candidates
-      security:
-        - bearerAuth: []
   /internal/routes/insertion-queue:
     get:
       tags:
@@ -4629,11 +5018,38 @@ components:
           example: 8900
         deliveryCode:
           type: string
-          description: "PIN confidencial (redactado para clientes no propietarios)"
+          description: "PIN de entrega. Solo root lo recibe, y solo si está guardado cifrado; para cualquier otro rol el servidor lo quita de la respuesta. Cada página que lo muestra queda en el registro de uso de datos."
           example: 4920
+        deliveryCodeAvailable:
+          type: boolean
+          description: "Solo root: hay un PIN recuperable (cifrado o en la copia de avisos)."
+        assignedRouteId:
+          type: string
+          nullable: true
+          description: "Código de la ruta vigente (delivery_routes.code), con clave foránea desde la migración 059."
+          example: RUT-ENT-20260928-001
         assignedDriverId:
           type: string
           example: usr_drv_201
+        discrepancyStatus:
+          $ref: #/components/schemas/PackageDiscrepancyStatus
+        discrepancyAmount:
+          type: number
+          description: "Diferencia a pagar, congelada al registrarla."
+          example: 3000
+        discrepancyPackageBarcodes:
+          type: array
+          nullable: true
+          items:
+            type: string
+          description: "Subcódigos de los bultos que no corresponden a lo declarado."
+          example:
+            - FLX-2026-8492-B02
+        discrepancyDueAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: "Fecha límite de pago; pasada, el pedido pasa a return_pending."
         createdAt:
           type: string
           format: date-time
@@ -4962,15 +5378,43 @@ components:
     OrderStatus:
       type: string
       enum:
-        - pending
-        - paid
-        - pickup_assigned
+        - created
         - picked_up
+        - pickup_failed
         - in_hub
-        - transit
+        - out_for_delivery
         - delivered
-        - incident
-      description: "Ciclo de vida del estado del envío"
+        - delivery_failed
+        - return_pending
+        - returned
+      description: "Ciclo de vida del envío. Los estados de la primera versión (pending, paid, pickup_assigned, transit, incident) se retiraron en la migración 049. return_pending y returned son la devolución al remitente cuando vence sin pago una diferencia de bulto (28-09-2026); no se asignan con PATCH /status."
+    PackageDiscrepancyStatus:
+      type: string
+      enum:
+        - none
+        - pending_payment
+        - settled
+        - waived
+        - expired
+      description: "pending_payment retiene el pedido hasta que el cliente pague por la pasarela. expired: venció el plazo sin pago y el pedido se devuelve al remitente. waived solo aparece en diferencias antiguas: condonar se retiró el 28-09-2026."
+    LimitBlock:
+      type: object
+      description: "Un límite de la ruta que el pedido sobrepasa. Solo estos se pueden sobrepasar con allowOverLimits; las reglas (día de servicio, coordenadas, recibido en el hub, pago, zona, ruta cerrada o ya en la calle) bloquean siempre."
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - out_of_shift_window
+            - weight_exceeded
+            - volume_exceeded
+            - packages_exceeded
+            - max_stops_reached
+        message:
+          type: string
+          example: "Bultos 36 supera 34."
     PaymentMethod:
       type: string
       enum:

@@ -117,7 +117,19 @@ Los correos emitidos por Amazon SES utilizan plantillas HTML con la identidad co
 #### F. Retención por Discrepancia de Bultos (`/notifications/email/package-discrepancy` o evento `ORDER_PACKAGE_DISCREPANCY`)
 * **Asunto:** `Flowex: tu pedido {trackingNumber} requiere pagar una diferencia para ser entregado`
 * **Destinatario:** Cliente remitente.
-* **Contenido:** Cuadro comparativo con la categoría de bulto declarada vs. la categoría verificada en la báscula del hub, el monto de la diferencia tarifaria en CLP, las observaciones del operador de bodega y la explicación de que el paquete queda retenido sin costo para el destinatario hasta que el remitente regularice el pago.
+* **Contenido:** Cuadro comparativo con la categoría de bulto declarada vs. la categoría verificada en la báscula del hub, los subcódigos de los bultos marcados (`packageBarcodes`), el monto de la diferencia tarifaria en CLP, las observaciones del operador de bodega, la explicación de que el paquete queda retenido sin costo para el destinatario, y la fecha límite de pago (`dueDate`): si no se paga en ese plazo, el pedido se devuelve al remitente.
+
+#### F.1 Cobro de diferencia anulado (evento `ORDER_PACKAGE_DISCREPANCY_REVERTED`)
+* **Asunto:** `Flowex: se anuló el cobro de diferencia de tu pedido {trackingNumber}`
+* **Destinatario:** Cliente remitente.
+* **Cuándo:** bodega revierte una diferencia registrada por error (`POST /internal/orders/{orderId}/discrepancy/revert`).
+* **Contenido:** Aviso de que no hay nada que pagar y el pedido sigue su curso, con enlace al rastreo.
+
+#### F.2 Devolución al remitente (evento `ORDER_RETURN_TO_SENDER`)
+* **Asunto:** `Flowex: tu pedido {trackingNumber} se devolverá al remitente`
+* **Destinatario:** Cliente remitente.
+* **Cuándo:** la corrida programada vence una diferencia impaga y el pedido pasa a `return_pending`.
+* **Contenido:** El monto que quedó sin pagar, que el pedido no se entregará al destinatario y que se coordinará la devolución.
 
 #### G. Solicitud de Supresión de Contacto de Libreta (`CONTACT_ERASURE_NOTICE` - Ley N° 21.719)
 * **Asunto:** `Flowex: solicitud de supresión de un contacto de tu libreta ({ticket})`

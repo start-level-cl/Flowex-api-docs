@@ -8,17 +8,27 @@ El motor logístico de Flowex orquesta el ciclo de vida completo de cada despach
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending: Creación de Solicitud
-    pending --> paid: Pago Confirmado (Mercado Pago / Fintoc)
-    paid --> pickup_assigned: Asignación a Ruta de Retiro
-    pickup_assigned --> picked_up: Retiro en Origen (Foto POD)
-    picked_up --> in_hub: Recepción y Consolidación en Hub
-    in_hub --> transit: Asignación a Ruta de Despacho
-    transit --> delivered: Entrega Exitosa (PIN + Firma + Foto)
-    transit --> incident: Intento Fallido (Dirección no encontrada / Ausente)
-    incident --> in_hub: Retorno a Hub para Reagendamiento
+    [*] --> created: Pedido creado (el pago se refleja en isPaid, no en el estado)
+    created --> picked_up: Retiro en origen (foto)
+    created --> pickup_failed: Retiro fallido
+    pickup_failed --> created: Reprogramar retiro
+    picked_up --> in_hub: Recepción en el hub
+    in_hub --> out_for_delivery: Sale en una ruta de entrega
+    out_for_delivery --> delivered: Entrega con PIN + firma + foto
+    out_for_delivery --> delivery_failed: Intento fallido
+    delivery_failed --> in_hub: Vuelve al hub
+    in_hub --> return_pending: Venció sin pago una diferencia de bulto
+    picked_up --> return_pending: Venció sin pago una diferencia de bulto
+    return_pending --> returned: Bodega lo entrega al remitente
     delivered --> [*]
+    returned --> [*]
 ```
+
+Los estados de la primera versión (`pending`, `paid`, `pickup_assigned`, `transit`,
+`incident`) se retiraron en la migración 049; la base solo admite los de este diagrama.
+`return_pending` y `returned` no se asignan con `PATCH /status`: los pone la corrida
+programada y `POST /internal/orders/{orderId}/return/complete` (ver
+[Diferencia de bulto](#⚖️-diferencia-de-bulto-reversion-y-devolucion-al-remitente)).
 
 ---
 
@@ -32,6 +42,7 @@ stateDiagram-v2
 * Al confirmarse el pago, el sistema genera automáticamente un **código de seguridad de 4 dígitos**.
 * Este código se envía de forma confidencial al cliente/destinatario por correo electrónico y WhatsApp.
 * **Regla estricta:** El conductor no puede marcar una orden como `delivered` sin ingresar el PIN correcto proporcionado por el receptor en mano.
+* **Quién lo ve:** solo `root`. En la tabla de pedidos lo recibe en `deliveryCode` cuando está guardado cifrado (cada página queda en el registro de uso de datos); los pedidos anteriores al cifrado muestran "Ver PIN", que consulta `GET /internal/orders/{orderId}/delivery-code` y lo deja cifrado. En Gestión de PIN, root tiene un botón "Ver PIN" por pedido. Para cualquier otro rol el servidor quita el PIN de la respuesta.
 
 ### 3. Proof of Delivery (POD) Completo
 Para garantizar la trazabilidad legal y operativa de la entrega, se capturan tres evidencias obligatorias:
@@ -139,14 +150,23 @@ export interface Order {
   hubName: string | null;
 
   // Estados & Pagos
-  status: OrderStatus;
+  status: OrderStatus; // created … delivered, más return_pending / returned
   isPaid: boolean;
   paymentMethod: 'mercadopago' | 'fintoc' | 'webpay' | 'transfer';
   paymentTransactionId?: string;
   paidAt?: string;
 
+  // Ruta vigente: el código de la ruta (delivery_routes.code), con clave foránea
+  assignedRouteId?: string | null;
+
+  // Diferencia de bulto registrada en bodega
+  discrepancyStatus: 'none' | 'pending_payment' | 'settled' | 'waived' | 'expired';
+  discrepancyAmount: number;
+  discrepancyPackageBarcodes?: string[] | null; // subcódigos marcados, p. ej. FLX-2026-8492-B02
+  discrepancyDueAt?: string | null;              // fecha límite de pago
+
   // Seguridad & Evidencias POD
-  deliveryCode: string; // PIN de 4 dígitos
+  deliveryCode?: string; // PIN de 4 dígitos; solo root lo recibe
   pickupPhotoUrl?: string;
   pickupTimestamp?: string;
   deliveryPhotoUrl?: string;
@@ -237,7 +257,8 @@ Flowex provee endpoints de consulta con el estándar unificado de paginación Im
 ### Control de Acceso por Rol
 * **`client` / `customer`**: Visualiza únicamente los pedidos asociados a sus identificadores de cuenta (`customer_id` o `customer_app_id`). El PIN confidencial de entrega (`deliveryCode`) es redactado para proteger la recepción en destino.
 * **`driver`**: Visualiza exclusivamente los pedidos asignados a sus rutas de despacho (`assigned_driver_app_id`), protegiendo los datos confidenciales de terceras rutas.
-* **`admin` / `root`**: Acceso completo a todos los pedidos operativos de la plataforma, tanto en `/orders` como en el endpoint interno de VPC `/internal/orders`.
+* **`admin` / `root`**: Acceso completo a todos los pedidos operativos de la plataforma, tanto en `/orders` como en el endpoint interno de VPC `/internal/orders`. Solo `root` recibe además `deliveryCode` (cuando el PIN está cifrado) y `deliveryCodeAvailable`.
+* **Ruta vigente:** `assignedRouteId` es siempre el código de la ruta (`RUT-ENT-20260928-001`). Desde la migración 059 es una clave foránea a `delivery_routes(code)`; antes podía traer el UUID o el `app_id`.
 
 ### Parámetros de Consulta (Query String)
 
@@ -245,7 +266,7 @@ Flowex provee endpoints de consulta con el estándar unificado de paginación Im
 | :--- | :--- | :--- | :--- |
 | `page` | `integer` | No | Número de página a consultar (1-indexed). Por defecto `1`. |
 | `limit` | `integer` | No | Cantidad máxima de órdenes por página (mínimo `1`, máximo `100`, por defecto `20`). |
-| `status` | `string` | No | Filtrar por estado del ciclo de vida (`pending`, `paid`, `in_hub`, `transit`, `delivered`, etc.). |
+| `status` | `string` | No | Filtrar por estado del ciclo de vida (`created`, `picked_up`, `in_hub`, `out_for_delivery`, `delivered`, `return_pending`…). `pending_payment` trae los impagos y los retenidos por una diferencia de bulto. |
 | `driverId` | `string` | No | Filtrar por identificador o UUID de chofer asignado (exclusivo para roles operativos). |
 | `customerId` | `string` | No | Filtrar por ID de cliente (exclusivo para roles administrativos). |
 | `search` | `string` | No | Búsqueda por coincidencia en número de tracking, remitente, destinatario o comuna. |
@@ -319,6 +340,100 @@ El contrato de respuesta incluye el arreglo principal en `data`, el alias de com
 > [!TIP]
 > **Tolerancia a Fallos y Modo Demostración:**
 > En caso de indisponibilidad temporal de la base de datos PostgreSQL, el servicio activa automáticamente degradación limpia al almacén en memoria del contenedor Lambda (`ordersStore`), preservando los mismos filtros por rol, búsqueda y estructura canónica `{ data, orders, total, meta }`.
+
+---
+
+## ⚖️ Diferencia de bulto, reversión y devolución al remitente
+
+Al crear un pedido nadie ha medido el bulto, así que se cobra lo declarado. La diferencia
+aparece en bodega. Reglas vigentes (28-09-2026):
+
+* **La registra bodega** (`admin` o `root`), nunca el conductor, con el pedido en `picked_up`
+  o `in_hub`.
+* **Se marca el bulto exacto.** Bodega indica qué subcódigos no corresponden (`B01`, `B02`…) y
+  se cobra la diferencia de tarifa solo por esos. **El pedido completo queda retenido**: no hay
+  entregas parciales.
+* **Se paga por la pasarela.** El remitente recibe un correo con los bultos, el monto y la
+  fecha límite, y paga desde sus envíos; el pago aprobado libera el pedido solo. Nadie puede
+  marcarla pagada a mano, y **condonar ya no existe**.
+* **Si se registró por error, se revierte**, con doble confirmación.
+* **Si vence el plazo sin pago**, el cobro pasa a `expired` y el pedido a `return_pending`. El
+  plazo es el parámetro `discrepancy_return_days` del panel del planificador (7 días por
+  omisión) y se congela al registrar la diferencia, igual que el monto.
+
+Mientras la diferencia está `pending_payment` o `expired`, el pedido no entra a ninguna ruta
+(ni automática, ni manual, ni por inserción) y `PATCH /status` no lo despacha.
+
+### `POST /internal/orders/{orderId}/discrepancy`
+
+```jsonc
+// Solicitud
+{
+  "actualPackageType": "L",
+  "packageBarcodes": ["FLX-2026-8492-B02"],
+  "notes": "Caja de 60x60 declarada como S"
+}
+
+// 200
+{
+  "success": true,
+  "message": "Discrepancia registrada. El pedido queda retenido hasta el pago de $3.000 CLP; si no se paga antes del 05-10-2026, se devuelve al remitente.",
+  "discrepancy": {
+    "status": "pending_payment",
+    "declaredType": "S",
+    "actualType": "L",
+    "affectedPackages": 1,
+    "packageBarcodes": ["FLX-2026-8492-B02"],
+    "amount": 3000,
+    "dueAt": "2026-10-05T19:14:17.061Z",
+    "notes": "Caja de 60x60 declarada como S"
+  }
+}
+```
+
+Si el pedido tiene subcódigos y no se marca ninguno, la respuesta es `400` con
+`packageBarcodes` listando los del pedido. Un subcódigo ajeno también es `400`.
+
+### `POST /internal/orders/{orderId}/discrepancy/revert`
+
+Deshace una diferencia registrada por error, como si no se hubiera registrado. Solo con la
+diferencia en `pending_payment`; una ya pagada se devuelve por la pasarela.
+
+```jsonc
+{
+  "reason": "Se midió la caja equivocada.",
+  "confirmTrackingNumber": "FLX-2026-8492"
+}
+```
+
+La segunda confirmación es escribir el número de seguimiento, y la verifica el servidor: si no
+coincide responde `400 CONFIRMATION_MISMATCH` sin tocar nada. Al revertir, el remitente recibe
+un correo avisando que el cobro se anuló y el historial registra quién la revirtió y por qué.
+Si el cliente paga después, la pasarela devuelve ese pago como duplicado.
+
+`POST /internal/orders/{orderId}/discrepancy/settle` quedó retirado: responde `409` con
+`DISCREPANCY_PAID_BY_GATEWAY` o `DISCREPANCY_WAIVE_REMOVED`.
+
+### Devolución al remitente
+
+La corrida programada (EventBridge, cada 15 minutos) vence las diferencias cuyo
+`discrepancyDueAt` pasó sin pago: el pedido pasa a `return_pending`, sale de cualquier ruta y
+el remitente recibe un correo. Bodega coordina la entrega de vuelta y la cierra con:
+
+### `POST /internal/orders/{orderId}/return/complete`
+
+Pasa el pedido de `return_pending` a `returned`. El cuerpo admite `notes` para el historial.
+Responde `409` si el pedido no está pendiente de devolución. El viaje de vuelta no se
+planifica solo: no hay rutas de devolución.
+
+## 🗑️ Descarte de pedidos impagos (`DELETE /internal/orders/{orderId}`)
+
+El cliente dueño, `admin` o `root` descartan un pedido en `created` sin pagar y sin ruta. Los
+intentos de pago que nunca cobraron se borran con él. **Un pedido con un pago que movió
+dinero** (aprobado, en proceso, devuelto o por devolver) **no se descarta**: responde
+`409 ORDER_HAS_PAYMENT`, porque ese pago es un registro contable y puede tener una devolución
+en curso. La purga automática de impagos de más de 7 días aplica la misma regla, y la base lo
+garantiza: desde la migración 058, `payments.order_id` ya no borra en cascada.
 
 ---
 

@@ -43,7 +43,13 @@ export type OrderSummary = {
   weightKg?: number
   totalCost?: number
   deliveryCode?: string
+  deliveryCodeAvailable?: boolean
+  assignedRouteId?: string
   assignedDriverId?: string
+  discrepancyStatus?: PackageDiscrepancyStatus
+  discrepancyAmount?: number
+  discrepancyPackageBarcodes?: (string)[]
+  discrepancyDueAt?: string
   createdAt?: string
 }
 
@@ -142,7 +148,14 @@ export type OtpDeliveryItem = {
 
 export type UserRole = "root" | "admin" | "driver" | "client"
 
-export type OrderStatus = "pending" | "paid" | "pickup_assigned" | "picked_up" | "in_hub" | "transit" | "delivered" | "incident"
+export type OrderStatus = "created" | "picked_up" | "pickup_failed" | "in_hub" | "out_for_delivery" | "delivered" | "delivery_failed" | "return_pending" | "returned"
+
+export type PackageDiscrepancyStatus = "none" | "pending_payment" | "settled" | "waived" | "expired"
+
+export type LimitBlock = {
+  code: "out_of_shift_window" | "weight_exceeded" | "volume_exceeded" | "packages_exceeded" | "max_stops_reached"
+  message: string
+}
 
 export type PaymentMethod = "mercadopago" | "fintoc" | "webpay" | "credit_card" | "transfer"
 
@@ -1056,7 +1069,17 @@ export interface Operations {
     path: "/internal/orders/{orderId}"
     requestBody: undefined
     responses: {
-      "200": StandardSuccessResponse
+      "200": {
+        success?: boolean
+        message?: string
+        deletedOrderId?: string
+      }
+      "400": undefined
+      "401": undefined
+      "403": undefined
+      "404": undefined
+      "409": undefined
+      "503": undefined
     }
   }
   "internal_get_orders_orderId": {
@@ -1168,9 +1191,49 @@ export interface Operations {
   "internal_post_orders_orderId_discrepancy": {
     method: "POST"
     path: "/internal/orders/{orderId}/discrepancy"
-    requestBody: undefined
+    requestBody: {
+      actualPackageType: "S" | "M" | "L"
+      packageBarcodes: (string)[]
+      notes?: string
+    }
+    responses: {
+      "200": {
+        success?: boolean
+        message?: string
+        discrepancy?: {
+          status?: "pending_payment"
+          declaredType?: string
+          actualType?: string
+          affectedPackages?: number
+          packageBarcodes?: (string)[]
+          amount?: number
+          dueAt?: string
+          notes?: string
+        }
+      }
+      "400": undefined
+      "401": undefined
+      "403": undefined
+      "404": undefined
+      "409": undefined
+      "503": undefined
+    }
+  }
+  "internal_post_orders_orderId_discrepancy_revert": {
+    method: "POST"
+    path: "/internal/orders/{orderId}/discrepancy/revert"
+    requestBody: {
+      reason: string
+      confirmTrackingNumber: string
+    }
     responses: {
       "200": StandardSuccessResponse
+      "400": undefined
+      "401": undefined
+      "403": undefined
+      "404": undefined
+      "409": undefined
+      "503": undefined
     }
   }
   "internal_post_orders_orderId_discrepancy_settle": {
@@ -1178,7 +1241,8 @@ export interface Operations {
     path: "/internal/orders/{orderId}/discrepancy/settle"
     requestBody: undefined
     responses: {
-      "200": StandardSuccessResponse
+      "403": undefined
+      "409": undefined
     }
   }
   "internal_get_orders_orderId_evidence": {
@@ -1203,6 +1267,20 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_orders_orderId_return_complete": {
+    method: "POST"
+    path: "/internal/orders/{orderId}/return/complete"
+    requestBody: {
+      notes?: string
+    }
+    responses: {
+      "200": StandardSuccessResponse
+      "401": undefined
+      "403": undefined
+      "409": undefined
+      "503": undefined
     }
   }
   "internal_patch_orders_orderId_status": {
@@ -1455,9 +1533,43 @@ export interface Operations {
   "internal_post_routes_routeId_orders": {
     method: "POST"
     path: "/internal/routes/{routeId}/orders"
-    requestBody: undefined
+    requestBody: {
+      orderIds: (string)[]
+      allowOverLimits?: boolean
+      acknowledgedBlocks?: (string)[]
+    }
     responses: {
-      "200": StandardSuccessResponse
+      "200": {
+        success?: boolean
+        message?: string
+        route?: RouteSummary
+        addedOrdersCount?: number
+        addedOrders?: (string)[]
+        estimateSource?: "google" | "fallback" | "own"
+        overLimits?: (LimitBlock & {
+          trackingNumber?: string
+        })[]
+      }
+      "400": undefined
+      "401": undefined
+      "403": undefined
+      "404": undefined
+      "409": {
+        success?: boolean
+        error?: "ROUTE_NOT_OPEN" | "ROUTE_CAPACITY_EXCEEDED" | "ROUTE_INSERTION_BLOCKED" | "ROUTE_LIMITS_CHANGED"
+        message?: string
+        canOverride?: boolean
+        overLimits?: (LimitBlock)[]
+        details?: ({
+          trackingNumber?: string
+          blocks?: ({
+            code?: string
+            message?: string
+          })[]
+          overLimits?: (LimitBlock)[]
+          canOverride?: boolean
+        })[]
+      }
     }
   }
   "internal_post_routes_directions": {
@@ -1473,7 +1585,35 @@ export interface Operations {
     path: "/internal/routes/insertion-candidates"
     requestBody: undefined
     responses: {
-      "200": StandardSuccessResponse
+      "200": {
+        success?: boolean
+        date?: string
+        order?: {
+          trackingNumber?: string
+          kind?: "pickup" | "delivery"
+          currentRouteCode?: string
+        }
+        recommendedRouteCode?: string
+        candidates?: ({
+          routeCode?: string
+          feasible?: boolean
+          canOverride?: boolean
+          blocks?: ({
+            code?: string
+            message?: string
+          })[]
+          overLimits?: (LimitBlock)[]
+          warnings?: (string)[]
+          insertAtPosition?: number
+          detourKm?: number
+          extraMinutes?: number
+        })[]
+        message?: string
+      }
+      "400": undefined
+      "401": undefined
+      "403": undefined
+      "404": undefined
     }
   }
   "internal_get_routes_insertion_queue": {

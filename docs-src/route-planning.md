@@ -500,51 +500,76 @@ Consulta el listado de rutas planificadas y operativas con el estándar unificad
 
 ## `POST /internal/routes/{id}/orders`
 
-Agrega pedidos a una ruta ya generada. El `{id}` acepta el código de la ruta, su `app_id`
-o su UUID.
+Agrega pedidos a una ruta ya generada (también a las de Google). Solo `admin` o `root`. El
+`{id}` acepta el código de la ruta, su `app_id` o su UUID. La pantalla que la usa es
+**Inserción en rutas**, que primero consulta `GET /internal/routes/insertion-candidates`.
 
-El servidor inserta las paradas al final, recalcula el recorrido con Directions y reescribe
-la secuencia con el orden que devuelve Google, de modo que los kilómetros que se muestran y
-el orden que sigue el conductor describan el mismo viaje.
+**Evaluación.** Cada pedido se evalúa con las mismas reglas de la corrida y se inserta donde
+agrega menos desvío, no al final. Varios pedidos se evalúan en cadena: el segundo se mide
+contra la ruta que ya incluye al primero. Solo `root` vuelve a medir la ruta con Google; un
+admin se queda con la estimación propia.
 
-**409 `ROUTE_NOT_OPEN`**
+**Límites y reglas.** Lo que impide agregar un pedido se divide en dos:
 
-Una ruta cerrada o anulada no admite paradas nuevas. El conductor ya entregó la hoja del
-día, así que un pedido agregado ahí no lo recogería nadie: entra en la planificación
-siguiente.
+| Límites: se pueden sobrepasar con `allowOverLimits` | Reglas: bloquean siempre |
+|---|---|
+| Jornada del conductor (`out_of_shift_window`) | Día de servicio de la comuna |
+| Peso, volumen y bultos del vehículo | Coordenadas válidas |
+| Paradas máximas por ruta (`max_stops_reached`) | Entrega sin recibir en el hub |
+| | Pedido sin pagar o retenido por una diferencia |
+| | Zona no habilitada para el vehículo |
+| | Ruta cerrada, anulada o, para entregas, ya en la calle |
+| | Pedido que ya va en otra ruta |
 
 ```jsonc
+// Agregar sobre los límites, indicando cuáles vio el operador
 {
-  "success": false,
-  "error": "ROUTE_NOT_OPEN",
-  "message": "La ruta RUT-REC-20260909-001 está cerrada y ya no admite paradas. Los pedidos entrarán en la próxima planificación.",
-  "status": "completed"
+  "orderIds": ["FLX-2026-9377"],
+  "allowOverLimits": true,
+  "acknowledgedBlocks": ["packages_exceeded"]
+}
+
+// 200
+{
+  "success": true,
+  "message": "1 pedido(s) sumado(s) exitosamente a la ruta RUT-REC-20260928-001. Se agregó sobre los límites: Bultos 36 supera 34.",
+  "addedOrdersCount": 1,
+  "addedOrders": ["FLX-2026-9377"],
+  "estimateSource": "own",
+  "overLimits": [{ "trackingNumber": "FLX-2026-9377", "code": "packages_exceeded", "message": "Bultos 36 supera 34." }]
 }
 ```
 
-**409 `ROUTE_CAPACITY_EXCEEDED`**
+* El lote entra completo o no entra: si un pedido rompe una regla, no se agrega ninguno.
+* Sobre los límites no se reordena con Google: se conserva el orden de la inserción, que es
+  el que ya tiene el conductor.
+* El override queda en el log (`[Add Orders Over Limits]`) con el usuario y los límites.
+
+**409.** Sin `allowOverLimits`, un pedido que no cabe responde `ROUTE_CAPACITY_EXCEEDED` (solo
+capacidad) o `ROUTE_INSERTION_BLOCKED`, con `canOverride`, `overLimits` y `details` por pedido.
+`canOverride: true` significa que todo lo que bloquea son límites y se puede reintentar con
+`allowOverLimits`. Si al volver a evaluar aparece un límite que no estaba en
+`acknowledgedBlocks` (otro operador llenó la ruta), la respuesta es `ROUTE_LIMITS_CHANGED`.
+Una ruta cerrada o anulada responde `ROUTE_NOT_OPEN`.
 
 ```jsonc
 {
   "success": false,
   "error": "ROUTE_CAPACITY_EXCEEDED",
-  "message": "El vehículo KJL-942 no admite estos pedidos: volumen 4.100 m3 supera 3.7 m3",
+  "message": "El vehículo KJL-942 no admite estos pedidos: Bultos 36 supera 34. Solo se pasa de límites: puede agregarlo igual, con advertencia.",
+  "canOverride": true,
+  "overLimits": [{ "code": "packages_exceeded", "message": "Bultos 36 supera 34." }],
   "capacity": { "maxWeightKg": 800, "maxVolumeM3": 3.7, "maxPackages": 34 },
-  "projected": { "weightKg": 620, "volumeM3": 4.1, "packages": 31 }
+  "projected": { "weightKg": 620, "volumeM3": 3.1, "packages": 36 }
 }
 ```
 
-Es la única validación dura de capacidad que ve una persona, y esa persona es el operador.
-La creación de un pedido nunca se bloquea por capacidad (D4).
+La creación de un pedido nunca se bloquea por capacidad (D4): esta es la única validación de
+capacidad que ve una persona, y esa persona es el operador.
 
-La capacidad solo se puede exigir cuando la patente de la ruta corresponde a un vehículo de
-la flota. Si no lo resuelve, los pedidos se agregan y la respuesta lo informa en vez de
-inventar un límite.
-
-**En la consola.** El panel de pedidos pendientes del tablero de administración ofrece un
-selector con las rutas de recogida abiertas del día, con su conductor y su número de
-paradas. Sin ninguna ruta abierta los botones quedan deshabilitados: primero hay que generar
-la planificación.
+**Ruta del pedido.** El pedido queda con `assignedRouteId` igual al código de la ruta. Desde la
+migración 059 esa columna es una clave foránea a `delivery_routes(code)` con
+`ON UPDATE CASCADE`; `route_orders` guarda el historial de paradas.
 
 ---
 
@@ -666,7 +691,8 @@ rango 0 a 24, o si la colación no cabe en la jornada.
 | `vehicles` | Flota. Cada campo existe porque `optimizeTours` lo consume. |
 | `driver_profiles` | Extendida con `shift_start`, `shift_end`, `max_daily_hours`, `break_minutes`, `license_class`, `default_vehicle_id`. |
 | `route_assignments` | Asignación ruta ↔ conductor ↔ vehículo, con `sequence_in_day` y `chained_from_route_id`. |
-| `delivery_routes` | Extendida con `zone`, `hub_name`, `communes`, `app_id`, `estimate_source`, `planned_date`. |
+| `delivery_routes` | Extendida con `zone`, `hub_name`, `communes`, `app_id`, `estimate_source`, `planned_date` y `vehicle_id` (clave foránea a `vehicles` desde la 058; `vehicle_plate` queda para mostrar). |
+| `orders.assigned_route_id` | Código de la ruta vigente, con clave foránea a `delivery_routes(code)` desde la 059. |
 | `route_orders` | `stop_sequence` ahora se escribe realmente. |
 | `route_optimization_runs` | Contador de corridas, envíos y vehículos optimizados. |
 
@@ -681,6 +707,7 @@ rango 0 a 24, o si la colación no cabe en la jornada.
 | `driver_profiles.shift_start` / `shift_end` | `startTimeWindows` / `endTimeWindows` |
 | `driver_profiles.max_daily_hours` | `routeDurationLimit.maxDuration` |
 | `driver_profiles.break_minutes` | `breakRule.breakRequests[].minDuration` |
+| `shift_start` + 3 h / + 5 h, recortado al turno | `breakRule.breakRequests[].earliestStartTime` / `latestStartTime` |
 | `orders.estimated_volume_m3` | `loadDemands["volume_l"].amount` |
 
 **Trampa de unidades.** Los `maxLoad` y `amount` de `optimizeTours` son enteros. El volumen
@@ -690,6 +717,12 @@ bulto L son 216 litros y un furgón de 4,40 m³ son 4400. La base conserva metro
 conversión vive solo en el adaptador.
 
 `loadLimits` y `loadDemands` son **mapas indexados por tipo de carga**, no arreglos.
+
+**Ventana de colación.** Va de 3 a 5 horas después del **inicio real del turno** y se recorta
+para terminar antes del fin del turno; si ya pasó, la colación puede tomarse en lo que queda
+del día. Hasta el 28-09-2026 se contaba desde la hora de la corrida: una generación después de
+las 12:30 (turno 09:00-18:00) ponía la colación fuera del turno, Google rechazaba la solicitud
+entera con `INVALID_ARGUMENT` y la corrida caía al motor propio.
 
 ---
 
