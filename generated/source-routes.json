@@ -245,6 +245,20 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
+    "path": "/internal/batch",
+    "operationId": "internal_get_batch",
+    "tag": "General",
+    "tags": [
+      "General"
+    ],
+    "summary": "GET /internal/batch",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
     "path": "/internal/capacity/availability",
     "operationId": "internal_get_capacity_availability",
     "tag": "Fleet",
@@ -778,6 +792,20 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
+    "path": "/internal/metrics",
+    "operationId": "internal_get_metrics",
+    "tag": "General",
+    "tags": [
+      "General"
+    ],
+    "summary": "GET /internal/metrics",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
     "path": "/internal/orders",
     "operationId": "internal_get_orders",
     "tag": "Orders & Dispatch",
@@ -1078,6 +1106,25 @@
     "security": "bearerAuth",
     "aliases": [
       "/orders/batch"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/orders/metrics",
+    "operationId": "internal_get_orders_metrics",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "GET /internal/orders/metrics",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/metrics"
     ]
   },
   {

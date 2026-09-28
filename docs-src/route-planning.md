@@ -285,8 +285,7 @@ nada, así que **develop tiene un tope diario y producción no**.
 El tope es un número en el entorno, no una comprobación del nombre del ambiente: producción
 no puede heredarlo por accidente y se cambia sin desplegar código.
 
-**Una simulación cuenta.** `dryRun` no escribe nada, pero llama a Google igual que una
-corrida real y cuesta lo mismo. Dejarla fuera del contador volvía el tope burlable.
+**Una simulación cuenta en el histórico, pero con Google está deshabilitada.** Para proteger el presupuesto operativo, `dryRun: true` con `engine: "google"` responde `400 GOOGLE_SIMULATION_DISABLED`. Las simulaciones solo se ejecutan con el motor propio in-house (`engine: "own"`), el cual no incurre en costes de API externa. Con Google Route Optimization la generación de rutas es directa.
 
 El límite se comprueba antes de leer la base y antes de llamar al optimizador, así que una
 corrida rechazada no gasta ninguna petición.

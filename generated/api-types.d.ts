@@ -731,6 +731,14 @@ export interface Operations {
       "401": StandardErrorResponse
     }
   }
+  "internal_get_batch": {
+    method: "GET"
+    path: "/internal/batch"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "internal_get_capacity_availability": {
     method: "GET"
     path: "/internal/capacity/availability"
@@ -1007,6 +1015,14 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
+  "internal_get_metrics": {
+    method: "GET"
+    path: "/internal/metrics"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "internal_get_orders": {
     method: "GET"
     path: "/internal/orders"
@@ -1160,6 +1176,14 @@ export interface Operations {
       "403": undefined
       "409": undefined
       "503": undefined
+    }
+  }
+  "internal_get_orders_metrics": {
+    method: "GET"
+    path: "/internal/orders/metrics"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
     }
   }
   "internal_get_planner_settings": {

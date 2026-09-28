@@ -422,6 +422,21 @@ paths:
         - cookieAccessAuth: []
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
+  /internal/batch:
+    get:
+      tags:
+        - General
+      summary: "GET /internal/batch"
+      operationId: internal_get_batch
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
   /internal/capacity/availability:
     get:
       tags:
@@ -1189,6 +1204,21 @@ paths:
           required: true
           schema:
             type: string
+  /internal/metrics:
+    get:
+      tags:
+        - General
+      summary: "GET /internal/metrics"
+      operationId: internal_get_metrics
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
   /internal/orders:
     get:
       tags:
@@ -1740,6 +1770,27 @@ paths:
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
         - /orders/batch
+  /internal/orders/metrics:
+    get:
+      tags:
+        - Orders
+      summary: "GET /internal/orders/metrics"
+      operationId: internal_get_orders_metrics
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+      x-aliases:
+        - /orders/metrics
+      security:
+        - bearerAuth: []
   /internal/planner-settings:
     get:
       tags:
