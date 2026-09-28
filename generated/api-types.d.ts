@@ -1115,6 +1115,29 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
+  "internal_post_orders_orderId_delivery_code_resend": {
+    method: "POST"
+    path: "/internal/orders/{orderId}/delivery-code/resend"
+    requestBody: undefined
+    responses: {
+      "200": {
+        success: boolean
+        requestId: string
+        status: "accepted"
+        message: string
+      }
+      "401": undefined
+      "403": undefined
+      "404": undefined
+      "409": undefined
+      "429": {
+        error?: string
+        retryAfterSeconds?: number
+        message?: string
+      }
+      "503": undefined
+    }
+  }
   "internal_post_orders_orderId_discrepancy": {
     method: "POST"
     path: "/internal/orders/{orderId}/discrepancy"
@@ -1175,6 +1198,34 @@ export interface Operations {
       "401": undefined
       "403": undefined
       "409": undefined
+      "503": undefined
+    }
+  }
+  "internal_get_orders_delivery_codes": {
+    method: "GET"
+    path: "/internal/orders/delivery-codes"
+    requestBody: undefined
+    responses: {
+      "200": {
+        success: boolean
+        data: ({
+          orderId: string
+          trackingNumber: string
+          orderStatus: "out_for_delivery"
+          recipientName: string
+          recipientPhoneMasked?: string
+          deliveryCodeAvailable: boolean
+          deliveryCodeLocked: boolean
+          lastResendAt?: string
+          resendStatus?: "processing" | "accepted" | "failed"
+          resendAllowed: boolean
+          resendReason?: "pin_locked" | "pin_unavailable" | "destination_unavailable" | "cooldown"
+        })[]
+        total: number
+        meta: PaginationMeta
+      }
+      "401": undefined
+      "403": undefined
       "503": undefined
     }
   }
@@ -1704,7 +1755,7 @@ export interface Operations {
     path: "/otp/send-delivery-code"
     requestBody: undefined
     responses: {
-      "200": StandardSuccessResponse
+      "410": undefined
     }
   }
   "otp_post_verify": {

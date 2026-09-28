@@ -5,7 +5,7 @@ El microservicio `Flowex-otp-service-lambda` hace dos cosas distintas, con canal
 | Qué | Canal | Rutas |
 | :--- | :--- | :--- |
 | **Código de verificación** (registro, invitaciones) | **Solo correo** (Amazon SES vía la cola de notificaciones) | `POST /otp/send`, `POST /otp/verify`, `GET /otp/deliveries`, `POST /otp/deliveries/{deliveryId}/resend` |
-| **Avisos del pedido** y **código de entrega** al destinatario | Meta WhatsApp Cloud API | `POST /notifications/whatsapp`, `POST /otp/send-delivery-code` |
+| **Avisos del pedido** y **código de entrega** al destinatario | Meta WhatsApp Cloud API | `POST /notifications/whatsapp`, `GET /internal/orders/delivery-codes y POST /internal/orders/{orderId}/delivery-code/resend` |
 
 > [!IMPORTANT]
 > El código de verificación tiene **un único canal: el correo**. `POST /otp/send` ignora un
@@ -182,7 +182,56 @@ Requiere sesión. API Gateway entrega esta ruta a `otp-service`, no a `notificat
 > `delivered: false` y `whatsappResponse.status: "not_sent"`. Antes respondía `mock_sent`
 > con un id inventado y se contaba como entregado.
 
-### `POST /otp/send-delivery-code`
+### Ruta retirada: `POST /otp/send-delivery-code`
 
-Solo operaciones (`root`, `admin`, `driver`): envía al destinatario el código de entrega
-del pedido por WhatsApp. El texto es el canónico del servicio, no el del cuerpo.
+La ruta responde `410 ENDPOINT_RETIRED`: aceptaba teléfonos y PIN arbitrarios del llamador.
+El envío operativo ahora se resuelve desde el pedido y el teléfono actual registrado del destinatario.
+
+### Reenvío del PIN de entrega
+
+La vista `/admin/otp-deliveries` está reservada a `root` y `admin`. Solo lista pedidos cuyo
+estado actual es `out_for_delivery`; los entregados y los pedidos con otros estados no aparecen.
+La lista se pagina en servidor con `page` (inicia en 1), `limit` (20 por defecto, máximo 100)
+y `q` (seguimiento, nombre del destinatario o dígitos del teléfono). `data` contiene el nombre
+de pila y el teléfono enmascarado, nunca el PIN ni el teléfono completo.
+
+#### `GET /internal/orders/delivery-codes`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "orderId": "8d98802d-45da-47b3-9c91-d710c19d0278",
+      "trackingNumber": "FLX-2026-8492",
+      "orderStatus": "out_for_delivery",
+      "recipientName": "María",
+      "recipientPhoneMasked": "•••• 4567",
+      "deliveryCodeAvailable": true,
+      "deliveryCodeLocked": false,
+      "lastResendAt": null,
+      "resendStatus": null,
+      "resendAllowed": true,
+      "resendReason": null
+    }
+  ],
+  "total": 1,
+  "meta": { "total": 1, "page": 1, "limit": 20, "last_page": 1 }
+}
+```
+
+#### `POST /internal/orders/{orderId}/delivery-code/resend`
+
+El cuerpo está vacío. El backend comprueba nuevamente que el pedido siga en `out_for_delivery`,
+recupera el PIN vigente desde el almacenamiento cifrado o valida una copia antigua contra el hash,
+y obtiene el teléfono del pedido. El PIN no aparece en la respuesta. Se permite un intento por
+pedido cada 60 segundos.
+
+`200` significa que Meta aceptó el mensaje; no confirma que el teléfono lo haya recibido.
+La respuesta incluye `requestId`, `status: "accepted"` y un mensaje informativo. `401`/`403`
+indican sesión o rol no permitido; `404`, pedido inexistente; `409`, estado no elegible, PIN
+bloqueado/no recuperable o teléfono inválido; `429`, enfriamiento; `503`, fallo del proveedor
+o del servicio de notificaciones.
+
+Los intentos guardan actor, estado, fecha, teléfono enmascarado y el identificador de Meta.
+El PIN y el texto enviado no se guardan en la tabla de auditoría ni en la respuesta.

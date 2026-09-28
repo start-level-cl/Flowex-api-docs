@@ -1558,6 +1558,75 @@ paths:
             type: string
       security:
         - bearerAuth: []
+  /internal/orders/{orderId}/delivery-code/resend:
+    post:
+      tags:
+        - "Orders & Dispatch"
+      summary: "Reenviar por WhatsApp el PIN vigente del pedido"
+      operationId: internal_post_orders_orderId_delivery_code_resend
+      responses:
+        200:
+          description: "Meta aceptó el mensaje."
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - requestId
+                  - status
+                  - message
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  requestId:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    enum:
+                      - accepted
+                  message:
+                    type: string
+        401:
+          description: "Token ausente o inválido."
+        403:
+          description: "Solo root y admin pueden reenviar el PIN."
+        404:
+          description: "Pedido no encontrado."
+        409:
+          description: "El pedido ya no está en reparto, el PIN está bloqueado o no se puede recuperar, o el teléfono del destinatario no es válido."
+        429:
+          description: "Límite de un reenvío por pedido cada 60 segundos."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: cooldown
+                  retryAfterSeconds:
+                    type: integer
+                  message:
+                    type: string
+        503:
+          description: "WhatsApp no aceptó el mensaje o el servicio no está disponible."
+      description: "El servidor obtiene el teléfono y el PIN vigente del pedido. El cuerpo no admite PIN, teléfono ni número de seguimiento. Solo aplica a pedidos out_for_delivery. El estado accepted indica que Meta aceptó el mensaje; no confirma entrega al teléfono."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - admin
+        - root
   /internal/orders/{orderId}/discrepancy:
     post:
       tags:
@@ -1770,6 +1839,125 @@ paths:
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
         - /orders/batch
+  /internal/orders/delivery-codes:
+    get:
+      tags:
+        - "Orders & Dispatch"
+      summary: "Listar pedidos en reparto activo con paginación"
+      operationId: internal_get_orders_delivery_codes
+      responses:
+        200:
+          description: "Pedidos en reparto activo y metadatos de paginación."
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - data
+                  - total
+                  - meta
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - orderId
+                        - trackingNumber
+                        - orderStatus
+                        - recipientName
+                        - deliveryCodeAvailable
+                        - deliveryCodeLocked
+                        - resendAllowed
+                      properties:
+                        orderId:
+                          type: string
+                          format: uuid
+                        trackingNumber:
+                          type: string
+                          example: FLX-2026-8492
+                        orderStatus:
+                          type: string
+                          enum:
+                            - out_for_delivery
+                        recipientName:
+                          type: string
+                          description: "Nombre de pila del destinatario."
+                        recipientPhoneMasked:
+                          type: string
+                          nullable: true
+                          example: "•••• 4567"
+                        deliveryCodeAvailable:
+                          type: boolean
+                        deliveryCodeLocked:
+                          type: boolean
+                        lastResendAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+                        resendStatus:
+                          type: string
+                          enum:
+                            - processing
+                            - accepted
+                            - failed
+                          nullable: true
+                        resendAllowed:
+                          type: boolean
+                        resendReason:
+                          type: string
+                          enum:
+                            - pin_locked
+                            - pin_unavailable
+                            - destination_unavailable
+                            - cooldown
+                          nullable: true
+                  total:
+                    type: integer
+                    example: 21
+                  meta:
+                    $ref: #/components/schemas/PaginationMeta
+        401:
+          description: "Token ausente o inválido."
+        403:
+          description: "Solo root y admin pueden consultar esta lista."
+        503:
+          description: "No se pudo consultar la base de datos."
+      description: "Devuelve exclusivamente pedidos con estado out_for_delivery. Los contactos se enmascaran; el PIN no se incluye. La búsqueda y la paginación se ejecutan en el servidor."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 120
+          description: "Busca por número de seguimiento, destinatario o dígitos del teléfono."
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - admin
+        - root
   /internal/orders/metrics:
     get:
       tags:
@@ -3513,21 +3701,14 @@ paths:
     post:
       tags:
         - "OTP & WhatsApp"
-      summary: "Enviar al destinatario el código de entrega por WhatsApp (operaciones)"
+      summary: "Ruta retirada: el PIN ahora se reenvía asociado al pedido"
       operationId: otp_post_send_delivery_code
       responses:
-        200:
-          description: "Operación ejecutada exitosamente."
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/StandardSuccessResponse
+        410:
+          description: "Ruta retirada."
+      description: "Esta ruta rechazaba el envío al aceptar teléfono y PIN arbitrarios. Use POST /internal/orders/{orderId}/delivery-code/resend."
       x-service: otp-service-lambda
       x-source: Flowex-otp-service-lambda/src/index.ts
-      x-roles:
-        - root
-      security:
-        - bearerAuth: []
   /otp/verify:
     post:
       tags:
