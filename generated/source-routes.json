@@ -842,6 +842,23 @@
   {
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "delete",
+    "path": "/internal/orders/{orderId}",
+    "operationId": "internal_delete_orders_orderId",
+    "tag": "Orders",
+    "tags": [
+      "Orders"
+    ],
+    "summary": "DELETE /internal/orders/{orderId}",
+    "roles": [],
+    "security": "bearerAuth",
+    "aliases": [
+      "/orders/{orderId}"
+    ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
     "path": "/internal/orders/{orderId}",
     "operationId": "internal_get_orders_orderId",

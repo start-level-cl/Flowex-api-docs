@@ -1051,6 +1051,14 @@ export interface Operations {
       "503": undefined
     }
   }
+  "internal_delete_orders_orderId": {
+    method: "DELETE"
+    path: "/internal/orders/{orderId}"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "internal_get_orders_orderId": {
     method: "GET"
     path: "/internal/orders/{orderId}"

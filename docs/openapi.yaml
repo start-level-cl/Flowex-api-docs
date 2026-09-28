@@ -1357,6 +1357,30 @@ paths:
       x-aliases:
         - /orders
   /internal/orders/{orderId}:
+    delete:
+      tags:
+        - Orders
+      summary: "DELETE /internal/orders/{orderId}"
+      operationId: internal_delete_orders_orderId
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-aliases:
+        - "/orders/{orderId}"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
     get:
       tags:
         - Orders
