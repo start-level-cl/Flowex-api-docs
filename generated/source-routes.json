@@ -245,6 +245,57 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
+    "path": "/internal/account-deletions",
+    "operationId": "internal_get_account_deletions",
+    "tag": "Privacy",
+    "tags": [
+      "Privacy"
+    ],
+    "summary": "Solicitudes de eliminación de cuenta, con lo que impide aprobarlas (registrado)",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/account-deletions/{accountDeletionId}/approve",
+    "operationId": "internal_post_account_deletion_approve",
+    "tag": "Privacy",
+    "tags": [
+      "Privacy"
+    ],
+    "summary": "Aprueba y anonimiza la cuenta; pedidos y pagos se conservan por la obligación tributaria",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/account-deletions/{accountDeletionId}/reject",
+    "operationId": "internal_post_account_deletion_reject",
+    "tag": "Privacy",
+    "tags": [
+      "Privacy"
+    ],
+    "summary": "Rechaza la solicitud con un motivo que se informa al titular",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
     "path": "/internal/batch",
     "operationId": "internal_get_batch",
     "tag": "General",
@@ -466,7 +517,7 @@
     ],
     "summary": "Registrar la solicitud de supresión de un titular sin cuenta",
     "roles": [],
-    "security": "bearerAuth"
+    "security": false
   },
   {
     "service": "auth-admin-lambda",
@@ -1776,7 +1827,7 @@
     "tags": [
       "Users Administration"
     ],
-    "summary": "Listar usuarios internos del sistema con paginación Importal y filtros",
+    "summary": "Directorio de usuarios: primer nombre, rol y estado (Ley N° 21.719). Búsqueda en el servidor",
     "roles": [
       "root",
       "admin"
@@ -1796,7 +1847,7 @@
     "tags": [
       "Users Administration"
     ],
-    "summary": "Crear usuario interno en VPC (Roles: root, admin, driver, client)",
+    "summary": "Retirada: responde 410. Las cuentas se crean por registro con OTP o por invitación",
     "roles": [
       "root",
       "admin"
@@ -1885,14 +1936,17 @@
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "post",
     "path": "/internal/users/{userId}/addresses",
-    "operationId": "internal_post_users_userId_addresses",
-    "tag": "Users",
+    "operationId": "internal_post_user_addresses",
+    "tag": "Users Administration",
     "tags": [
-      "Users"
+      "Users Administration"
     ],
-    "summary": "Agregar una dirección a un usuario",
+    "summary": "Agrega una dirección a la cuenta propia o, para el personal, a la de un cliente (registrado)",
     "roles": [
-      "root"
+      "root",
+      "admin",
+      "driver",
+      "client"
     ],
     "security": "bearerAuth",
     "aliases": [
@@ -1937,6 +1991,40 @@
     "aliases": [
       "/users/{userId}/orders"
     ]
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "patch",
+    "path": "/internal/users/{userId}/restriction",
+    "operationId": "internal_patch_user_restriction",
+    "tag": "Privacy",
+    "tags": [
+      "Privacy"
+    ],
+    "summary": "Bloqueo temporal del tratamiento (Ley N° 21.719): con motivo; no se crean envíos",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "put",
+    "path": "/internal/users/{userId}/restriction",
+    "operationId": "internal_put_user_restriction",
+    "tag": "Privacy",
+    "tags": [
+      "Privacy"
+    ],
+    "summary": "Igual que PATCH: bloqueo temporal del tratamiento",
+    "roles": [
+      "root",
+      "admin"
+    ],
+    "security": "bearerAuth"
   },
   {
     "service": "auth-admin-lambda",
@@ -2452,6 +2540,34 @@
     ]
   },
   {
+    "service": "registration-public-lambda",
+    "source": "Flowex-registration-public-lambda/src/index.ts",
+    "method": "get",
+    "path": "/registration/unsubscribe",
+    "operationId": "registration_get_unsubscribe",
+    "tag": "Registration",
+    "tags": [
+      "Registration"
+    ],
+    "summary": "GET /registration/unsubscribe",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "registration-public-lambda",
+    "source": "Flowex-registration-public-lambda/src/index.ts",
+    "method": "post",
+    "path": "/registration/unsubscribe",
+    "operationId": "registration_post_unsubscribe",
+    "tag": "Registration",
+    "tags": [
+      "Registration"
+    ],
+    "summary": "POST /registration/unsubscribe",
+    "roles": [],
+    "security": false
+  },
+  {
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
@@ -2594,6 +2710,54 @@
   {
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "delete",
+    "path": "/users/me/deletion-request",
+    "operationId": "users_me_delete_deletion_request",
+    "tag": "Privacy",
+    "tags": [
+      "Privacy"
+    ],
+    "summary": "Cancela la solicitud de eliminación mientras está pendiente",
+    "roles": [
+      "client"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/users/me/deletion-request",
+    "operationId": "users_me_get_deletion_request",
+    "tag": "Privacy",
+    "tags": [
+      "Privacy"
+    ],
+    "summary": "Solicitud de eliminación de la cuenta propia (Ley N° 21.719, supresión)",
+    "roles": [
+      "client"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/users/me/deletion-request",
+    "operationId": "users_me_post_deletion_request",
+    "tag": "Privacy",
+    "tags": [
+      "Privacy"
+    ],
+    "summary": "Pide eliminar la cuenta propia; la revisa root o admin",
+    "roles": [
+      "client"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
     "path": "/users/me/driver-profile",
     "operationId": "internal_get_users_me_driver_profile",
@@ -2624,6 +2788,20 @@
   {
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/users/me/email",
+    "operationId": "internal_post_users_me_email",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "POST /users/me/email",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
     "path": "/users/me/export",
     "operationId": "internal_get_users_me_export",
@@ -2640,13 +2818,18 @@
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
     "path": "/users/me/notifications",
-    "operationId": "internal_get_users_me_notifications",
-    "tag": "Users",
+    "operationId": "users_me_get_notifications",
+    "tag": "Profile",
     "tags": [
-      "Users"
+      "Profile"
     ],
-    "summary": "Mis preferencias de notificación (correo y WhatsApp)",
-    "roles": [],
+    "summary": "Preferencias de notificación de la cuenta propia",
+    "roles": [
+      "root",
+      "admin",
+      "driver",
+      "client"
+    ],
     "security": "bearerAuth"
   },
   {
@@ -2654,12 +2837,31 @@
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "put",
     "path": "/users/me/notifications",
-    "operationId": "internal_put_users_me_notifications",
+    "operationId": "users_me_put_notifications",
+    "tag": "Profile",
+    "tags": [
+      "Profile"
+    ],
+    "summary": "Actualiza las preferencias de notificación de la cuenta propia",
+    "roles": [
+      "root",
+      "admin",
+      "driver",
+      "client"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/users/me/verification",
+    "operationId": "internal_post_users_me_verification",
     "tag": "Users",
     "tags": [
       "Users"
     ],
-    "summary": "Actualizar mis preferencias de notificación",
+    "summary": "POST /users/me/verification",
     "roles": [],
     "security": "bearerAuth"
   },

@@ -422,6 +422,78 @@ paths:
         - cookieAccessAuth: []
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
+  /internal/account-deletions:
+    get:
+      tags:
+        - Privacy
+      summary: "Solicitudes de eliminación de cuenta, con lo que impide aprobarlas (registrado)"
+      operationId: internal_get_account_deletions
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      security:
+        - bearerAuth: []
+  /internal/account-deletions/{accountDeletionId}/approve:
+    post:
+      tags:
+        - Privacy
+      summary: "Aprueba y anonimiza la cuenta; pedidos y pagos se conservan por la obligación tributaria"
+      operationId: internal_post_account_deletion_approve
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      parameters:
+        - name: accountDeletionId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/account-deletions/{accountDeletionId}/reject:
+    post:
+      tags:
+        - Privacy
+      summary: "Rechaza la solicitud con un motivo que se informa al titular"
+      operationId: internal_post_account_deletion_reject
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      parameters:
+        - name: accountDeletionId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
   /internal/batch:
     get:
       tags:
@@ -727,8 +799,6 @@ paths:
                 $ref: #/components/schemas/StandardSuccessResponse
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
-      security:
-        - bearerAuth: []
   /internal/contacts/erasure-requests/{erasureRequestId}/identify:
     post:
       tags:
@@ -3475,7 +3545,7 @@ paths:
     post:
       tags:
         - "Users Administration"
-      summary: "Crear usuario interno en VPC (Roles: root, admin, driver, client)"
+      summary: "Retirada: responde 410. Las cuentas se crean por registro con OTP o por invitación"
       operationId: internal_post_users
       responses:
         201:
@@ -3619,9 +3689,9 @@ paths:
         - bearerAuth: []
     post:
       tags:
-        - Users
-      summary: "Agregar una dirección a un usuario"
-      operationId: internal_post_users_userId_addresses
+        - "Users Administration"
+      summary: "Agrega una dirección a la cuenta propia o, para el personal, a la de un cliente (registrado)"
+      operationId: internal_post_user_addresses
       responses:
         200:
           description: "Operación ejecutada exitosamente."
@@ -3633,6 +3703,9 @@ paths:
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
         - root
+        - admin
+        - driver
+        - client
       x-aliases:
         - "/users/{userId}/addresses"
       parameters:
@@ -3709,6 +3782,57 @@ paths:
         - root
       x-aliases:
         - "/users/{userId}/orders"
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+  /internal/users/{userId}/restriction:
+    patch:
+      tags:
+        - Privacy
+      summary: "Bloqueo temporal del tratamiento (Ley N° 21.719): con motivo; no se crean envíos"
+      operationId: internal_patch_user_restriction
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Privacy
+      summary: "Igual que PATCH: bloqueo temporal del tratamiento"
+      operationId: internal_put_user_restriction
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
       parameters:
         - name: userId
           in: path
@@ -4558,6 +4682,35 @@ paths:
       x-source: Flowex-registration-public-lambda/src/index.ts
       x-aliases:
         - /registration/coverage/tariffs
+  /registration/unsubscribe:
+    get:
+      tags:
+        - Registration
+      summary: "GET /registration/unsubscribe"
+      operationId: registration_get_unsubscribe
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: registration-public-lambda
+      x-source: Flowex-registration-public-lambda/src/index.ts
+    post:
+      tags:
+        - Registration
+      summary: "POST /registration/unsubscribe"
+      operationId: registration_post_unsubscribe
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: registration-public-lambda
+      x-source: Flowex-registration-public-lambda/src/index.ts
   /users/me/addresses:
     get:
       tags:
@@ -4747,6 +4900,61 @@ paths:
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
         - bearerAuth: []
+  /users/me/deletion-request:
+    delete:
+      tags:
+        - Privacy
+      summary: "Cancela la solicitud de eliminación mientras está pendiente"
+      operationId: users_me_delete_deletion_request
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - client
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - Privacy
+      summary: "Solicitud de eliminación de la cuenta propia (Ley N° 21.719, supresión)"
+      operationId: users_me_get_deletion_request
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - client
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Privacy
+      summary: "Pide eliminar la cuenta propia; la revisa root o admin"
+      operationId: users_me_post_deletion_request
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - client
+      security:
+        - bearerAuth: []
   /users/me/driver-profile:
     get:
       tags:
@@ -4782,6 +4990,23 @@ paths:
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
         - bearerAuth: []
+  /users/me/email:
+    post:
+      tags:
+        - Users
+      summary: "POST /users/me/email"
+      operationId: internal_post_users_me_email
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      security:
+        - bearerAuth: []
   /users/me/export:
     get:
       tags:
@@ -4802,9 +5027,9 @@ paths:
   /users/me/notifications:
     get:
       tags:
-        - Users
-      summary: "Mis preferencias de notificación (correo y WhatsApp)"
-      operationId: internal_get_users_me_notifications
+        - Profile
+      summary: "Preferencias de notificación de la cuenta propia"
+      operationId: users_me_get_notifications
       responses:
         200:
           description: "Operación ejecutada exitosamente."
@@ -4814,13 +5039,40 @@ paths:
                 $ref: #/components/schemas/StandardSuccessResponse
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+        - client
       security:
         - bearerAuth: []
     put:
       tags:
+        - Profile
+      summary: "Actualiza las preferencias de notificación de la cuenta propia"
+      operationId: users_me_put_notifications
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-admin-lambda
+      x-source: Flowex-auth-admin-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+        - client
+      security:
+        - bearerAuth: []
+  /users/me/verification:
+    post:
+      tags:
         - Users
-      summary: "Actualizar mis preferencias de notificación"
-      operationId: internal_put_users_me_notifications
+      summary: "POST /users/me/verification"
+      operationId: internal_post_users_me_verification
       responses:
         200:
           description: "Operación ejecutada exitosamente."

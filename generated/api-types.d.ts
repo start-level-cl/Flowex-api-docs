@@ -744,6 +744,30 @@ export interface Operations {
       "401": StandardErrorResponse
     }
   }
+  "internal_get_account_deletions": {
+    method: "GET"
+    path: "/internal/account-deletions"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_account_deletion_approve": {
+    method: "POST"
+    path: "/internal/account-deletions/{accountDeletionId}/approve"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_account_deletion_reject": {
+    method: "POST"
+    path: "/internal/account-deletions/{accountDeletionId}/reject"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "internal_get_batch": {
     method: "GET"
     path: "/internal/batch"
@@ -1738,7 +1762,7 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
-  "internal_post_users_userId_addresses": {
+  "internal_post_user_addresses": {
     method: "POST"
     path: "/internal/users/{userId}/addresses"
     requestBody: undefined
@@ -1759,6 +1783,22 @@ export interface Operations {
   "internal_get_users_userId_orders": {
     method: "GET"
     path: "/internal/users/{userId}/orders"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_patch_user_restriction": {
+    method: "PATCH"
+    path: "/internal/users/{userId}/restriction"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_put_user_restriction": {
+    method: "PUT"
+    path: "/internal/users/{userId}/restriction"
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
@@ -2060,6 +2100,22 @@ export interface Operations {
       "503": undefined
     }
   }
+  "registration_get_unsubscribe": {
+    method: "GET"
+    path: "/registration/unsubscribe"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "registration_post_unsubscribe": {
+    method: "POST"
+    path: "/registration/unsubscribe"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "internal_get_users_me_addresses": {
     method: "GET"
     path: "/users/me/addresses"
@@ -2140,6 +2196,30 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
+  "users_me_delete_deletion_request": {
+    method: "DELETE"
+    path: "/users/me/deletion-request"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "users_me_get_deletion_request": {
+    method: "GET"
+    path: "/users/me/deletion-request"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "users_me_post_deletion_request": {
+    method: "POST"
+    path: "/users/me/deletion-request"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "internal_get_users_me_driver_profile": {
     method: "GET"
     path: "/users/me/driver-profile"
@@ -2156,6 +2236,14 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
+  "internal_post_users_me_email": {
+    method: "POST"
+    path: "/users/me/email"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "internal_get_users_me_export": {
     method: "GET"
     path: "/users/me/export"
@@ -2164,7 +2252,7 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
-  "internal_get_users_me_notifications": {
+  "users_me_get_notifications": {
     method: "GET"
     path: "/users/me/notifications"
     requestBody: undefined
@@ -2172,9 +2260,17 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
-  "internal_put_users_me_notifications": {
+  "users_me_put_notifications": {
     method: "PUT"
     path: "/users/me/notifications"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_users_me_verification": {
+    method: "POST"
+    path: "/users/me/verification"
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
