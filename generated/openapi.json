@@ -803,29 +803,6 @@
         ]
       }
     },
-    "/internal/batch": {
-      "get": {
-        "tags": [
-          "General"
-        ],
-        "summary": "GET /internal/batch",
-        "operationId": "internal_get_batch",
-        "responses": {
-          "200": {
-            "description": "Operación ejecutada exitosamente.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StandardSuccessResponse"
-                }
-              }
-            }
-          }
-        },
-        "x-service": "auth-admin-lambda",
-        "x-source": "Flowex-auth-admin-lambda/src/index.ts"
-      }
-    },
     "/internal/capacity/availability": {
       "get": {
         "tags": [
@@ -1246,6 +1223,78 @@
         ]
       }
     },
+    "/internal/contacts/erasure-notices": {
+      "get": {
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "GET /internal/contacts/erasure-notices",
+        "operationId": "internal_get_contacts_erasure_notices",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/internal/contacts/erasure-notices/{erasureNoticeId}/respond": {
+      "post": {
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "POST /internal/contacts/erasure-notices/{erasureNoticeId}/respond",
+        "operationId": "internal_post_contacts_erasure_notices_erasureNoticeId_respond",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root"
+        ],
+        "parameters": [
+          {
+            "name": "erasureNoticeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/internal/contacts/erasure-requests": {
       "get": {
         "tags": [
@@ -1298,6 +1347,47 @@
         "x-source": "Flowex-auth-admin-lambda/src/index.ts"
       }
     },
+    "/internal/contacts/erasure-requests/{erasureRequestId}": {
+      "get": {
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "GET /internal/contacts/erasure-requests/{erasureRequestId}",
+        "operationId": "internal_get_contacts_erasure_requests_erasureRequestId",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root"
+        ],
+        "parameters": [
+          {
+            "name": "erasureRequestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/internal/contacts/erasure-requests/{erasureRequestId}/identify": {
       "post": {
         "tags": [
@@ -1346,6 +1436,47 @@
         ],
         "summary": "Avisar a los remitentes afectados por una supresión",
         "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_notify",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root"
+        ],
+        "parameters": [
+          {
+            "name": "erasureRequestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/internal/contacts/erasure-requests/{erasureRequestId}/process": {
+      "post": {
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "POST /internal/contacts/erasure-requests/{erasureRequestId}/process",
+        "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_process",
         "responses": {
           "200": {
             "description": "Operación ejecutada exitosamente.",
@@ -1460,6 +1591,29 @@
             "bearerAuth": []
           }
         ]
+      }
+    },
+    "/internal/contacts/erasure-requests/verification": {
+      "post": {
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "POST /internal/contacts/erasure-requests/verification",
+        "operationId": "internal_post_contacts_erasure_requests_verification",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts"
       }
     },
     "/internal/contacts/lawful-basis": {
@@ -1990,6 +2144,9 @@
         },
         "x-service": "auth-admin-lambda",
         "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "x-roles": [
+          "root"
+        ],
         "security": [
           {
             "bearerAuth": []
@@ -2069,29 +2226,6 @@
             }
           }
         ]
-      }
-    },
-    "/internal/metrics": {
-      "get": {
-        "tags": [
-          "General"
-        ],
-        "summary": "GET /internal/metrics",
-        "operationId": "internal_get_metrics",
-        "responses": {
-          "200": {
-            "description": "Operación ejecutada exitosamente.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StandardSuccessResponse"
-                }
-              }
-            }
-          }
-        },
-        "x-service": "auth-admin-lambda",
-        "x-source": "Flowex-auth-admin-lambda/src/index.ts"
       }
     },
     "/internal/orders": {
@@ -5366,11 +5500,6 @@
         "x-source": "Flowex-auth-admin-lambda/src/index.ts",
         "x-aliases": [
           "/routes/planning-quota"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
         ]
       }
     },
@@ -8025,6 +8154,101 @@
         ],
         "summary": "POST /users/me/verification",
         "operationId": "internal_post_users_me_verification",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/users/privacy/export": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "GET /users/privacy/export",
+        "operationId": "internal_get_users_privacy_export",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts"
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "POST /users/privacy/export",
+        "operationId": "internal_post_users_privacy_export",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts"
+      }
+    },
+    "/users/privacy/otp/request": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Portal de privacidad acceso portabilidad sin sesión",
+        "operationId": "internal_post_users_privacy_otp_request",
+        "responses": {
+          "200": {
+            "description": "Operación ejecutada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardSuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-service": "auth-admin-lambda",
+        "x-source": "Flowex-auth-admin-lambda/src/index.ts"
+      }
+    },
+    "/users/privacy/otp/verify": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "POST /users/privacy/otp/verify",
+        "operationId": "internal_post_users_privacy_otp_verify",
         "responses": {
           "200": {
             "description": "Operación ejecutada exitosamente.",

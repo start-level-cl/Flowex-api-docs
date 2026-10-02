@@ -296,20 +296,6 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
-    "path": "/internal/batch",
-    "operationId": "internal_get_batch",
-    "tag": "General",
-    "tags": [
-      "General"
-    ],
-    "summary": "GET /internal/batch",
-    "roles": [],
-    "security": false
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "get",
     "path": "/internal/capacity/availability",
     "operationId": "internal_get_capacity_availability",
     "tag": "Fleet",
@@ -493,6 +479,38 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "get",
+    "path": "/internal/contacts/erasure-notices",
+    "operationId": "internal_get_contacts_erasure_notices",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "GET /internal/contacts/erasure-notices",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/contacts/erasure-notices/{erasureNoticeId}/respond",
+    "operationId": "internal_post_contacts_erasure_notices_erasureNoticeId_respond",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "POST /internal/contacts/erasure-notices/{erasureNoticeId}/respond",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
     "path": "/internal/contacts/erasure-requests",
     "operationId": "internal_get_contacts_erasure_requests",
     "tag": "Contacts",
@@ -518,6 +536,22 @@
     "summary": "Registrar la solicitud de supresión de un titular sin cuenta",
     "roles": [],
     "security": false
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/internal/contacts/erasure-requests/{erasureRequestId}",
+    "operationId": "internal_get_contacts_erasure_requests_erasureRequestId",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "GET /internal/contacts/erasure-requests/{erasureRequestId}",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
   },
   {
     "service": "auth-admin-lambda",
@@ -555,6 +589,22 @@
     "service": "auth-admin-lambda",
     "source": "Flowex-auth-admin-lambda/src/index.ts",
     "method": "post",
+    "path": "/internal/contacts/erasure-requests/{erasureRequestId}/process",
+    "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_process",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "POST /internal/contacts/erasure-requests/{erasureRequestId}/process",
+    "roles": [
+      "root"
+    ],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
     "path": "/internal/contacts/erasure-requests/{erasureRequestId}/purge",
     "operationId": "internal_post_contacts_erasure_requests_erasureRequestId_purge",
     "tag": "Contacts",
@@ -582,6 +632,20 @@
       "root"
     ],
     "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/internal/contacts/erasure-requests/verification",
+    "operationId": "internal_post_contacts_erasure_requests_verification",
+    "tag": "Contacts",
+    "tags": [
+      "Contacts"
+    ],
+    "summary": "POST /internal/contacts/erasure-requests/verification",
+    "roles": [],
+    "security": false
   },
   {
     "service": "auth-admin-lambda",
@@ -806,7 +870,9 @@
       "Invitations"
     ],
     "summary": "Invitar a un administrador o conductor (root)",
-    "roles": [],
+    "roles": [
+      "root"
+    ],
     "security": "bearerAuth"
   },
   {
@@ -836,20 +902,6 @@
       "Invitations"
     ],
     "summary": "Verificar una invitación antes del registro",
-    "roles": [],
-    "security": false
-  },
-  {
-    "service": "auth-admin-lambda",
-    "source": "Flowex-auth-admin-lambda/src/index.ts",
-    "method": "get",
-    "path": "/internal/metrics",
-    "operationId": "internal_get_metrics",
-    "tag": "General",
-    "tags": [
-      "General"
-    ],
-    "summary": "GET /internal/metrics",
     "roles": [],
     "security": false
   },
@@ -1774,7 +1826,7 @@
     ],
     "summary": "Corridas de planificación que quedan hoy",
     "roles": [],
-    "security": "bearerAuth",
+    "security": false,
     "aliases": [
       "/routes/planning-quota"
     ]
@@ -2862,6 +2914,62 @@
       "Users"
     ],
     "summary": "POST /users/me/verification",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "get",
+    "path": "/users/privacy/export",
+    "operationId": "internal_get_users_privacy_export",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "GET /users/privacy/export",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/users/privacy/export",
+    "operationId": "internal_post_users_privacy_export",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "POST /users/privacy/export",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/users/privacy/otp/request",
+    "operationId": "internal_post_users_privacy_otp_request",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "Portal de privacidad acceso portabilidad sin sesión",
+    "roles": [],
+    "security": false
+  },
+  {
+    "service": "auth-admin-lambda",
+    "source": "Flowex-auth-admin-lambda/src/index.ts",
+    "method": "post",
+    "path": "/users/privacy/otp/verify",
+    "operationId": "internal_post_users_privacy_otp_verify",
+    "tag": "Users",
+    "tags": [
+      "Users"
+    ],
+    "summary": "POST /users/privacy/otp/verify",
     "roles": [],
     "security": "bearerAuth"
   },

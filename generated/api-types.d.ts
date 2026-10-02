@@ -768,14 +768,6 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
-  "internal_get_batch": {
-    method: "GET"
-    path: "/internal/batch"
-    requestBody: undefined
-    responses: {
-      "200": StandardSuccessResponse
-    }
-  }
   "internal_get_capacity_availability": {
     method: "GET"
     path: "/internal/capacity/availability"
@@ -872,6 +864,22 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
+  "internal_get_contacts_erasure_notices": {
+    method: "GET"
+    path: "/internal/contacts/erasure-notices"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_contacts_erasure_notices_erasureNoticeId_respond": {
+    method: "POST"
+    path: "/internal/contacts/erasure-notices/{erasureNoticeId}/respond"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "internal_get_contacts_erasure_requests": {
     method: "GET"
     path: "/internal/contacts/erasure-requests"
@@ -883,6 +891,14 @@ export interface Operations {
   "internal_post_contacts_erasure_requests": {
     method: "POST"
     path: "/internal/contacts/erasure-requests"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_contacts_erasure_requests_erasureRequestId": {
+    method: "GET"
+    path: "/internal/contacts/erasure-requests/{erasureRequestId}"
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
@@ -904,6 +920,14 @@ export interface Operations {
       "200": StandardSuccessResponse
     }
   }
+  "internal_post_contacts_erasure_requests_erasureRequestId_process": {
+    method: "POST"
+    path: "/internal/contacts/erasure-requests/{erasureRequestId}/process"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "internal_post_contacts_erasure_requests_erasureRequestId_purge": {
     method: "POST"
     path: "/internal/contacts/erasure-requests/{erasureRequestId}/purge"
@@ -915,6 +939,14 @@ export interface Operations {
   "internal_post_contacts_erasure_requests_erasureRequestId_reject": {
     method: "POST"
     path: "/internal/contacts/erasure-requests/{erasureRequestId}/reject"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_contacts_erasure_requests_verification": {
+    method: "POST"
+    path: "/internal/contacts/erasure-requests/verification"
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
@@ -1047,14 +1079,6 @@ export interface Operations {
   "internal_get_invites_inviteId_verify": {
     method: "GET"
     path: "/internal/invites/{inviteId}/verify"
-    requestBody: undefined
-    responses: {
-      "200": StandardSuccessResponse
-    }
-  }
-  "internal_get_metrics": {
-    method: "GET"
-    path: "/internal/metrics"
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
@@ -2271,6 +2295,38 @@ export interface Operations {
   "internal_post_users_me_verification": {
     method: "POST"
     path: "/users/me/verification"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_get_users_privacy_export": {
+    method: "GET"
+    path: "/users/privacy/export"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_users_privacy_export": {
+    method: "POST"
+    path: "/users/privacy/export"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_users_privacy_otp_request": {
+    method: "POST"
+    path: "/users/privacy/otp/request"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
+  "internal_post_users_privacy_otp_verify": {
+    method: "POST"
+    path: "/users/privacy/otp/verify"
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
