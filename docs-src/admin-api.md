@@ -296,43 +296,51 @@ Permite a clientes y administradores consultar la agenda de contactos frecuentes
 ---
 
 ### 9. Solicitudes de Supresión de Datos Personales (`GET /contacts/erasure-requests` o `GET /internal/contacts/erasure-requests`)
-Bandeja de solicitudes de ejercicio de derechos ARCO (supresión / derecho al olvido) bajo la Ley N° 21.719 para supervisión de oficiales de protección de datos y administradores.
+Supresión de datos de titulares sin cuenta cuyo teléfono aparece en la libreta de algún cliente (Ley N° 21.719). El trámite es **automático**; el personal (`admin`, `root`) lo sigue y solo interviene en casos puntuales.
 
-* **Parámetros Query:**
-  - `page`: (Opcional, default `1`, 1-indexed) Página actual.
-  - `limit`: (Opcional, default `20`, máx `100`) Límite de solicitudes por página.
-* **Respuesta (`200 OK`):**
+**Flujo**
+1. `POST /internal/contacts/erasure-requests/verification` (público): `{ claimantPhone, claimantEmail }`. Envía un código de 6 dígitos **por WhatsApp al teléfono** (plantilla `flowex_otp_code`) y responde `{ verificationId, expiresInSeconds }`. Guarda solo la huella del teléfono. Topes: 3 códigos por teléfono y hora, 5 por origen y hora, 60 s entre códigos. Si WhatsApp no lo entrega: `502 ERASURE_CODE_NOT_SENT`, con la indicación de escribir a privacidad@flowex.cl.
+2. `POST /internal/contacts/erasure-requests` (público): `{ claimantPhone, claimantEmail, verificationId, code }`. Valida el código (5 intentos, 10 minutos, solo para ese teléfono), crea el folio y **en el acto** busca el teléfono en las libretas y avisa a cada remitente (`CONTACT_ERASURE_NOTICE`), con 10 días corridos para responder. Si no está en ninguna libreta, cierra y responde `sin_datos`.
+3. El remitente responde desde su libreta (ver más abajo). Cuando respondieron todos, o vence el plazo, se cierra: se purga el contacto en las libretas sin oposición (solo `contact_book`; los pedidos conservan su copia por obligación tributaria), se le responde al titular (`CONTACT_ERASURE_RESOLVED`, con las causales si las hubo) y se borran su teléfono y su correo. Queda la huella `claimant_subject`.
+4. La tarea programada cada 15 minutos (la misma de la planificación de rutas) reintenta los avisos que no salieron y cierra las vencidas.
+
+**Causales para conservar** (catálogo cerrado, `causes` en las respuestas): `relacion_contractual`, `obligacion_legal`, `defensa_reclamaciones`. No hay causal de "autorización del titular": pedir la supresión es retirarla.
+
+**Ninguna respuesta lleva datos de quien reclama**, ni completos ni enmascarados.
+
+* **Listado (`GET`):** `page`, `limit` (default 50, máx 100). Filtros, todos sobre el trámite y nunca sobre los datos de quien reclama: `status` (un estado, o `abiertas` / `cerradas`), `deadline` (`vencido` / `por_vencer`, dos días o menos), `withCauses=true` (conservadas en alguna libreta por una causal) y `ticket` (folio o parte). `total` respeta los filtros; `pending` cuenta siempre toda la cola. Cada solicitud trae `ticket`, `status`, fechas, `matchedOwners`, `responsesCount`, `rejectionCauses`, `hasOwnerResponse`, `hasResolutionNote`; las notas, que son texto libre, solo en la ficha. No se registra como uso de datos.
 ```json
 {
   "success": true,
-  "data": [
-    {
-      "id": "era_1771344928000",
-      "requesterName": "Carolina Soto",
-      "contactIdentifier": "c***@gmail.com",
-      "status": "pendiente",
-      "requestedAt": "2026-09-18T14:20:00.000Z"
-    }
-  ],
   "requests": [
     {
-      "id": "era_1771344928000",
-      "requesterName": "Carolina Soto",
-      "contactIdentifier": "c***@gmail.com",
-      "status": "pendiente",
-      "requestedAt": "2026-09-18T14:20:00.000Z"
+      "id": "e0000000-0000-0000-0000-000000000001",
+      "ticket": "SUP-20260910-1234",
+      "status": "notificada",
+      "statusLabel": "Remitente notificado, en plazo para acreditar legitimidad",
+      "matchedContacts": 2,
+      "matchedOwners": ["b1c2…", "c3d4…"],
+      "notifiedAt": "2026-09-10T13:05:00.000Z",
+      "responseDeadlineAt": "2026-09-20T13:05:00.000Z",
+      "responsesCount": 1,
+      "rejectionCauses": [],
+      "hasOwnerResponse": true,
+      "hasResolutionNote": false,
+      "createdAt": "2026-09-10T12:00:00.000Z"
     }
   ],
   "total": 5,
   "pending": 2,
-  "meta": {
-    "total": 5,
-    "page": 1,
-    "limit": 20,
-    "last_page": 1
-  }
+  "meta": { "total": 5, "page": 1, "limit": 50, "last_page": 1 },
+  "causes": { "relacion_contractual": "Hay un contrato vigente con usted que requiere estos datos para cumplirse", "…": "…" }
 }
 ```
+* **Ficha (`GET …/{ticket}`):** agrega `ownerResponses` (`ownerName` con el primer nombre, `decision`, `cause`, `causeLabel`, `note`) y `resolutionNote`. Cada lectura se registra como `VIEW_ERASURE_REQUEST_DETAIL`.
+* **Acciones del personal (`POST …/{ticket}/{acción}`):** `process` (alias `identify`/`notify`) reintenta la búsqueda y el aviso; `purge` cierra una vencida sin esperar la tarea programada (`409` si no se buscó, si falta el aviso o si el plazo está abierto); `reject` conserva el dato en todas las libretas: exige `cause` del catálogo y `note` de al menos 10 caracteres (constancia interna, no va al titular). Si la respuesta al titular no se puede encolar: `502 ERASURE_ANSWER_NOT_SENT` y la solicitud sigue abierta.
+
+#### Avisos para el remitente (rol cliente)
+* **`GET /internal/contacts/erasure-notices`:** solicitudes abiertas sobre su libreta, con sus propios contactos afectados (`contacts`), el teléfono enmascarado, el plazo y su respuesta si ya respondió. Trae `causes`.
+* **`POST /internal/contacts/erasure-notices/{ticket}/respond`:** `{ decision: "eliminar" | "conservar", cause?, note? }`. Conservar exige una `cause` del catálogo (`400 ERASURE_CAUSE_REQUIRED`). Una respuesta por remitente (`409 ERASURE_ALREADY_ANSWERED`); fuera de plazo, `409 ERASURE_DEADLINE_PASSED`. Si era el último en responder, la solicitud se cierra en el acto.
 
 ---
 

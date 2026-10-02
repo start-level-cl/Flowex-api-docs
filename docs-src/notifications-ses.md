@@ -134,7 +134,18 @@ Los correos emitidos por Amazon SES utilizan plantillas HTML con la identidad co
 #### G. Solicitud de Supresión de Contacto de Libreta (`CONTACT_ERASURE_NOTICE` - Ley N° 21.719)
 * **Asunto:** `Flowex: solicitud de supresión de un contacto de tu libreta ({ticket})`
 * **Destinatario:** Remitente titular de una libreta de direcciones.
-* **Contenido:** Aviso formal de que un tercero ha ejercido su derecho de supresión sobre su número de teléfono (enmascarado `+56 9 **** 1234`), otorgándole **10 días corridos** para acreditar una base de licitud contractual antes de la purga definitiva del registro de la libreta.
+* **Contenido:** Aviso de que un tercero ejerció su derecho de supresión sobre un contacto de su libreta (teléfono enmascarado `+56 9 **** 1234`), con **10 días corridos** para responder desde su libreta (botón a `respondUrl`): eliminar el contacto o conservarlo por una causal legal del catálogo, que se le informa al titular. Si no responde, el contacto se elimina. No lleva el nombre de quien reclama: solo el contacto como el remitente lo guardó (`contactName`, primer nombre) y el teléfono enmascarado.
+
+#### H. Respuesta al Titular de una Supresión (`CONTACT_ERASURE_RESOLVED` - Ley N° 21.719)
+* **Asunto:** `Flowex: respuesta a su solicitud de supresión ({ticket})`
+* **Destinatario:** Quien pidió la supresión, al correo que dejó en el formulario `/derechos`.
+* **Cuándo:** al cerrar la solicitud (`purge` o `reject`). Es la única respuesta que recibe: nadie del personal ve su teléfono ni su correo, y ambos se borran al cerrar.
+* **Contenido:** según `outcome`: `purgada` (eliminado de las libretas, salvo el historial de envíos que se conserva por obligación tributaria), `parcial` (eliminado de algunas libretas y conservado en otras), `sin_datos` (no estaba en ninguna) o `rechazada` (conservado en todas). Si se conservó en alguna parte, la respuesta va **fundamentada**: incluye las causales (`causes`, ya redactadas) y el derecho a reclamar ante la Agencia de Protección de Datos Personales. No cita las notas de los remitentes ni la constancia del personal.
+
+#### I. Código de verificación de una supresión (invocación directa `ERASURE_CODE_WHATSAPP`)
+* **Canal:** WhatsApp, plantilla de autenticación `flowex_otp_code` (código en el cuerpo y en el botón «Copiar código»).
+* **Quién la invoca:** auth-admin, en forma síncrona, para saber en el acto si el código salió. Responde `{ status: "accepted" }` o `{ status: "not_sent" }` (503). Sin respaldo de texto libre: fuera de la ventana de 24 horas no llegaría.
+* **Requisito:** la plantilla `flowex_otp_code` tiene que estar creada y aprobada en Meta (`Flowex-otp-service-lambda/scripts/sync-whatsapp-templates.mjs`).
 
 ---
 
