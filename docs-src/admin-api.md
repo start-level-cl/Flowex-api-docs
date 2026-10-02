@@ -19,9 +19,10 @@ Permite a la consola administrativa consultar todos los usuarios registrados con
   - `page`: (Opcional, default `1`, 1-indexed) Número de página actual a consultar.
   - `limit`: (Opcional, default `50`, máx `100`) Cantidad máxima de registros por página.
   - `offset`: (Opcional, default `0`) Desplazamiento alternativo para compatibilidad hacia atrás. Si se suministra `page`, se calcula `offset = (page - 1) * limit`.
-  - `role`: (Opcional) `'all' | 'root' | 'admin' | 'driver' | 'client'`
+  - `role`: (Opcional) `'all' | 'root' | 'admin' | 'driver' | 'client'`, o varios separados por coma (`admin,root`). Los valores desconocidos se ignoran; el filtro se aplica antes de paginar.
   - `status`: (Opcional) `'all' | 'active' | 'blocked'`
   - `search`: (Opcional) Búsqueda libre insensible a mayúsculas/minúsculas sobre nombre, email, RUT o teléfono.
+* **`summary` (KPI globales):** la respuesta trae `summary` con `total`, `active`, `blocked`, `clients`, `drivers`, `admins`, `roots` y `staff` (admin + root) de **toda** la plataforma, independiente de página, búsqueda y filtros. Son solo conteos: el panel ya no descarga el directorio completo para calcularlos (antes hasta 5.000 cuentas, cada página registrada como acceso a datos personales). Si no se pudo calcular, `summary` es `null` y el listado sale igual.
 * **Respuesta Exitosa (`200 OK`):**
 ```json
 {
@@ -380,6 +381,15 @@ Permite a roles `root` y `admin` listar las invitaciones de onboarding emitidas 
   }
 }
 ```
+
+---
+
+### 11. Cupones de promoción (`GET /internal/root/coupons`, solo `root`)
+Listado paginado de cupones con el formato dual (`data` y `coupons`, más `total` y `meta`).
+
+* **Parámetros Query:** `page`, `limit` (máx `100`), `isActive` (`true`/`false`), `search` (código, descripción o creador; alias `code`; los comodines se tratan como texto) y `creator` (solo creador).
+* **`summary` (KPI globales):** `total`, `active` (`is_active`, como siempre), `usable` (activos, vigentes y con usos disponibles: los que se pueden canjear hoy), `redemptions` (suma de canjes) y `discountApplied` (descuento aplicado en canjes vigentes). Son de **todos** los cupones, independientes de página y filtros; antes el panel los sumaba sobre los primeros 50. `null` si no se pudo calcular.
+* **Errores:** si la base no responde, `503` (antes respondía una lista vacía con total 0, que se leía como «no hay cupones»).
 
 ---
 

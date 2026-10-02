@@ -269,7 +269,14 @@ Flowex provee endpoints de consulta con el estándar unificado de paginación Im
 | `status` | `string` | No | Filtrar por estado del ciclo de vida (`created`, `picked_up`, `in_hub`, `out_for_delivery`, `delivered`, `return_pending`…). `pending_payment` trae los impagos y los retenidos por una diferencia de bulto. |
 | `driverId` | `string` | No | Filtrar por identificador o UUID de chofer asignado (exclusivo para roles operativos). |
 | `customerId` | `string` | No | Filtrar por ID de cliente (exclusivo para roles administrativos). |
-| `search` | `string` | No | Búsqueda por coincidencia en número de tracking, remitente, destinatario o comuna. |
+| `search` | `string` | No | Búsqueda por coincidencia en tracking, remitente, destinatario, comuna, conductor, hub, folio de factura, razón social de la factura y subcódigos de bulto. Los comodines `%` y `_` se tratan como texto. |
+| `routeId` | `string` | No | Código de la ruta asignada (`RUT-ENT-20261002-001`), o `none` para los pedidos sin ruta. Alias: `route`. |
+| `invoiceStatus` | `string` | No | `none`, `requested` o `emitted`. |
+| `period` | `string` | No | Período del `summary`: `today` (por omisión), `week` o `month`. |
+
+### Resumen global (`summary`, solo `admin` y `root`)
+
+La respuesta del personal trae `summary` con los KPI de la operación del período, los mismos de `GET /internal/orders/metrics` (`period`, `cutoff`, `delivered`, `pickupQueue`, `pickedUp`, `failed`, `totalRevenue`, `totalOrders`). Son de todos los pedidos del período, independientes de la página y los filtros. Clientes y conductores no lo reciben. `GET /internal/orders/metrics` sigue disponible y responde lo mismo. Si no se pudo calcular, `summary` es `null`.
 
 ### Respuesta Dual y Metadatos de Paginación (`200 OK`)
 

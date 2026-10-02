@@ -631,20 +631,31 @@ Lista la flota. Los costos por kilómetro y por hora se omiten para el rol `driv
 
 ### `GET /internal/vehicles/presets`
 
-Capacidades por defecto según tipo de vehículo. Solo precargan el formulario; el
-planificador siempre usa los valores guardados por unidad.
+Tipos de vehículo y sus capacidades sugeridas. Solo precargan el formulario; el planificador
+siempre usa los valores guardados por unidad.
 
-| Tipo | Carga útil | Volumen | Bultos | Licencia |
-|---|---|---|---|---|
-| `moto` | 20 kg | 0,10 m³ | 6 | A-1 |
-| `furgon_compacto` | 800 kg | 3,70 m³ | 34 | B |
-| `furgon` | 800 kg | 4,40 m³ | 41 | B |
-| `furgon_grande` | 1.200 kg | 7,80 m³ | 73 | B |
-| `camion_3_4` | 3.000 kg | 20,00 m³ | 187 | A-4 |
-| `camion_rampla` | 12.000 kg | 45,00 m³ | 421 | A-5 |
+**Fuente: la tabla `vehicle_types`** (migración 076). Es la misma que valida `POST`/`PUT
+/internal/vehicles`, así que catálogo y validación no pueden divergir, y agregar un tipo es
+insertar una fila (sin `ALTER TYPE` ni despliegue). La respuesta trae `source: "database"`; si la
+base no responde, el catálogo de respaldo con `source: "fallback"`.
+
+Cada tipo trae `isActive` (solo los activos se pueden asignar a un vehículo) y
+`registrationAliases`: los textos con que el conductor declara su vehículo al registrarse. El
+expediente del conductor usa esos alias para mostrar el tipo de la flota en vez del texto libre.
+
+| Tipo | Nombre | Carga útil | Volumen | Bultos | Licencia | Activo | Alias del registro |
+|---|---|---|---|---|---|---|---|
+| `auto` | Automóvil | 300 kg | 0,40 m³ | 12 | B | **No** | Automóvil Sedán / Hatchback |
+| `moto` | Moto con baúl | 20 kg | 0,10 m³ | 6 | A-1 | Sí | Motocicleta Express |
+| `furgon_compacto` | Furgón compacto | 800 kg | 3,70 m³ | 34 | B | Sí | |
+| `furgon` | Furgón | 800 kg | 4,40 m³ | 41 | B | Sí | Furgón / Camioneta |
+| `furgon_grande` | Furgón grande | 1.200 kg | 7,80 m³ | 73 | B | Sí | |
+| `camion_3_4` | Camión 3/4 | 3.000 kg | 20,00 m³ | 187 | A-4 | Sí | Camión 3/4 |
+| `camion_rampla` | Camión con rampla | 12.000 kg | 45,00 m³ | 421 | A-5 | Sí | |
 
 `max_packages` no es un dato del fabricante: se deriva del volumen con un factor de estiba
-de 0,75 sobre un bulto promedio de 0,08 m³.
+de 0,75 sobre un bulto promedio de 0,08 m³. `auto` está inactivo: el registro lo ofrece, pero
+operaciones decide si se usa en la flota (activarlo es cambiar `is_active`).
 
 ### `POST` / `PUT` / `DELETE /internal/vehicles`
 
