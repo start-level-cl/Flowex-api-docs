@@ -254,22 +254,11 @@ Permite a clientes y administradores consultar la agenda de contactos frecuentes
   - `page`: (Opcional, default `1`, 1-indexed) Página actual solicitada.
   - `limit`: (Opcional, default `50`, máx `100`) Cantidad de registros por página.
   - `q`: (Opcional) Término de búsqueda por nombre completo, comuna, dirección o teléfono.
-* **Respuesta (`200 OK`):**
+* **Respuesta (`200 OK`):** la colección va **solo en `data`**. Es la única excepción al formato dual de los listados: hasta octubre de 2026 se repetía en `contacts`, que duplicaba el tamaño de la respuesta.
 ```json
 {
   "success": true,
   "data": [
-    {
-      "id": "cnt_1771344928000",
-      "ownerId": "usr_client_101",
-      "fullName": "Beatriz Morales",
-      "phone": "+56 9 8765 4321",
-      "commune": "Providencia",
-      "streetAddress": "Av. Providencia 1234, Of. 502",
-      "createdAt": "2026-08-20T10:30:00.000Z"
-    }
-  ],
-  "contacts": [
     {
       "id": "cnt_1771344928000",
       "ownerId": "usr_client_101",
