@@ -143,17 +143,20 @@ se puede releer). Si el envío original no tiene correo responde `409`.
 
 ## 📱 WhatsApp: avisos del pedido
 
-### Plantillas
+### Plantillas Oficiales Meta WhatsApp
 
-| Tipo (`notificationType`) | Plantilla | Uso |
-| :--- | :--- | :--- |
-| `ORDER_CREATED` | `flowex_order_created_v2` | Pedido registrado, con PIN de entrega, razón social del remitente e imagen de cabecera |
-| `ORDER_OUT_TODAY` | `flowex_order_out_today` | El pedido sale hoy a reparto |
-| `ORDER_NEXT_STOP` | `flowex_order_next_stop` | El destinatario es la siguiente parada |
-| `ORDER_IN_TRANSIT` | `flowex_order_in_transit` | En tránsito |
-| `ORDER_DELIVERED` | `flowex_order_delivered` | Entregado |
-| `DELIVERY_INCIDENT` | `flowex_delivery_incident` | Incidencia en la entrega |
-| (otro) | `flowex_general_notification` | Respaldo de utilidad |
+Sigue la matriz aprobada el 16-09-2026 (Requerimiento 11, Anexo I). Los avisos por WhatsApp están reservados exclusivamente al destinatario para coordinación operativa y entrega segura del PIN de 4 dígitos. Las plantillas intermedias (`flowex_order_in_transit`, `flowex_order_delivered`, `flowex_delivery_incident`) fueron retiradas de Meta el 29-09-2026 para evitar spam y costos innecesarios (las incidencias se notifican por correo al remitente).
+
+| Tipo (`notificationType`) | Plantilla Oficial Meta | Categoría | Uso y Parámetros |
+| :--- | :--- | :--- | :--- |
+| `ORDER_CREATED` | `flowex_order_created_v2` | `UTILITY` | Pedido registrado y pagado. `{{1}}` Tracking, `{{2}}` PIN, `{{3}}` Destinatario, `{{4}}` Comuna, `{{5}}` Dirección, `{{6}}` Remitente. |
+| `ORDER_OUT_TODAY` | `flowex_order_out_today` | `UTILITY` | Paquete en ruta hoy. `{{1}}` Tracking, `{{2}}` Chofer, `{{3}}` Destinatario, `{{4}}` PIN. |
+| `ORDER_NEXT_STOP` | `flowex_order_next_stop` | `UTILITY` | Destinatario es la siguiente parada. `{{1}}` Tracking, `{{2}}` Chofer, `{{3}}` Destinatario, `{{4}}` PIN, `{{5}}` Dirección. |
+| (otro / fallback) | `flowex_general_notification` | `UTILITY` | Respaldo utilitario de texto libre (`{{1}}` Texto). Usado también como fallback automático si la plantilla OTP no está dada de alta. |
+| (autenticación) | `flowex_otp_code` | `AUTHENTICATION` | Código OTP de 6 dígitos (`{{1}}` Código). |
+
+> [!TIP]
+> Para sincronizar o dar de alta estas plantillas automáticamente contra la API de Meta Graph, ejecutar `node scripts/sync-whatsapp-templates.mjs` en `Flowex-otp-service-lambda`.
 
 ### `POST /notifications/whatsapp`
 

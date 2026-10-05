@@ -131,9 +131,6 @@ Flowex opera un motor de notificaciones multicanal event-driven desacoplado que 
 | **Envío Creado y Pagado** | `flowex_order_created_v2` | `{{1}}` Tracking, `{{2}}` PIN 4 dígitos, `{{3}}` Destinatario, `{{4}}` Comuna, `{{5}}` Dirección, `{{6}}` Remitente | Notificación inmediata con PIN secreto al receptor. |
 | **Paquete en Salida Hoy** | `flowex_order_out_today` | `{{1}}` Tracking, `{{2}}` Chofer, `{{3}}` Destinatario, `{{4}}` PIN | Alerta matutina de ruta activa para recepción. |
 | **Alerta Próxima Parada** | `flowex_order_next_stop` | `{{1}}` Tracking, `{{2}}` Chofer, `{{3}}` Destinatario, `{{4}}` PIN, `{{5}}` Dirección | Aviso cuando el conductor se encuentra a minutos del domicilio. |
-| **Actualización en Tránsito** | `flowex_order_in_transit` | `{{1}}` Tracking, `{{2}}` Estado / Hub Logístico, `{{3}}` Destinatario | Notificación de movimiento intermedio en centros de distribución. |
-| **Confirmación de Entrega (POD)** | `flowex_order_delivered` | `{{1}}` Tracking, `{{2}}` Fecha y Hora, `{{3}}` Receptor | Comprobante de entrega exitosa para remitente y receptor. |
-| **Incidencia de Despacho** | `flowex_delivery_incident` | `{{1}}` Tracking, `{{2}}` Causa de la Incidencia, `{{3}}` Destinatario | Aviso de dirección no encontrada, cliente ausente o rechazo. |
 | **Aviso General de Plataforma** | `flowex_general_notification`| `{{1}}` Texto del comunicado oficial | Contingencias operativas y anuncios de servicio. |
 
 ### 3. Matriz de Correos Electrónicos Transaccionales (Amazon SES)

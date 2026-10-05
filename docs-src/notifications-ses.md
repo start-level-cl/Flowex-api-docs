@@ -70,9 +70,6 @@ Todas las plantillas de WhatsApp están tipadas en [`whatsapp-templates.ts`](fil
 | **Envío Creado y Pagado** | `flowex_order_created_v2` | `UTILITY` (con Header de Imagen) | `{{1}}` Tracking, `{{2}}` PIN de entrega (4 dígitos), `{{3}}` Nombre Destinatario, `{{4}}` Comuna, `{{5}}` Dirección, `{{6}}` Nombre Remitente | Destinatario del Paquete |
 | **Paquete en Salida Hoy** | `flowex_order_out_today` | `UTILITY` | `{{1}}` Tracking, `{{2}}` Nombre Chofer, `{{3}}` Destinatario, `{{4}}` PIN de Entrega | Destinatario del Paquete |
 | **Alerta de Parada Próxima** | `flowex_order_next_stop` | `UTILITY` | `{{1}}` Tracking, `{{2}}` Nombre Chofer, `{{3}}` Destinatario, `{{4}}` PIN, `{{5}}` Dirección de Entrega | Destinatario del Paquete |
-| **Actualización en Tránsito** | `flowex_order_in_transit` | `UTILITY` | `{{1}}` Tracking, `{{2}}` Estado / hub donde está el pedido, `{{3}}` Destinatario | Remitente y Destinatario |
-| **Confirmación de Entrega (POD)** | `flowex_order_delivered` | `UTILITY` | `{{1}}` Tracking, `{{2}}` Fecha y Hora de Entrega, `{{3}}` Nombre Destinatario | Remitente y Destinatario |
-| **Incidencia / Fallo de Entrega** | `flowex_delivery_incident` | `UTILITY` | `{{1}}` Tracking, `{{2}}` Motivo del Fallo, `{{3}}` Destinatario | Destinatario y Remitente |
 | **Notificación de Contingencia** | `flowex_general_notification` | `UTILITY` (Fallback) | `{{1}}` Texto del aviso general | Usuarios de la plataforma |
 
 > [!WARNING]
