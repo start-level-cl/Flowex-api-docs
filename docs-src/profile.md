@@ -92,7 +92,7 @@ Consulta el estado vigente del consentimiento otorgado y el desglose detallado d
   "userId": "usr_client_1771344000",
   "appId": "flowex",
   "status": "GRANTED",
-  "policyVersion": "v2.5",
+  "policyVersion": "v3.2",
   "channel": "web_registration",
   "purposes": [
     {
@@ -108,20 +108,6 @@ Consulta el estado vigente del consentimiento otorgado y el desglose detallado d
       "description": "Alertas críticas sobre el estado y despacho de envíos",
       "granted": true,
       "essential": true
-    },
-    {
-      "purpose": "sms_whatsapp_alerts",
-      "name": "Alertas por WhatsApp",
-      "description": "Avisos del pedido por WhatsApp",
-      "granted": true,
-      "essential": false
-    },
-    {
-      "purpose": "delivery_tracking",
-      "name": "Seguimiento y Georreferenciación",
-      "description": "Rastreo en tiempo real y posicionamiento geoespacial de envíos",
-      "granted": true,
-      "essential": false
     }
   ],
   "grantedAt": "2026-08-24T10:30:00.000Z",
@@ -133,56 +119,15 @@ Consulta el estado vigente del consentimiento otorgado y el desglose detallado d
 ---
 
 ### 2. `POST /auth/consent/revoke`
-Permite al titular ejercer su derecho de oposición/revocación sobre finalidades **no esenciales**. Al revocarse, se emite de forma asíncrona un evento `REVOKE_CONSENT` a Amazon SQS (`FlowexConsentQueue`).
+Desde la política **v3.2** no hay finalidades que el titular pueda revocar: las dos vigentes (`terms_and_conditions`, `operational_notifications`) son esenciales para el servicio y la facturación tributaria. Las de WhatsApp y seguimiento (`sms_whatsapp_alerts`, `delivery_tracking`) se retiraron porque no correspondían a ningún tratamiento: los avisos de WhatsApp van al destinatario del envío y no existe rastreo con GPS.
 
 * **Método:** `POST`
 * **Autenticación:** Requerida (`Bearer <JWT>` o cookie HttpOnly `access_token`).
 * **Cuerpo de Solicitud (`application/json`):**
 ```json
-{
-  "purposes": [
-    "sms_whatsapp_alerts"
-  ],
-  "reason": "El titular solicita dejar de recibir alertas por WhatsApp"
-}
+{ "purposes": ["terms_and_conditions"], "reason": "..." }
 ```
-* **Respuesta Exitosa (`200 OK`):**
-```json
-{
-  "message": "Consentimiento revocado exitosamente para las finalidades seleccionadas",
-  "userId": "usr_client_1771344000",
-  "status": "PARTIALLY_REVOKED",
-  "policyVersion": "v2.5",
-  "purposes": [
-    {
-      "purpose": "terms_and_conditions",
-      "name": "Términos y Condiciones del Servicio",
-      "granted": true,
-      "essential": true
-    },
-    {
-      "purpose": "operational_notifications",
-      "name": "Notificaciones Operacionales",
-      "granted": true,
-      "essential": true
-    },
-    {
-      "purpose": "sms_whatsapp_alerts",
-      "name": "Alertas por WhatsApp",
-      "granted": false,
-      "essential": false
-    },
-    {
-      "purpose": "delivery_tracking",
-      "name": "Seguimiento y Georreferenciación",
-      "granted": true,
-      "essential": false
-    }
-  ],
-  "updatedAt": "2026-08-24T14:30:00.000Z"
-}
-```
-* **Respuesta de Error si se intenta revocar finalidad esencial (`400 Bad Request`):**
+* **Respuesta si se intenta revocar una finalidad esencial (`400 Bad Request`):**
 ```json
 {
   "message": "No es posible revocar finalidades esenciales para la operación del servicio (Ley N° 21.719)",
@@ -190,18 +135,27 @@ Permite al titular ejercer su derecho de oposición/revocación sobre finalidade
   "essentialPurposes": ["terms_and_conditions", "operational_notifications"]
 }
 ```
+* **Respuesta si se nombra una finalidad retirada o desconocida (`400 Bad Request`), sin revocar nada ni emitir evento:**
+```json
+{
+  "message": "Finalidad desconocida. No se revocó nada.",
+  "unknownPurposes": ["sms_whatsapp_alerts"],
+  "validPurposes": ["terms_and_conditions", "operational_notifications"]
+}
+```
+
+Lo que el titular otorgó de las finalidades retiradas antes de la v3.2 se conserva como evidencia en la central y en `user_consents`, y se revoca al eliminar la cuenta.
 
 ---
 
 ### 3. `POST /auth/consent/grant`
-Vuelve a otorgar finalidades accesorias revocadas. Mismo cuerpo que la revocación (sin `reason`):
+Otorga las finalidades vigentes que falten (por ejemplo, a una cuenta sin registro de consentimiento). Mismo cuerpo que la revocación (sin `reason`):
 
 ```json
-{ "purposes": ["sms_whatsapp_alerts"] }
+{ "purposes": ["terms_and_conditions", "operational_notifications"] }
 ```
 
-La clave `sms_whatsapp_alerts` se conserva por compatibilidad con los registros existentes;
-hoy cubre solo WhatsApp.
+Nombrar una finalidad retirada en la v3.2 responde `400` con `unknownPurposes`: la central rechazaría el registro (`INVALID_PURPOSE`) porque ya no está en la política activa.
 
 ---
 
@@ -254,7 +208,7 @@ Endpoint interno (VPC / Consola Administrativa) para la inspección forense de c
   "userId": "usr_1771345600000",
   "appId": "flowex",
   "status": "GRANTED",
-  "policyVersion": "v2.5",
+  "policyVersion": "v3.2",
   "channel": "web_registration",
   "purposes": [
     {
@@ -268,18 +222,6 @@ Endpoint interno (VPC / Consola Administrativa) para la inspección forense de c
       "name": "Notificaciones Operacionales",
       "granted": true,
       "essential": true
-    },
-    {
-      "purpose": "sms_whatsapp_alerts",
-      "name": "Alertas por WhatsApp",
-      "granted": true,
-      "essential": false
-    },
-    {
-      "purpose": "delivery_tracking",
-      "name": "Seguimiento y Georreferenciación",
-      "granted": true,
-      "essential": false
     }
   ],
   "grantedAt": "2026-08-20T10:00:00.000Z",
@@ -321,7 +263,7 @@ Flowex estructura el cumplimiento del catálogo de derechos del titular conforme
 | **A**cceso | Derecho del titular a conocer qué datos personales han sido recolectados, con qué fines y a quiénes se transfieren. | `GET /auth/consent`, `GET /users/me/export` y panel de perfil de usuario (`Flowex-frontend`). |
 | **R**ectificación | Derecho a modificar, corregir o actualizar datos inexactos, desactualizados o incompletos (RUT, teléfono, razón social DTE). | `PUT /registration/requests/{email}/update-contact`, libreta de direcciones y configuración de facturación DTE. |
 | **C**ancelación (Supresión) | Derecho a solicitar el borrado de datos cuando ha concluido la relación contractual y vencido el plazo legal de retención tributaria/logística. | Solicitud formal de derecho ARCOP procesada por el Oficial de Privacidad (DPO) y archivo final en S3 Glacier WORM. |
-| **O**posición / Revocación | Derecho a revocar total o parcialmente el consentimiento sobre finalidades accesorias (alertas WhatsApp, seguimiento). | `POST /auth/consent/revoke` y `POST /auth/consent/grant` (no aplica a finalidades esenciales del contrato de transporte). |
+| **O**posición | Desde la v3.2 las dos finalidades vigentes son esenciales del contrato de transporte y no se retiran por separado. Los avisos por correo se dejan de recibir con el enlace de cada correo; el bloqueo temporal se pide a privacidad. | `POST /auth/consent/revoke` rechaza toda finalidad (esencial o retirada) con `400`. |
 | **P**ortabilidad | Derecho a recibir los datos personales en un formato estructurado, interoperable y de uso común. | `GET /users/me/export` (JSON), botón "Exportar Datos" del perfil. |
 
 ---

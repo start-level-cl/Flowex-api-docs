@@ -187,10 +187,8 @@ Registra el otorgamiento explícito de finalidades de tratamiento de datos al re
 {
   "userId": "usr_9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
   "purposes": [
-    { "purpose": "terms_and_conditions", "granted": true, "policyVersion": "v2.5" },
-    { "purpose": "operational_notifications", "granted": true, "policyVersion": "v2.5" },
-    { "purpose": "sms_whatsapp_alerts", "granted": true, "policyVersion": "v2.5" },
-    { "purpose": "delivery_tracking", "granted": true, "policyVersion": "v2.5" }
+    { "purpose": "terms_and_conditions", "granted": true, "policyVersion": "v3.2" },
+    { "purpose": "operational_notifications", "granted": true, "policyVersion": "v3.2" }
   ],
   "channel": "web_registration",
   "acceptedAt": "2026-08-24T12:00:00.000Z"
@@ -198,14 +196,14 @@ Registra el otorgamiento explícito de finalidades de tratamiento de datos al re
 ```
 
 #### 2. Payload: `REVOKE_CONSENT`
-Registra la revocación o derecho de oposición del titular a una o varias finalidades no esenciales.
+Desde la política **v3.2** no existen finalidades que el titular pueda retirar por separado: las dos vigentes (`terms_and_conditions`, `operational_notifications`) son esenciales. El evento solo se emite al **eliminar la cuenta**, y revoca las dos vigentes y las dos retiradas en la v3.2 (`sms_whatsapp_alerts`, `delivery_tracking`), para que lo otorgado antes de ese cambio también quede revocado. La central no valida las finalidades al revocar.
 ```json
 {
   "userId": "usr_9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
-  "purposes": ["sms_whatsapp_alerts"],
-  "reason": "Solicitud expresa de cese de alertas por WhatsApp",
+  "purposes": ["terms_and_conditions", "operational_notifications", "sms_whatsapp_alerts", "delivery_tracking"],
+  "reason": "Cuenta eliminada a solicitud del titular",
   "revokedAt": "2026-08-24T14:30:00.000Z",
-  "channel": "web_settings"
+  "channel": "account_deletion"
 }
 ```
 
@@ -232,8 +230,8 @@ Para el consumo directo desde las aplicaciones clientes (`Flowex-frontend` SPA y
 | Endpoint | Método | Microservicio Emisor | Rol Requerido | Descripción & Evento SQS |
 |---|---|---|---|---|
 | `/auth/consent` | `GET` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Consulta las finalidades vigentes y estado legal del usuario en sesión. |
-| `/auth/consent/revoke` | `POST` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Revoca finalidades accesorias (`sms_whatsapp_alerts`, `delivery_tracking`). Encola `REVOKE_CONSENT` a SQS. Rechaza revocación de finalidades esenciales (`400 Bad Request`). |
-| `/auth/consent/grant` | `POST` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Vuelve a otorgar finalidades accesorias revocadas. |
+| `/auth/consent/revoke` | `POST` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Ya no hay finalidades revocables (v3.2): rechaza las esenciales (`400 Bad Request`). |
+| `/auth/consent/grant` | `POST` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Otorga las finalidades vigentes que falten (`terms_and_conditions`, `operational_notifications`). Rechaza con `400` las retiradas en la v3.2 (`unknownPurposes`). |
 | `/users/me/export` | `GET` | `Flowex-auth-admin-lambda` | Titular de la sesión | Portabilidad: todos los datos del titular en JSON. Registra `EXPORT_PERSONAL_DATA`. |
 | `/internal/users/{userId}/consents` | `GET` | `Flowex-auth-admin-lambda` | `admin`, `root` | Inspección forense de consentimientos de un tercero. Encola obligatoriamente `PII_ACCESS_AUDIT` a SQS. Si la cuenta está suspendida (`userIsActive = false`), añade custodia legal. |
 
