@@ -657,6 +657,14 @@ export interface Operations {
       "401": StandardErrorResponse
     }
   }
+  "auth_post_change_password_request_otp": {
+    method: "POST"
+    path: "/auth/change-password/request-otp"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
+    }
+  }
   "auth_get_user_consent": {
     method: "GET"
     path: "/auth/consent"
@@ -682,6 +690,14 @@ export interface Operations {
       "200": UserConsent
       "400": StandardErrorResponse
       "401": StandardErrorResponse
+    }
+  }
+  "auth_post_forgot_password": {
+    method: "POST"
+    path: "/auth/forgot-password"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
     }
   }
   "auth_post_login": {
@@ -725,6 +741,14 @@ export interface Operations {
     responses: {
       "200": RefreshTokenResponse
       "401": StandardErrorResponse
+    }
+  }
+  "auth_post_reset_password": {
+    method: "POST"
+    path: "/auth/reset-password"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
     }
   }
   "auth_patch_security": {

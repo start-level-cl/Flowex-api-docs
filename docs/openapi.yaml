@@ -146,7 +146,7 @@ paths:
     post:
       tags:
         - Auth
-      summary: "Cambio y actualización de contraseña de usuario"
+      summary: "Cambio y actualización de contraseña de usuario con confirmación OTP"
       operationId: auth_post_change_password
       responses:
         200:
@@ -175,6 +175,28 @@ paths:
               $ref: #/components/schemas/ChangePasswordRequest
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
+  /auth/change-password/request-otp:
+    post:
+      tags:
+        - Auth
+      summary: "Solicitar código OTP al correo para autorizar cambio de contraseña"
+      operationId: auth_post_change_password_request_otp
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-api-lambda
+      x-source: Flowex-auth-api-lambda/src/index.ts
+      x-roles:
+        - root
+        - admin
+        - driver
+        - client
+      security:
+        - bearerAuth: []
   /auth/consent:
     get:
       tags:
@@ -262,6 +284,21 @@ paths:
         - admin
         - driver
         - client
+  /auth/forgot-password:
+    post:
+      tags:
+        - Auth
+      summary: "Solicitar código de verificación para recuperación de contraseña"
+      operationId: auth_post_forgot_password
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-api-lambda
+      x-source: Flowex-auth-api-lambda/src/index.ts
   /auth/login:
     post:
       tags:
@@ -375,6 +412,21 @@ paths:
               $ref: #/components/schemas/RefreshTokenRequest
       security:
         - cookieRefreshAuth: []
+      x-service: auth-api-lambda
+      x-source: Flowex-auth-api-lambda/src/index.ts
+  /auth/reset-password:
+    post:
+      tags:
+        - Auth
+      summary: "Restablecer contraseña mediante código OTP recibido por correo"
+      operationId: auth_post_reset_password
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
   /auth/security:

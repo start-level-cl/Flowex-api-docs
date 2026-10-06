@@ -78,9 +78,28 @@
     "tags": [
       "Auth"
     ],
-    "summary": "Cambio y actualización de contraseña de usuario",
+    "summary": "Cambio y actualización de contraseña de usuario con confirmación OTP",
     "roles": [],
     "security": false
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/change-password/request-otp",
+    "operationId": "auth_post_change_password_request_otp",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Solicitar código OTP al correo para autorizar cambio de contraseña",
+    "roles": [
+      "root",
+      "admin",
+      "driver",
+      "client"
+    ],
+    "security": "bearerAuth"
   },
   {
     "service": "auth-api-lambda",
@@ -133,6 +152,20 @@
       "client"
     ],
     "security": "bearerAuth"
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/forgot-password",
+    "operationId": "auth_post_forgot_password",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Solicitar código de verificación para recuperación de contraseña",
+    "roles": [],
+    "security": false
   },
   {
     "service": "auth-api-lambda",
@@ -208,6 +241,20 @@
     "summary": "Renovación de Access Token mediante Refresh Token",
     "roles": [],
     "security": "cookieRefreshAuth"
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
+    "path": "/auth/reset-password",
+    "operationId": "auth_post_reset_password",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "Restablecer contraseña mediante código OTP recibido por correo",
+    "roles": [],
+    "security": false
   },
   {
     "service": "auth-api-lambda",
