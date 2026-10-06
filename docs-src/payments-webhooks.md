@@ -48,18 +48,21 @@ sequenceDiagram
 ## 📡 Endpoints del Módulo de Pagos
 
 ### 1. Crear Preferencia en Mercado Pago (`POST /payments/mercadopago/preference`)
-Genera el identificador de preferencia y las URLs de redirección para Checkout Pro.
+Genera el identificador de preferencia y las URLs de redirección para Checkout Pro. Admite tanto pago individual (`orderId`) como cobro agrupado de lote (`orderIds: string[]`, máximo 25 envíos).
 
-* **Cuerpo de Solicitud:**
+* **Cuerpo de Solicitud (Individual o Lote):**
 ```json
 {
   "orderId": "ord_1771344928",
+  "orderIds": ["ord_1771344928", "ord_1771344929"],
   "trackingNumber": "FLX-2026-8492",
-  "amount": 14500,
   "payerEmail": "cliente@gmail.com",
   "payerName": "Andrea Morales"
 }
 ```
+
+> [!TIP]
+> Para cobros de lote, el servidor valida pertenencia de los envíos a la misma cuenta, calcula el total consolidado como suma de cada orden (respetando descuentos aplicados), y genera un ítem por envío en la preferencia de Mercado Pago con `external_reference = grp_<uuid>`.
 
 * **Respuesta Exitosa (`200 OK`):**
 ```json
@@ -96,15 +99,15 @@ Genera el identificador de preferencia y las URLs de redirección para Checkout 
 
 ---
 
-### 2. Crear Intención de Pago en Fintoc (`POST /payments/fintoc/payment-intent`)
-Genera el `widgetToken` y la URL para inicializar el widget de Open Banking.
+### 2. Crear Sesión de Checkout en Fintoc (`POST /payments/fintoc/checkout-session`)
+Genera la sesión de checkout (`sessionId`) y el `sessionToken` para inicializar el widget de Open Banking embebido. Admite cobro individual (`orderId`) o lote de pedidos (`orderIds: string[]`, máx. 25).
 
-* **Cuerpo de Solicitud:**
+* **Cuerpo de Solicitud (Individual o Lote):**
 ```json
 {
   "orderId": "ord_1771344928",
+  "orderIds": ["ord_1771344928", "ord_1771344929"],
   "trackingNumber": "FLX-2026-8492",
-  "amount": 14500,
   "payerEmail": "cliente@gmail.com"
 }
 ```
@@ -113,26 +116,40 @@ Genera el `widgetToken` y la URL para inicializar el widget de Open Banking.
 ```json
 {
   "provider": "fintoc",
-  "paymentIntentId": "pi_fintoc_1771344928000",
-  "widgetToken": "wt_9a8b7c6d5e4f3a2b1c0d",
-  "checkoutUrl": "https://checkout.fintoc.com/p/wt_9a8b7c6d5e4f3a2b1c0d",
-  "payload": {
-    "amount": 14500,
-    "currency": "CLP",
-    "recipient_account": {
-      "holder_id": "77123456-7",
-      "holder_name": "Flowex SpA",
-      "number": "12345678",
-      "type": "checking_account",
-      "bank_id": "cl_banco_de_chile"
-    },
-    "comment": "Pago Envío Flowex FLX-2026-8492",
-    "metadata": {
-      "orderId": "ord_1771344928",
-      "trackingNumber": "FLX-2026-8492",
-      "payerEmail": "cliente@gmail.com"
-    }
-  }
+  "sessionId": "cs_test_1771344928",
+  "sessionToken": "st_test_9a8b7c6d5e4f3a2b1c0d",
+  "publicKey": "pk_test_...",
+  "mode": "test",
+  "amount": 29000,
+  "currency": "CLP",
+  "paymentGroupId": "grp_fintoc_1771344928000"
+}
+```
+
+---
+
+### 3. Consulta de Estado de Pagos (`GET /payments/mercadopago/status` y `GET /payments/fintoc/status`)
+Permite al frontend consultar y verificar el estado oficial de una transacción individual o de un lote completo.
+
+* **Parámetros de Consulta:**
+  - Individual: `?paymentId=...` (Mercado Pago) o `?sessionId=...` (Fintoc)
+  - Lote: `?groupId=...` (ambas pasarelas retornan el estado agregado del grupo de pago)
+
+* **Respuesta de Lote (`200 OK`):**
+```json
+{
+  "provider": "mercadopago",
+  "paymentGroupId": "grp_550e8400-e29b-41d4-a716-446655440000",
+  "status": "approved",
+  "orderStatus": "paid",
+  "totalAmount": 29000,
+  "orderCount": 2,
+  "orderIds": ["ord_1771344928", "ord_1771344929"],
+  "orders": [
+    { "id": "ord_1771344928", "trackingNumber": "FLX-2026-8492", "isPaid": true, "status": "created", "totalCost": 14500 },
+    { "id": "ord_1771344929", "trackingNumber": "FLX-2026-8493", "isPaid": true, "status": "created", "totalCost": 14500 }
+  ],
+  "paidAt": "2026-10-06T15:30:00.000Z"
 }
 ```
 

@@ -6016,17 +6016,17 @@ components:
       type: object
       required:
         - purposes
-      description: "Solicitud de revocación o derecho de oposición sobre finalidades no esenciales"
+      description: "Solicitud de revocación. Desde la política v3.2 no hay finalidades no esenciales: las vigentes (terms_and_conditions, operational_notifications) son esenciales y se rechazan con 400, y las retiradas (sms_whatsapp_alerts, delivery_tracking) responden 400 con unknownPurposes"
       properties:
         purposes:
           type: array
           items:
             type: string
           example:
-            - sms_whatsapp_alerts
+            - terms_and_conditions
         reason:
           type: string
-          example: "El titular solicita dejar de recibir alertas por WhatsApp"
+          example: "Solicitud del titular"
     UserProfile:
       type: object
       description: "Modelo estandarizado de perfil de usuario en Flowex para todos los roles (root, admin, driver, client, customer)"
