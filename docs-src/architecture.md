@@ -231,6 +231,7 @@ Para el consumo directo desde las aplicaciones clientes (`Flowex-frontend` SPA y
 |---|---|---|---|---|
 | `/auth/consent` | `GET` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Consulta las finalidades vigentes y estado legal del usuario en sesión. |
 | `/auth/consent/revoke` | `POST` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Ya no hay finalidades revocables (v3.2): rechaza las esenciales (`400 Bad Request`). |
+| `/auth/consent/accept-policy` | `POST` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Acepta la versión vigente de los términos (renovación o primera aceptación). `{ accepted: true, policyVersion }`; `409 POLICY_VERSION_MISMATCH` si no es la vigente. |
 | `/auth/consent/grant` | `POST` | `Flowex-auth-api-lambda` | `client`, `driver`, `admin`, `root` | Otorga las finalidades vigentes que falten (`terms_and_conditions`, `operational_notifications`). Rechaza con `400` las retiradas en la v3.2 (`unknownPurposes`). |
 | `/users/me/export` | `GET` | `Flowex-auth-admin-lambda` | Titular de la sesión | Portabilidad: todos los datos del titular en JSON. Registra `EXPORT_PERSONAL_DATA`. |
 | `/internal/users/{userId}/consents` | `GET` | `Flowex-auth-admin-lambda` | `admin`, `root` | Inspección forense de consentimientos de un tercero. Encola obligatoriamente `PII_ACCESS_AUDIT` a SQS. Si la cuenta está suspendida (`userIsActive = false`), añade custodia legal. |

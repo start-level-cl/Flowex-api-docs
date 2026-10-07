@@ -93,6 +93,8 @@ Consulta el estado vigente del consentimiento otorgado y el desglose detallado d
   "appId": "flowex",
   "status": "GRANTED",
   "policyVersion": "v3.2",
+  "currentPolicyVersion": "v3.2",
+  "requiresPolicyAcceptance": false,
   "channel": "web_registration",
   "purposes": [
     {
@@ -115,6 +117,21 @@ Consulta el estado vigente del consentimiento otorgado y el desglose detallado d
   "legalNotice": "Tratamiento de datos personales conforme a la Ley N° 21.719 sobre Protección de Datos Personales en Chile."
 }
 ```
+
+* **`policyVersion`** es la versión que el titular **aceptó**; **`currentPolicyVersion`**, la vigente.
+* **`status`:** `GRANTED`, `NEEDS_RENEWAL` (aceptó una versión anterior: el consentimiento existe,
+  pero tiene que aceptar la vigente), `REVOKED`, `NO_RECORD` (no hay registro de ninguna
+  aceptación) o `UNKNOWN` (no se pudo consultar).
+* **`requiresPolicyAcceptance`:** `true` con `NEEDS_RENEWAL` o `NO_RECORD`. El frontend muestra
+  entonces la aceptación de la versión vigente (ver §3b) en toda pantalla con sesión, salvo
+  `/terminos`, `/privacidad`, `/privacidad/mis-datos`, `/derechos`, `/baja` y `/profile`, para que
+  pueda leer el texto y ejercer sus derechos sin aceptar. Con `UNKNOWN` es `false`: no se bloquea
+  a nadie por una consulta caída.
+
+La central (`mark-stale-consents`, cada noche) marca `NEEDS_RENEWAL` todo otorgamiento hecho
+bajo una versión que no sea la activa. Flowex aplica el mismo criterio sin esperar esa tarea: un
+`GRANTED` con otra versión también pide renovar. Por eso **toda** versión nueva pide aceptar de
+nuevo: solo se publica una cuando cambia lo que el titular acepta.
 
 ---
 
@@ -156,6 +173,38 @@ Otorga las finalidades vigentes que falten (por ejemplo, a una cuenta sin regist
 ```
 
 Nombrar una finalidad retirada en la v3.2 responde `400` con `unknownPurposes`: la central rechazaría el registro (`INVALID_PURPOSE`) porque ya no está en la política activa.
+
+---
+
+### 3b. `POST /auth/consent/accept-policy` — Renovación
+
+Registra que el titular aceptó la versión vigente, con las mismas garantías que el registro: la
+aceptación es afirmativa, se guarda con versión, fecha, IP y navegador (`user_consents`,
+`channel = policy_renewal`) y se envía a la central como `RECORD_CONSENT` de las dos finalidades.
+La central lo anota como `RENEW` en el historial si reemplaza un otorgamiento de otra versión.
+
+* **Autenticación:** Requerida. Una cuenta bloqueada responde `403`.
+* **Cuerpo:** `{ "accepted": true, "policyVersion": "v3.2" }`. `policyVersion` es la versión que se
+  le mostró.
+* **`200 OK`:**
+```json
+{
+  "message": "Registramos tu aceptación de la versión vigente.",
+  "status": "GRANTED",
+  "policyVersion": "v3.2",
+  "previousPolicyVersion": "v3.1",
+  "currentPolicyVersion": "v3.2",
+  "requiresPolicyAcceptance": false,
+  "acceptedAt": "2026-10-07T15:00:00.000Z"
+}
+```
+* **`400 POLICY_NOT_ACCEPTED`:** `accepted` no es el booleano `true` (`"true"`, `1`, `false` o ausente).
+* **`409 POLICY_VERSION_MISMATCH`:** la versión enviada no es la vigente (la política cambió mientras
+  la leía); trae `currentPolicyVersion`. No registra nada.
+* **`503 CONSENT_NOT_PERSISTED`:** no se pudo escribir en la base; no se emite el evento.
+
+Mientras el worker lleva la aceptación a la central (segundos), la central todavía dice
+`NEEDS_RENEWAL`: auth-api y auth-admin leen entonces la base, que ya tiene la versión vigente.
 
 ---
 
