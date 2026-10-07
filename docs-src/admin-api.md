@@ -247,7 +247,13 @@ solo vive en memoria (modo demostración). Ver migración `028_user_blocking.sql
 
 ---
 
-### 8. Libreta de Contactos Frecuentes (`GET /contacts` o `GET /internal/contacts`)
+### 8. Libreta de Contactos Frecuentes (`GET /internal/contacts`)
+
+> **Solo bajo `/internal`.** La lambda también reconoce `/contacts/...`, pero API Gateway no
+> expone ese prefijo: una llamada a `/contacts/...` no llega al servicio y la puerta de enlace
+> responde `403 Missing Authentication Token`. Vale para todas las rutas de esta sección y de
+> la siguiente (libreta, base de licitud, supresión y avisos al remitente).
+
 Permite a clientes y administradores consultar la agenda de contactos frecuentes para despacho con base legal registrada conforme a la Ley N° 21.719 de Protección de Datos Personales.
 
 * **Parámetros Query:**
@@ -285,7 +291,7 @@ Permite a clientes y administradores consultar la agenda de contactos frecuentes
 
 ---
 
-### 9. Solicitudes de Supresión de Datos Personales (`GET /contacts/erasure-requests` o `GET /internal/contacts/erasure-requests`)
+### 9. Solicitudes de Supresión de Datos Personales (`GET /internal/contacts/erasure-requests`)
 Supresión de datos de titulares sin cuenta cuyo teléfono aparece en la libreta de algún cliente (Ley N° 21.719). El trámite es **automático**; el personal (`admin`, `root`) lo sigue y solo interviene en casos puntuales.
 
 **Flujo**
