@@ -144,7 +144,7 @@ La respuesta trae `Retry-After` y las cabeceras CORS del dominio de la app, para
 | Equipo de Flowex | Cabecera `X-Maintenance-Bypass: <llave>`. El frontend la copia de la cookie `flowex_bypass`. |
 | Rastreo público | `GET /orders/{id}` **sin** `Authorization` (vista recortada del seguimiento) |
 
-Todo lo demás recibe el 503, incluidos `/webhooks/*`: Mercado Pago y Fintoc reintentan, y al reabrir se concilian los pagos pendientes. El frontend solo muestra `/tracking`, con un aviso. Se enciende y se apaga con `Flowex-iac/scripts/maintenance-ctl.mjs`; ver el README de `Flowex-iac`.
+Todo lo demás recibe el 503, incluidos `/webhooks/*`: Mercado Pago y Fintoc reintentan, y al reabrir se concilian los pagos pendientes. El frontend solo muestra `/tracking`, con un aviso. Se enciende y se apaga con `Flowex-iac/scripts/maintenance-ctl.mjs`. Detalle completo en [Modo Mantenimiento](/maintenance-mode).
 
 ## 🛡️ Arquitectura de Consentimiento y Auditoría PII (Ley N° 21.719)
 

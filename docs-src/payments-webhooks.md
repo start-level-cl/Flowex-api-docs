@@ -231,6 +231,17 @@ Receptor de eventos emitidos por Fintoc tras el éxito, rechazo o requerimiento 
 
 ---
 
+## 🚧 Webhooks y pagos durante un mantenimiento
+
+En [modo mantenimiento](/maintenance-mode), `/payments/*` y `/webhooks/*` responden `503 MAINTENANCE_MODE` desde el WAF, sin llegar a la lambda: no se pueden iniciar pagos nuevos y las notificaciones de las pasarelas se rechazan.
+
+- **Mercado Pago** reintenta cada 15 minutos hasta recibir respuesta. Después del tercer intento espacia los envíos, pero no deja de enviarlos.
+- **Fintoc** reintenta con backoff exponencial, hasta 17 veces, y no avisa cuando se rinde. Los eventos perdidos se recuperan con su guía *Recover missed events*.
+
+Al reabrir hay que conciliar los pagos que quedaron pendientes en la ventana con los endpoints de estado de la sección anterior, que consultan a la pasarela y actualizan la base. El procedimiento está en [Modo Mantenimiento › Conciliación al reabrir](/maintenance-mode#conciliacion-al-reabrir).
+
+---
+
 ## 🧪 Guía de Pruebas y Credenciales de Sandbox (Testing & QA)
 
 Para ejecutar pruebas funcionales de extremo a extremo sin comprometer fondos reales, Flowex soporta el modo de prueba nativo de ambas pasarelas.
