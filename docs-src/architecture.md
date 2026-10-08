@@ -128,6 +128,24 @@ graph TB
 
 ---
 
+## 🚧 Modo mantenimiento
+
+Durante un mantenimiento el WAF del API responde **`503`** a toda operación, antes de llegar a la lambda:
+
+```json
+{ "error": "MAINTENANCE_MODE", "message": "Flowex está en mantenimiento. Vuelve a intentarlo en unos minutos." }
+```
+
+La respuesta trae `Retry-After` y las cabeceras CORS del dominio de la app, para que el navegador pueda leerla.
+
+| Pasa durante el mantenimiento | Condición |
+|---|---|
+| Preflight de CORS | Método `OPTIONS` |
+| Equipo de Flowex | Cabecera `X-Maintenance-Bypass: <llave>`. El frontend la copia de la cookie `flowex_bypass`. |
+| Rastreo público | `GET /orders/{id}` **sin** `Authorization` (vista recortada del seguimiento) |
+
+Todo lo demás recibe el 503, incluidos `/webhooks/*`: Mercado Pago y Fintoc reintentan, y al reabrir se concilian los pagos pendientes. El frontend solo muestra `/tracking`, con un aviso. Se enciende y se apaga con `Flowex-iac/scripts/maintenance-ctl.mjs`; ver el README de `Flowex-iac`.
+
 ## 🛡️ Arquitectura de Consentimiento y Auditoría PII (Ley N° 21.719)
 
 Para cumplir con el marco de protección de datos personales chileno sin degradar la latencia de las APIs principales, Flowex adopta una estrategia de **Buffer Local Asíncrono en Fase 1** con transición planificada a un microservicio central de gobernanza en **Fase 2**.

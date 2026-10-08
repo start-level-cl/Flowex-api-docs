@@ -6,6 +6,7 @@ import {
   createDefaultOperation,
   info,
   operationOverrides,
+  responses,
   schemas,
   securitySchemes,
   servers,
@@ -119,6 +120,13 @@ function buildOpenApiSpec(routes) {
       }
     }
 
+    // Modo mantenimiento: el WAF responde esto a cualquier operación antes de llegar a la
+    // lambda (salvo el preflight, la llave de bypass y el rastreo público).
+    operation.responses = {
+      ...operation.responses,
+      503: operation.responses?.[503] || { $ref: '#/components/responses/MaintenanceMode' },
+    }
+
     paths[routePath][route.method.toLowerCase()] = operation
   }
 
@@ -131,6 +139,7 @@ function buildOpenApiSpec(routes) {
     components: {
       securitySchemes,
       schemas,
+      responses,
     },
   }
 }
