@@ -1028,6 +1028,25 @@ export const schemas = {
       error: { type: 'string', example: 'BAD_REQUEST' },
     },
   },
+  MaintenanceModeError: {
+    type: 'object',
+    required: ['error'],
+    properties: {
+      error: { type: 'string', const: 'MAINTENANCE_MODE' },
+      message: { type: 'string', example: 'Flowex está en mantenimiento. Vuelve a intentarlo en unos minutos.' },
+    },
+  },
+}
+
+export const responses = {
+  MaintenanceMode: {
+    description:
+      'La plataforma está en modo mantenimiento. Lo responde el WAF antes de llegar al servicio, a toda operación salvo el preflight `OPTIONS`, las peticiones con la cabecera `X-Maintenance-Bypass` del equipo y el rastreo público (`GET /orders/{id}` sin `Authorization`). Los webhooks de pago también lo reciben y las pasarelas reintentan. No se debe reintentar antes de `Retry-After`.',
+    headers: {
+      'Retry-After': { description: 'Segundos sugeridos antes de reintentar.', schema: { type: 'integer', example: 600 } },
+    },
+    content: { 'application/json': { schema: { $ref: '#/components/schemas/MaintenanceModeError' } } },
+  },
 }
 
 export const operationOverrides = {
