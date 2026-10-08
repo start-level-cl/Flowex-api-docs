@@ -37,6 +37,7 @@ programada y `POST /internal/orders/{orderId}/return/complete` (ver
 ### 1. Número de Tracking Único (`trackingNumber`)
 * Formato: `FLX-YYYY-XXXX` (ejemplo: `FLX-2026-8492`).
 * Permite el seguimiento público en tiempo real mediante la interfaz de tracking sin requerir inicio de sesión.
+* Es lo único que sigue abierto al público en [modo mantenimiento](/maintenance-mode): `GET /orders/{id}` sin `Authorization` pasa el WAF, y `/tracking` se muestra con un aviso de que la información puede no estar disponible.
 
 ### 2. PIN de Seguridad de Entrega (`deliveryCode`)
 * Al confirmarse el pago, el sistema genera automáticamente un **código de seguridad de 4 dígitos**.
