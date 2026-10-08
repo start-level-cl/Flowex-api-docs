@@ -613,6 +613,11 @@ export type StandardErrorResponse = {
   error?: string
 }
 
+export type MaintenanceModeError = {
+  error: "MAINTENANCE_MODE"
+  message?: string
+}
+
 export interface Operations {
   "admin_post_override_activate_registration": {
     method: "POST"
@@ -621,6 +626,7 @@ export interface Operations {
     responses: {
       "200": AdminOverrideActivateResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "admin_post_registration_requests_requestId_approve": {
@@ -629,6 +635,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "admin_get_tariffs": {
@@ -637,6 +644,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "admin_put_tariffs_tariffId": {
@@ -645,6 +653,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "auth_post_change_password": {
@@ -655,6 +664,7 @@ export interface Operations {
       "200": StandardSuccessResponse
       "400": StandardErrorResponse
       "401": StandardErrorResponse
+      "503": undefined
     }
   }
   "auth_post_change_password_request_otp": {
@@ -663,6 +673,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "auth_get_user_consent": {
@@ -672,6 +683,7 @@ export interface Operations {
     responses: {
       "200": UserConsent
       "401": StandardErrorResponse
+      "503": undefined
     }
   }
   "auth_post_consent_grant": {
@@ -680,6 +692,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "auth_post_revoke_consent": {
@@ -690,6 +703,7 @@ export interface Operations {
       "200": UserConsent
       "400": StandardErrorResponse
       "401": StandardErrorResponse
+      "503": undefined
     }
   }
   "auth_post_forgot_password": {
@@ -698,6 +712,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "auth_post_login": {
@@ -707,6 +722,7 @@ export interface Operations {
     responses: {
       "200": LoginResponse
       "400": StandardErrorResponse
+      "503": undefined
     }
   }
   "auth_post_login_resend_2fa": {
@@ -715,6 +731,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "auth_post_login_verify_2fa": {
@@ -723,6 +740,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "auth_post_logout": {
@@ -732,6 +750,7 @@ export interface Operations {
     responses: {
       "200": StandardSuccessResponse
       "401": StandardErrorResponse
+      "503": undefined
     }
   }
   "auth_post_refresh": {
@@ -741,6 +760,7 @@ export interface Operations {
     responses: {
       "200": RefreshTokenResponse
       "401": StandardErrorResponse
+      "503": undefined
     }
   }
   "auth_post_reset_password": {
@@ -749,6 +769,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "auth_patch_security": {
@@ -757,6 +778,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "auth_get_validate": {
@@ -766,6 +788,7 @@ export interface Operations {
     responses: {
       "200": ValidateResponse
       "401": StandardErrorResponse
+      "503": undefined
     }
   }
   "internal_get_account_deletions": {
@@ -774,6 +797,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_account_deletion_approve": {
@@ -782,6 +806,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_account_deletion_reject": {
@@ -790,6 +815,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_capacity_availability": {
@@ -798,6 +824,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_communes": {
@@ -806,6 +833,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_communes": {
@@ -814,6 +842,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_patch_communes_communeId": {
@@ -822,6 +851,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_communes_communeId": {
@@ -830,6 +860,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_communes_communeId_change_request": {
@@ -838,6 +869,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_communes_communeId_feasibility": {
@@ -846,6 +878,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_communes_communeId_history": {
@@ -854,6 +887,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_contacts": {
@@ -862,6 +896,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_contacts": {
@@ -870,6 +905,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_delete_contacts_contactId": {
@@ -878,6 +914,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_contacts_contactId": {
@@ -886,6 +923,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_contacts_erasure_notices": {
@@ -894,6 +932,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_contacts_erasure_notices_erasureNoticeId_respond": {
@@ -902,6 +941,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_contacts_erasure_requests": {
@@ -910,6 +950,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_contacts_erasure_requests": {
@@ -918,6 +959,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_contacts_erasure_requests_erasureRequestId": {
@@ -926,6 +968,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_contacts_erasure_requests_erasureRequestId_identify": {
@@ -934,6 +977,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_contacts_erasure_requests_erasureRequestId_notify": {
@@ -942,6 +986,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_contacts_erasure_requests_erasureRequestId_process": {
@@ -950,6 +995,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_contacts_erasure_requests_erasureRequestId_purge": {
@@ -958,6 +1004,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_contacts_erasure_requests_erasureRequestId_reject": {
@@ -966,6 +1013,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_contacts_erasure_requests_verification": {
@@ -974,6 +1022,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_contacts_lawful_basis": {
@@ -982,6 +1031,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "coupons_post_release": {
@@ -992,6 +1042,7 @@ export interface Operations {
       "200": StandardSuccessResponse
       "400": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "coupons_post_validate": {
@@ -1002,6 +1053,7 @@ export interface Operations {
       "200": CouponValidationResponse
       "400": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "internal_patch_drivers_driverId_shift": {
@@ -1010,6 +1062,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_drivers_driverId_shift": {
@@ -1018,6 +1071,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_drivers_shifts": {
@@ -1026,6 +1080,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_geo_commune_at": {
@@ -1034,6 +1089,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_hubs": {
@@ -1042,6 +1098,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_hubs": {
@@ -1050,6 +1107,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_delete_hubs_hubId": {
@@ -1058,6 +1116,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_patch_hubs_hubId": {
@@ -1066,6 +1125,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_hubs_hubId": {
@@ -1074,6 +1134,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_invites": {
@@ -1082,6 +1143,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_invites": {
@@ -1090,6 +1152,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_delete_invites_inviteId": {
@@ -1098,6 +1161,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_invites_inviteId_verify": {
@@ -1106,6 +1170,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_orders": {
@@ -1121,6 +1186,7 @@ export interface Operations {
       }
       "401": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "internal_post_orders": {
@@ -1160,6 +1226,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_patch_orders_orderId_client_modifications": {
@@ -1168,6 +1235,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_delete_orders_orderId_coupon": {
@@ -1176,6 +1244,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_orders_orderId_coupon": {
@@ -1184,6 +1253,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_delete_orders_orderId_coupon_remove": {
@@ -1192,6 +1262,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_orders_orderId_coupon_remove": {
@@ -1200,6 +1271,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_orders_orderId_delivery_code": {
@@ -1208,6 +1280,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_orders_orderId_delivery_code_regenerate": {
@@ -1216,6 +1289,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_orders_orderId_delivery_code_reissue": {
@@ -1315,6 +1389,7 @@ export interface Operations {
     responses: {
       "403": undefined
       "409": undefined
+      "503": undefined
     }
   }
   "internal_get_orders_orderId_evidence": {
@@ -1323,6 +1398,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_orders_orderId_evidence": {
@@ -1331,6 +1407,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_patch_orders_orderId_invoice": {
@@ -1339,6 +1416,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_orders_orderId_return_complete": {
@@ -1361,6 +1439,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_orders_batch": {
@@ -1414,6 +1493,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_planner_settings": {
@@ -1422,6 +1502,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_patch_planner_settings_plannerSettingId": {
@@ -1430,6 +1511,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_planner_settings_plannerSettingId": {
@@ -1438,6 +1520,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_planner_settings_plannerSettingId_change_request": {
@@ -1446,6 +1529,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_planner_settings_plannerSettingId_history": {
@@ -1454,6 +1538,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "root_get_coupons": {
@@ -1475,6 +1560,7 @@ export interface Operations {
         }
       }
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "root_post_coupons": {
@@ -1488,6 +1574,7 @@ export interface Operations {
       }
       "400": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "root_patch_coupon_by_id": {
@@ -1501,6 +1588,7 @@ export interface Operations {
       }
       "400": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "root_post_coupons_batch": {
@@ -1515,6 +1603,7 @@ export interface Operations {
       }
       "400": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "root_post_coupons_import_csv": {
@@ -1529,6 +1618,7 @@ export interface Operations {
       }
       "400": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "internal_get_route_assignments": {
@@ -1537,6 +1627,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_routes": {
@@ -1552,6 +1643,7 @@ export interface Operations {
       }
       "401": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "internal_get_routes_routeId": {
@@ -1560,6 +1652,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_routes_routeId_close": {
@@ -1568,6 +1661,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_routes_routeId_directions": {
@@ -1576,6 +1670,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_routes_routeId_directions": {
@@ -1584,6 +1679,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_routes_routeId_driver": {
@@ -1592,6 +1688,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_routes_routeId_driver_preview": {
@@ -1600,6 +1697,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_routes_routeId_orders": {
@@ -1642,6 +1740,7 @@ export interface Operations {
           canOverride?: boolean
         })[]
       }
+      "503": undefined
     }
   }
   "internal_post_routes_directions": {
@@ -1650,6 +1749,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_routes_insertion_candidates": {
@@ -1686,6 +1786,7 @@ export interface Operations {
       "401": undefined
       "403": undefined
       "404": undefined
+      "503": undefined
     }
   }
   "internal_get_routes_insertion_queue": {
@@ -1694,6 +1795,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_routes_leftovers": {
@@ -1702,6 +1804,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_routes_plan_daily": {
@@ -1710,6 +1813,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_routes_plan_daily_confirm": {
@@ -1718,6 +1822,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_routes_plan_daily_simulation": {
@@ -1726,6 +1831,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_routes_planning_quota": {
@@ -1734,6 +1840,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_routes_settings": {
@@ -1742,6 +1849,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_patch_routes_settings": {
@@ -1750,6 +1858,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_users": {
@@ -1767,6 +1876,7 @@ export interface Operations {
       }
       "401": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "internal_post_users": {
@@ -1776,6 +1886,7 @@ export interface Operations {
     responses: {
       "201": InternalUserResponse
       "400": StandardErrorResponse
+      "503": undefined
     }
   }
   "internal_delete_user_by_id": {
@@ -1784,6 +1895,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_user_by_id": {
@@ -1792,6 +1904,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": InternalUserResponse
+      "503": undefined
     }
   }
   "internal_put_user_by_id": {
@@ -1800,6 +1913,7 @@ export interface Operations {
     requestBody: InternalUserUpdateRequest
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_users_userId_addresses": {
@@ -1808,6 +1922,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_user_addresses": {
@@ -1816,6 +1931,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_user_consents": {
@@ -1826,6 +1942,7 @@ export interface Operations {
       "200": UserConsent
       "401": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "internal_get_users_userId_orders": {
@@ -1834,6 +1951,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_patch_user_restriction": {
@@ -1842,6 +1960,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_user_restriction": {
@@ -1850,6 +1969,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_patch_users_userId_status": {
@@ -1858,6 +1978,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_users_userId_status": {
@@ -1866,6 +1987,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_vehicles": {
@@ -1874,6 +1996,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_vehicles": {
@@ -1882,6 +2005,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_delete_vehicles_vehicleId": {
@@ -1890,6 +2014,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_patch_vehicles_vehicleId": {
@@ -1898,6 +2023,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_vehicles_vehicleId": {
@@ -1906,6 +2032,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_vehicles_available": {
@@ -1914,6 +2041,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_vehicles_presets": {
@@ -1922,6 +2050,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "notifications_post_email_order_created": {
@@ -1930,6 +2059,7 @@ export interface Operations {
     requestBody: EmailOrderCreatedRequest
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "notifications_post_email_order_status_update": {
@@ -1938,6 +2068,7 @@ export interface Operations {
     requestBody: EmailOrderStatusUpdateRequest
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "notifications_post_email_package_discrepancy": {
@@ -1946,6 +2077,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "notifications_post_email_verify_account": {
@@ -1954,6 +2086,7 @@ export interface Operations {
     requestBody: EmailVerifyAccountRequest
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "notifications_post_email_welcome": {
@@ -1962,6 +2095,7 @@ export interface Operations {
     requestBody: EmailWelcomeRequest
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "notifications_post_whatsapp": {
@@ -1970,6 +2104,7 @@ export interface Operations {
     requestBody: WhatsAppNotificationRequest
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "otp_get_deliveries": {
@@ -1989,6 +2124,7 @@ export interface Operations {
       }
       "401": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "otp_post_deliveries_deliveryId_resend": {
@@ -1997,6 +2133,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "otp_post_send": {
@@ -2005,6 +2142,7 @@ export interface Operations {
     requestBody: SendOtpRequest
     responses: {
       "200": SendOtpResponse
+      "503": undefined
     }
   }
   "otp_post_send_delivery_code": {
@@ -2013,6 +2151,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "410": undefined
+      "503": undefined
     }
   }
   "otp_post_verify": {
@@ -2022,6 +2161,7 @@ export interface Operations {
     responses: {
       "200": VerifyOtpResponse
       "400": StandardErrorResponse
+      "503": undefined
     }
   }
   "payments_post_fintoc_checkout_session": {
@@ -2030,6 +2170,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "payments_get_fintoc_status": {
@@ -2038,6 +2179,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "payments_post_mercadopago_preference": {
@@ -2047,6 +2189,7 @@ export interface Operations {
     responses: {
       "200": MercadoPagoPreferenceResponse
       "400": StandardErrorResponse
+      "503": undefined
     }
   }
   "payments_get_mercadopago_status": {
@@ -2055,6 +2198,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "registration_post_calculate_sla": {
@@ -2063,6 +2207,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "registration_post_client": {
@@ -2077,6 +2222,7 @@ export interface Operations {
       }
       "400": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "registration_get_communes": {
@@ -2085,6 +2231,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "registration_post_invite": {
@@ -2099,6 +2246,7 @@ export interface Operations {
       }
       "400": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "registration_post_requests": {
@@ -2113,6 +2261,7 @@ export interface Operations {
       }
       "400": StandardErrorResponse
       "403": StandardErrorResponse
+      "503": undefined
     }
   }
   "registration_put_reupload_comprobante": {
@@ -2121,6 +2270,7 @@ export interface Operations {
     requestBody: ReuploadComprobanteRequest
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "registration_get_request_status": {
@@ -2129,6 +2279,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": RegistrationRequestStatusResponse
+      "503": undefined
     }
   }
   "registration_put_update_contact": {
@@ -2137,6 +2288,7 @@ export interface Operations {
     requestBody: UpdateContactRequest
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "registration_get_tariffs": {
@@ -2154,6 +2306,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "registration_post_unsubscribe": {
@@ -2162,6 +2315,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_users_me_addresses": {
@@ -2170,6 +2324,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_users_me_addresses": {
@@ -2178,6 +2333,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_delete_users_me_addresses_addressId": {
@@ -2186,6 +2342,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_users_me_addresses_addressId": {
@@ -2194,6 +2351,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_patch_users_me_addresses_addressId_default": {
@@ -2202,6 +2360,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_users_me_addresses_addressId_default": {
@@ -2210,6 +2369,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_users_me_avatar": {
@@ -2218,6 +2378,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_users_me_avatar": {
@@ -2226,6 +2387,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_users_me_billing": {
@@ -2234,6 +2396,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_users_me_billing": {
@@ -2242,6 +2405,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "users_me_delete_deletion_request": {
@@ -2250,6 +2414,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "users_me_get_deletion_request": {
@@ -2258,6 +2423,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "users_me_post_deletion_request": {
@@ -2266,6 +2432,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_users_me_driver_profile": {
@@ -2274,6 +2441,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_put_users_me_driver_profile": {
@@ -2282,6 +2450,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_users_me_email": {
@@ -2290,6 +2459,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_users_me_export": {
@@ -2298,6 +2468,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "users_me_get_notifications": {
@@ -2306,6 +2477,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "users_me_put_notifications": {
@@ -2314,6 +2486,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_users_me_verification": {
@@ -2322,6 +2495,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_get_users_privacy_export": {
@@ -2330,6 +2504,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_users_privacy_export": {
@@ -2338,6 +2513,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_users_privacy_otp_request": {
@@ -2346,6 +2522,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "internal_post_users_privacy_otp_verify": {
@@ -2354,6 +2531,7 @@ export interface Operations {
     requestBody: undefined
     responses: {
       "200": StandardSuccessResponse
+      "503": undefined
     }
   }
   "payments_post_webhook_fintoc": {
@@ -2362,6 +2540,7 @@ export interface Operations {
     requestBody: Record<string, unknown>
     responses: {
       "200": WebhookFintocResponse
+      "503": undefined
     }
   }
   "payments_post_webhook_mercadopago": {
@@ -2370,6 +2549,7 @@ export interface Operations {
     requestBody: Record<string, unknown>
     responses: {
       "200": WebhookMercadoPagoResponse
+      "503": undefined
     }
   }
 }

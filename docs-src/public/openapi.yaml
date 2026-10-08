@@ -57,6 +57,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       security:
         - bearerAuth: []
       parameters:
@@ -92,6 +94,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: registration-admin-lambda
       x-source: Flowex-registration-admin-lambda/src/index.ts
       x-aliases:
@@ -115,6 +119,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: registration-admin-lambda
       x-source: Flowex-registration-admin-lambda/src/index.ts
       x-roles:
@@ -132,6 +138,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: registration-admin-lambda
       x-source: Flowex-registration-admin-lambda/src/index.ts
       x-roles:
@@ -167,6 +175,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: true
         content:
@@ -188,6 +198,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
       x-roles:
@@ -216,6 +228,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       security:
         - bearerAuth: []
         - cookieAccessAuth: []
@@ -239,6 +253,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
       security:
@@ -268,6 +284,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       security:
         - bearerAuth: []
         - cookieAccessAuth: []
@@ -297,6 +315,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
   /auth/login:
@@ -318,6 +338,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: true
         content:
@@ -344,6 +366,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
   /auth/login/verify-2fa:
@@ -359,6 +383,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
   /auth/logout:
@@ -380,6 +406,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       security:
         - bearerAuth: []
         - cookieAccessAuth: []
@@ -404,6 +432,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: false
         content:
@@ -427,6 +457,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
   /auth/security:
@@ -442,6 +474,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-api-lambda
       x-source: Flowex-auth-api-lambda/src/index.ts
       x-roles:
@@ -469,6 +503,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       security:
         - bearerAuth: []
         - cookieAccessAuth: []
@@ -487,6 +523,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -507,6 +545,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -533,6 +573,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -559,6 +601,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -578,6 +622,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -596,6 +642,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -615,6 +663,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -639,6 +689,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -664,6 +716,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -689,6 +743,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       parameters:
@@ -712,6 +768,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -738,6 +796,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -754,6 +814,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -771,6 +833,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       parameters:
@@ -793,6 +857,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       parameters:
@@ -816,6 +882,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -835,6 +903,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -860,6 +930,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -878,6 +950,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
   /internal/contacts/erasure-requests/{erasureRequestId}:
@@ -893,6 +967,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -918,6 +994,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -943,6 +1021,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -968,6 +1048,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -993,6 +1075,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1018,6 +1102,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1043,6 +1129,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
   /internal/contacts/lawful-basis:
@@ -1058,6 +1146,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -1087,6 +1177,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Libera la reserva temporal de un cupón para que el cliente pueda volver a utilizarlo si el pago no se completó."
       security:
         - bearerAuth: []
@@ -1127,6 +1219,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Valida la aplicabilidad de un cupón según vigencia, límite de uso, tope de $30.000 CLP y 15% de descuento máximo. Exclusivo para clientes."
       security:
         - bearerAuth: []
@@ -1155,6 +1249,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1180,6 +1276,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1206,6 +1304,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1225,6 +1325,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -1242,6 +1344,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1260,6 +1364,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1279,6 +1385,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1303,6 +1411,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1327,6 +1437,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1352,6 +1464,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1370,6 +1484,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1389,6 +1505,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1414,6 +1532,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       parameters:
@@ -1461,6 +1581,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Endpoint administrativo y de despacho para supervisión global de pedidos en VPC, con filtros combinados por estado, conductor o cliente y metadatos estándar de paginación. Para root cada pedido incluye deliveryCode cuando el PIN está guardado cifrado (los pedidos anteriores al cifrado traen solo deliveryCodeAvailable y se consultan con GET /internal/orders/{orderId}/delivery-code); la página queda en el registro de uso de datos como VIEW_DELIVERY_CODES_IN_ORDER_LIST. assignedRouteId es siempre el código de la ruta."
       security:
         - bearerAuth: []
@@ -1616,6 +1738,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -1641,6 +1765,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -1666,6 +1792,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -1690,6 +1818,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -1715,6 +1845,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -1739,6 +1871,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -1764,6 +1898,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -1791,6 +1927,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2100,6 +2238,8 @@ paths:
           description: "Solo bodega (admin o root)."
         409:
           description: "code DISCREPANCY_PAID_BY_GATEWAY (marcar pagada a mano) o DISCREPANCY_WAIVE_REMOVED (condonar)."
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Ya no libera pedidos. La diferencia se da por pagada solo cuando la pasarela confirma el cobro, y condonar se retiró el 28-09-2026: si la diferencia se registró por error, se usa POST /internal/orders/{orderId}/discrepancy/revert."
       security:
         - bearerAuth: []
@@ -2126,6 +2266,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -2150,6 +2292,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2179,6 +2323,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2250,6 +2396,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2461,6 +2609,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2482,6 +2632,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2501,6 +2653,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2525,6 +2679,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2550,6 +2706,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2575,6 +2733,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2639,6 +2799,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Devuelve la lista paginada de cupones con métricas consolidadas de canjes, descuentos acumulados y creadores asociados."
       security:
         - bearerAuth: []
@@ -2710,6 +2872,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Crea un cupón único con restricciones financieras de máx 15% y $30.000 CLP. Exclusivo para el rol root."
       security:
         - bearerAuth: []
@@ -2756,6 +2920,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Permite pausar/desactivar un cupón, extender su vigencia o aumentar el límite de usos."
       security:
         - bearerAuth: []
@@ -2815,6 +2981,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Genera un lote de cupones con prefijo unificado (hasta 500 unidades) para activaciones o convenios de creadores. Exclusivo para root."
       security:
         - bearerAuth: []
@@ -2866,6 +3034,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Permite la carga de listas masivas de códigos personalizados de influencers/creadores respetando topes comerciales."
       security:
         - bearerAuth: []
@@ -2894,6 +3064,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -2941,6 +3113,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Consulta interna en VPC de rutas planificadas con paradas ordenadas secuencialmente por stopSequence, cálculo de distancias y paginación estándar Importal."
       security:
         - bearerAuth: []
@@ -2995,6 +3169,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3024,6 +3200,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -3049,6 +3227,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -3071,6 +3251,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -3094,6 +3276,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3122,6 +3306,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3236,6 +3422,8 @@ paths:
                             $ref: #/components/schemas/LimitBlock
                         canOverride:
                           type: boolean
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Solo admin o root. El {routeId} acepta el código, el app_id o el UUID de la ruta. Cada pedido se evalúa con las reglas de la corrida y se inserta donde agrega menos desvío; varios pedidos se evalúan en cadena. Si solo se pasan de límites (jornada, peso, volumen, bultos o paradas) se pueden agregar con allowOverLimits: true; las reglas bloquean siempre y el lote entra completo o no entra. Con acknowledgedBlocks el operador indica qué límites vio: si al volver a evaluar aparece otro, la respuesta es 409 ROUTE_LIMITS_CHANGED. Sobre los límites no se reordena con Google (se conserva el orden de la inserción) y el override queda en el log con el usuario y los límites. Solo root recalcula la distancia con Google."
       security:
         - bearerAuth: []
@@ -3289,6 +3477,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3376,6 +3566,8 @@ paths:
           description: "Solo admin o root."
         404:
           description: "Pedido no encontrado."
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Solo admin o root. Evalúa cada ruta abierta de la fecha con las reglas de la corrida (capacidad, paradas, zona, día de servicio y jornada) y el desvío que agrega. feasible: cabe sin romper nada. canOverride: no cabe, pero solo por límites, así que se puede agregar con allowOverLimits. recommendedRouteCode apunta solo a rutas feasible. Solo lee; la inserción la hace POST /internal/routes/{routeId}/orders, que vuelve a validar."
       security:
         - bearerAuth: []
@@ -3412,6 +3604,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3433,6 +3627,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3455,6 +3651,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3477,6 +3675,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3499,6 +3699,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3521,6 +3723,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -3538,6 +3742,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3558,6 +3764,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3611,6 +3819,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Consulta el listado administrativo de usuarios en VPC con soporte de búsqueda por texto libre y filtros por rol y estado. Retorna el formato estándar de paginación Importal con el objeto dual data/users y metadatos calculados."
       security:
         - bearerAuth: []
@@ -3691,6 +3901,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       security:
         - bearerAuth: []
       requestBody:
@@ -3717,6 +3929,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       security:
         - bearerAuth: []
       parameters:
@@ -3744,6 +3958,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/InternalUserResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       security:
         - bearerAuth: []
       parameters:
@@ -3772,6 +3988,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       security:
         - bearerAuth: []
       parameters:
@@ -3806,6 +4024,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-aliases:
@@ -3830,6 +4050,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3872,6 +4094,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       security:
         - bearerAuth: []
       parameters:
@@ -3907,6 +4131,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3934,6 +4160,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3959,6 +4187,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -3985,6 +4215,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -4011,6 +4243,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -4038,6 +4272,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -4058,6 +4294,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -4078,6 +4316,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -4103,6 +4343,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -4128,6 +4370,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -4154,6 +4398,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -4175,6 +4421,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -4196,6 +4444,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: true
         content:
@@ -4217,6 +4467,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: true
         content:
@@ -4238,6 +4490,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: notification-lambda
       x-source: Flowex-notification-lambda/src/index.ts
   /notifications/email/verify-account:
@@ -4253,6 +4507,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: true
         content:
@@ -4274,6 +4530,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: true
         content:
@@ -4295,6 +4553,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: true
         content:
@@ -4357,6 +4617,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Consulta el registro de emisiones y entregas de códigos OTP vía Meta WhatsApp Cloud API y canales de respaldo, aplicando enmascaramiento estricto de datos de contacto (Ley N° 21.719) y formato de paginación estándar Importal."
       security:
         - bearerAuth: []
@@ -4399,6 +4661,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: otp-service-lambda
       x-source: Flowex-otp-service-lambda/src/index.ts
       x-roles:
@@ -4424,6 +4688,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/SendOtpResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: true
         content:
@@ -4441,6 +4707,8 @@ paths:
       responses:
         410:
           description: "Ruta retirada."
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Esta ruta rechazaba el envío al aceptar teléfono y PIN arbitrarios. Use POST /internal/orders/{orderId}/delivery-code/resend."
       x-service: otp-service-lambda
       x-source: Flowex-otp-service-lambda/src/index.ts
@@ -4463,6 +4731,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: true
         content:
@@ -4484,6 +4754,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: payments-api-lambda
       x-source: Flowex-payments-api-lambda/src/index.ts
       security:
@@ -4501,6 +4773,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: payments-api-lambda
       x-source: Flowex-payments-api-lambda/src/index.ts
       security:
@@ -4524,6 +4798,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: true
         content:
@@ -4548,6 +4824,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: payments-api-lambda
       x-source: Flowex-payments-api-lambda/src/index.ts
       security:
@@ -4565,6 +4843,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: registration-public-lambda
       x-source: Flowex-registration-public-lambda/src/index.ts
       x-aliases:
@@ -4603,6 +4883,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Registra un nuevo cliente validando RUT Módulo 11, teléfono chileno E.164 y contraseña. No requiere direcciones fijas (calle, número, comuna o región) al momento del registro; los domicilios de retiro y entrega se suministran dinámicamente en cada orden mediante POST /orders."
       requestBody:
         required: true
@@ -4625,6 +4907,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: registration-public-lambda
       x-source: Flowex-registration-public-lambda/src/index.ts
       x-aliases:
@@ -4663,6 +4947,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Registra usuarios internos (administradores o choferes) mediante validación de tokens de invitación autorizados (INV-ADM-... o INV-DRV-...) y captura de datos vehiculares en el caso de conductores."
       requestBody:
         required: true
@@ -4706,6 +4992,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardErrorResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       description: "Crea una solicitud de registro general. Para clientes, las direcciones físicas (calle, número, comuna, región) son opcionales y no requeridas, dado que las direcciones de recolección y entrega se configuran dinámicamente por envío en POST /orders."
       requestBody:
         required: true
@@ -4728,6 +5016,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       parameters:
         - name: email
           in: path
@@ -4756,6 +5046,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/RegistrationRequestStatusResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       parameters:
         - name: email
           in: path
@@ -4779,6 +5071,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       parameters:
         - name: email
           in: path
@@ -4826,6 +5120,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: registration-public-lambda
       x-source: Flowex-registration-public-lambda/src/index.ts
     post:
@@ -4840,6 +5136,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: registration-public-lambda
       x-source: Flowex-registration-public-lambda/src/index.ts
   /users/me/addresses:
@@ -4855,6 +5153,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -4871,6 +5171,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -4888,6 +5190,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       parameters:
@@ -4910,6 +5214,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       parameters:
@@ -4933,6 +5239,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       parameters:
@@ -4955,6 +5263,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       parameters:
@@ -4978,6 +5288,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -4994,6 +5306,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -5011,6 +5325,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -5027,6 +5343,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -5044,6 +5362,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -5062,6 +5382,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -5080,6 +5402,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -5099,6 +5423,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -5117,6 +5443,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -5134,6 +5462,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -5151,6 +5481,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -5168,6 +5500,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -5189,6 +5523,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       x-roles:
@@ -5211,6 +5547,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -5228,6 +5566,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
     post:
@@ -5242,6 +5582,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
   /users/privacy/otp/request:
@@ -5257,6 +5599,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
   /users/privacy/otp/verify:
@@ -5272,6 +5616,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/StandardSuccessResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       x-service: auth-admin-lambda
       x-source: Flowex-auth-admin-lambda/src/index.ts
       security:
@@ -5289,6 +5635,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/WebhookFintocResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: true
         content:
@@ -5310,6 +5658,8 @@ paths:
             application/json:
               schema:
                 $ref: #/components/schemas/WebhookMercadoPagoResponse
+        503:
+          $ref: #/components/responses/MaintenanceMode
       requestBody:
         required: false
         content:
@@ -7166,3 +7516,27 @@ components:
         error:
           type: string
           example: BAD_REQUEST
+    MaintenanceModeError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          const: MAINTENANCE_MODE
+        message:
+          type: string
+          example: "Flowex está en mantenimiento. Vuelve a intentarlo en unos minutos."
+  responses:
+    MaintenanceMode:
+      description: "La plataforma está en modo mantenimiento. Lo responde el WAF antes de llegar al servicio, a toda operación salvo el preflight `OPTIONS`, las peticiones con la cabecera `X-Maintenance-Bypass` del equipo y el rastreo público (`GET /orders/{id}` sin `Authorization`). Los webhooks de pago también lo reciben y las pasarelas reintentan. No se debe reintentar antes de `Retry-After`."
+      headers:
+        Retry-After:
+          description: "Segundos sugeridos antes de reintentar."
+          schema:
+            type: integer
+            example: 600
+      content:
+        application/json:
+          schema:
+            $ref: #/components/schemas/MaintenanceModeError
