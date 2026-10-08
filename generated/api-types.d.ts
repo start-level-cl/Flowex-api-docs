@@ -42,6 +42,12 @@ export type OrderSummary = {
   packageType?: string
   weightKg?: number
   totalCost?: number
+  declaredValue?: number
+  declaredValuesClp?: (number)[]
+  valueDocument?: {
+    type?: "boleta" | "factura"
+    number?: string
+  }
   deliveryCode?: string
   deliveryCodeAvailable?: boolean
   assignedRouteId?: string
@@ -672,6 +678,14 @@ export interface Operations {
     responses: {
       "200": UserConsent
       "401": StandardErrorResponse
+    }
+  }
+  "auth_post_consent_accept_policy": {
+    method: "POST"
+    path: "/auth/consent/accept-policy"
+    requestBody: undefined
+    responses: {
+      "200": StandardSuccessResponse
     }
   }
   "auth_post_consent_grant": {

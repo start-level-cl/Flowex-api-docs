@@ -138,7 +138,9 @@ export interface Order {
   packagesCount: number;
   packageType: string;
   weightKg: number;
-  declaredValue: number;
+  declaredValue: number;                              // total declarado; no llega al conductor
+  declaredValuesClp?: Array<number | null> | null;    // por bulto, en orden de subcódigo; null = sin declarar
+  valueDocument?: { type: 'boleta' | 'factura'; number: string } | null; // solo en el detalle del pedido
   insuranceCost: number;
   shippingType: 'normal' | 'express' | 'same_day';
   zone: string;
@@ -211,8 +213,8 @@ export interface Order {
   "recipientLatitude": -33.4103,
   "recipientLongitude": -70.5677,
   "recipientRegion": "Región Metropolitana",
-  "packages": [{ "size": "M", "count": 1 }],
-  "declaredValue": 45000,
+  "packages": [{ "size": "M", "count": 2, "declaredValuesClp": [45000, 120000] }],
+  "valueDocument": { "type": "boleta", "number": "B-123456" },
   "shippingType": "normal"
 }
 ```
@@ -239,6 +241,31 @@ Solo un cliente autenticado puede crear pedidos. El servidor verifica ambas comu
 la cobertura y calcula el precio con las tarifas activas; ignora importes, PIN, ruta y estado
 de pago enviados por el cliente. `weightKg` es opcional: si falta o vale `0`, se estima con
 la suma de `maxWeightKg` de los bultos declarados. El PIN nunca aparece en esta respuesta.
+
+### Valor declarado por bulto
+
+El cliente puede declarar, de forma opcional, cuánto vale la mercadería de cada bulto y el
+número de la boleta o factura que lo acredita. No se sube el archivo: el documento se pide si
+hay un siniestro. **No afecta la tarifa ni el seguro.**
+
+- `packages[].declaredValuesClp`: un valor por unidad, en orden, con tantos elementos como
+  `count`. Cada elemento es un entero en CLP de 0 a $10.000.000, o `null` si ese bulto no se
+  declara. El total declarado de un envío no puede superar $50.000.000.
+- `valueDocument`: `{ "type": "boleta" | "factura", "number": "B-123456" }`, uno por envío.
+  El número admite letras, números, guion, punto y barra, hasta 30 caracteres.
+- Cualquier valor fuera de estas reglas devuelve `400 INVALID_DECLARED_VALUES`, con el número
+  del envío del lote.
+- Si se declara por bulto, `declaredValue` del pedido pasa a ser la suma de lo declarado (el
+  `declaredValue` que mande el cliente se ignora). Sin declaración se conserva el
+  comportamiento anterior.
+- La respuesta del pedido devuelve `declaredValuesClp` (en el orden de los subcódigos `-B01`,
+  `-B02`, …) y `valueDocument` al cliente dueño, a admin y a root. **No** los reciben el
+  conductor ni el rastreo público, y el listado del personal devuelve `valueDocument: null`: el
+  número puede vincular a un tercero, así que solo está en el detalle del pedido
+  (`GET /internal/orders/{id}`), cuyo acceso queda registrado (`VIEW_ORDER`, campo
+  `valueDocument`). El historial de pedidos de un usuario (`GET /internal/users/{id}/orders`)
+  suma `declaredTotalClp`, solo el total.
+- Requiere la migración `081_order_declared_values.sql` antes de desplegar el servicio.
 
 `POST /orders/batch` (también `/internal/orders/batch`) recibe `{ "orders": [ ... ] }`.
 El lote se confirma completo en PostgreSQL o no se crea ningún pedido. Puede enviarse

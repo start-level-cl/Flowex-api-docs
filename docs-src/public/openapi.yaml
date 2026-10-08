@@ -226,6 +226,23 @@ paths:
         - admin
         - driver
         - client
+  /auth/consent/accept-policy:
+    post:
+      tags:
+        - Auth
+      summary: "POST /auth/consent/accept-policy"
+      operationId: auth_post_consent_accept_policy
+      responses:
+        200:
+          description: "Operación ejecutada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: #/components/schemas/StandardSuccessResponse
+      x-service: auth-api-lambda
+      x-source: Flowex-auth-api-lambda/src/index.ts
+      security:
+        - bearerAuth: []
   /auth/consent/grant:
     post:
       tags:
@@ -5460,6 +5477,34 @@ components:
         totalCost:
           type: number
           example: 8900
+        declaredValue:
+          type: number
+          description: "Total declarado del pedido: la suma de `declaredValuesClp` cuando se declaró por bulto. No se entrega al conductor."
+          example: 165000
+        declaredValuesClp:
+          type: array
+          nullable: true
+          items:
+            type: integer
+            nullable: true
+          description: "Valor declarado por bulto en CLP, en el orden de los subcódigos (-B01, -B02, …); `null` en un elemento = bulto sin declarar. No se entrega al conductor ni en el rastreo público."
+          example:
+            - 45000
+            - null
+            - 120000
+        valueDocument:
+          type: object
+          nullable: true
+          description: "Boleta o factura que acredita el valor. Solo en el detalle del pedido para el cliente dueño, admin y root: los listados del personal lo devuelven en `null`. No se entrega al conductor ni en el rastreo público."
+          properties:
+            type:
+              type: string
+              enum:
+                - boleta
+                - factura
+            number:
+              type: string
+              example: B-123456
         deliveryCode:
           type: string
           description: "PIN de entrega. Solo root lo recibe, y solo si está guardado cifrado; para cualquier otro rol el servidor lo quita de la respuesta. Cada página que lo muestra queda en el registro de uso de datos."

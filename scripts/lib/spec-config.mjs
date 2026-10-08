@@ -148,6 +148,9 @@ export const schemas = {
       packageType: { type: 'string', example: 'caja_mediana' },
       weightKg: { type: 'number', example: 2.5 },
       totalCost: { type: 'number', example: 8900 },
+      declaredValue: { type: 'number', description: 'Total declarado del pedido: la suma de `declaredValuesClp` cuando se declaró por bulto. No se entrega al conductor.', example: 165000 },
+      declaredValuesClp: { type: 'array', nullable: true, items: { type: 'integer', nullable: true }, description: 'Valor declarado por bulto en CLP, en el orden de los subcódigos (-B01, -B02, …); `null` en un elemento = bulto sin declarar. No se entrega al conductor ni en el rastreo público.', example: [45000, null, 120000] },
+      valueDocument: { type: 'object', nullable: true, description: 'Boleta o factura que acredita el valor. Solo en el detalle del pedido para el cliente dueño, admin y root: los listados del personal lo devuelven en `null`. No se entrega al conductor ni en el rastreo público.', properties: { type: { type: 'string', enum: ['boleta', 'factura'] }, number: { type: 'string', example: 'B-123456' } } },
       deliveryCode: { type: 'string', description: 'PIN de entrega. Solo root lo recibe, y solo si está guardado cifrado; para cualquier otro rol el servidor lo quita de la respuesta. Cada página que lo muestra queda en el registro de uso de datos.', example: '4920' },
       deliveryCodeAvailable: { type: 'boolean', description: 'Solo root: hay un PIN recuperable (cifrado o en la copia de avisos).' },
       assignedRouteId: { type: 'string', nullable: true, description: 'Código de la ruta vigente (delivery_routes.code), con clave foránea desde la migración 059.', example: 'RUT-ENT-20260928-001' },
@@ -169,7 +172,30 @@ export const schemas = {
       recipientName: { type: 'string' }, recipientPhone: { type: 'string' },
       recipientAddress: { type: 'string' }, recipientCommune: { type: 'string' },
       recipientLatitude: { type: 'number' }, recipientLongitude: { type: 'number' },
-      packages: { type: 'array', minItems: 1, items: { type: 'object', required: ['size', 'count'], properties: { size: { type: 'string', enum: ['S', 'M', 'L'] }, count: { type: 'integer', minimum: 1 } } } },
+      packages: {
+        type: 'array', minItems: 1,
+        items: {
+          type: 'object', required: ['size', 'count'],
+          properties: {
+            size: { type: 'string', enum: ['S', 'M', 'L'] },
+            count: { type: 'integer', minimum: 1 },
+            declaredValuesClp: {
+              type: 'array',
+              description: 'Opcional. Valor declarado de la mercadería de cada bulto de esta línea, en orden, con tantos elementos como `count`. Cada elemento es un entero en CLP (0 a 10.000.000) o `null` si ese bulto no se declara. El total declarado de un envío no puede superar $50.000.000. No afecta la tarifa ni el seguro.',
+              items: { type: 'integer', minimum: 0, maximum: 10000000, nullable: true },
+              example: [45000, null],
+            },
+          },
+        },
+      },
+      valueDocument: {
+        type: 'object', required: ['type', 'number'],
+        description: 'Opcional. Boleta o factura que acredita el valor declarado, una por envío. No se sube el archivo: se pide si hay un siniestro. El número puede vincular a un tercero: no aparece en los listados del personal y su lectura en el detalle queda registrada.',
+        properties: {
+          type: { type: 'string', enum: ['boleta', 'factura'] },
+          number: { type: 'string', maxLength: 30, pattern: '^[A-Za-z0-9][A-Za-z0-9\\-./]*$', example: 'B-123456' },
+        },
+      },
       weightKg: { type: 'number', minimum: 0, description: 'Opcional; si falta o vale 0 se estima sumando maxWeightKg de los bultos declarados.' },
       couponCode: { type: 'string' },
     },

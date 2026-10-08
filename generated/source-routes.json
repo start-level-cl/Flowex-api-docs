@@ -124,6 +124,20 @@
     "service": "auth-api-lambda",
     "source": "Flowex-auth-api-lambda/src/index.ts",
     "method": "post",
+    "path": "/auth/consent/accept-policy",
+    "operationId": "auth_post_consent_accept_policy",
+    "tag": "Auth",
+    "tags": [
+      "Auth"
+    ],
+    "summary": "POST /auth/consent/accept-policy",
+    "roles": [],
+    "security": "bearerAuth"
+  },
+  {
+    "service": "auth-api-lambda",
+    "source": "Flowex-auth-api-lambda/src/index.ts",
+    "method": "post",
     "path": "/auth/consent/grant",
     "operationId": "auth_post_consent_grant",
     "tag": "Auth",
