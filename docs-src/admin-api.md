@@ -272,6 +272,7 @@ Permite a clientes y administradores consultar la agenda de contactos frecuentes
       "phone": "+56 9 8765 4321",
       "commune": "Providencia",
       "streetAddress": "Av. Providencia 1234, Of. 502",
+      "isPreferred": true,
       "createdAt": "2026-08-20T10:30:00.000Z"
     }
   ],
@@ -288,6 +289,8 @@ Permite a clientes y administradores consultar la agenda de contactos frecuentes
   }
 }
 ```
+
+* **Contacto preferente (`isPreferred`):** el remitente puede marcar al destinatario al que más despacha. El listado lo entrega **primero** (luego el orden alfabético) y el selector de la creación de pedidos lo muestra con ★. Se marca con `PUT /internal/contacts/{contactId}` y `{ "isPreferred": true }`, o al crear con `POST /internal/contacts`; el servicio desmarca al anterior, así que hay **a lo más uno por libreta**. `{ "isPreferred": false }` lo quita sin tocar a los demás; editar otros campos no cambia la marca. Un valor que no sea booleano responde `400 INVALID_CONTACT`. Es solo una marca de orden: no agrega ni expone datos del titular.
 
 ---
 
