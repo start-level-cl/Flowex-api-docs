@@ -170,6 +170,14 @@ node scripts/maintenance-ctl.mjs generate-key --env dev   # llave nueva a mano
 - **Verificación:** `on` y `off` esperan a que WAF y CloudFront reflejen el cambio, con un máximo de 150 s.
 - **Reparación:** repetir `on` arregla una capa que haya quedado mal, sin olvidar el estado previo de los jobs.
 
+### Desde GitHub Actions
+
+El workflow *Flowex IaC CI/CD* de `Flowex-iac` ofrece las acciones `maintenance-on`, `maintenance-off`, `maintenance-status` y `maintenance-test` (solo `target_env=dev`), que ejecutan este mismo script desde el runner. Con `maintenance-on`, las opciones `no_tracking` y `keep_jobs` equivalen a `--no-tracking` y `--keep-jobs`.
+
+- La llave de bypass **no aparece** en los logs ni en el resumen, porque cualquiera con acceso al repositorio los ve. Se obtiene con `url` desde una máquina con credenciales de AWS.
+- No espera a las pruebas del repositorio ni se cancela por un despliegue en curso.
+- Las acciones de prod no existen: el job falla de inmediato.
+
 ### Por qué no se despliega
 
 El CDK crea los recursos una sola vez y el CLI solo cambia su contenido:
