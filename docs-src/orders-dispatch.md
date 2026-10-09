@@ -489,7 +489,9 @@ Flowex opera con varios hubs y se pueden crear más. Al pasar un pedido a `in_hu
 5. El único hub activo.
 
 Si ninguno aplica (varios hubs y ninguna pista), el pedido se recibe igual y el hub queda
-sin fijar, en vez de mostrar el nombre de uno que no corresponde. Las rutas traen el nombre y
+sin fijar, en vez de mostrar el nombre de uno que no corresponde. En la consola, quien opera
+una bodega fija su hub en el selector «Recepción en …» y queda recordado en ese equipo: cada
+ingreso viaja con ese `hubId` y el servidor no tiene que adivinarlo. Las rutas traen el nombre y
 las coordenadas de su hub (`hubName`, `hubLatitude`, `hubLongitude`), y el rastreo público
 muestra el hub del pedido.
 

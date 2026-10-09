@@ -20,6 +20,35 @@ Este documento describe el algoritmo, el contrato de los endpoints y los código
 
 ---
 
+## Varios hubs
+
+Cada ruta sale de un hub y vuelve a él. El planificador reparte el día entre los hubs activos con coordenadas, y cada hub se planifica por separado con su flota y sus pedidos. Las mismas reglas gobiernan la corrida diaria, la vista del día, el armado manual y los pedidos pendientes (`hub-scope.ts`).
+
+| Qué | A qué hub pertenece |
+|---|---|
+| **Vehículo** | A su `vehicles.hub_id`. Sin hub, al principal (`HUB-STGO-CENTRAL`, o el primero activo). |
+| **Conductor** | Al hub de su vehículo por defecto (`default_vehicle_id`). No existe un vínculo directo conductor↔hub. |
+| **Entrega** | Al hub que la recibió (`orders.hub_id`). Sin hub, al principal. |
+| **Recogida** | Al hub más cercano al remitente. Sin ubicación, al principal. |
+
+Un hub con pedidos y sin flota los deja en `unassigned` con `no_fleet_available`; no se pasan a otro hub.
+
+### Alcance en la consola
+
+Los endpoints de planificación aceptan `hubCode` (código o id del hub). Sin `hubCode`, o con `ALL`, el alcance es la red completa y no se filtra nada.
+
+| Endpoint | Con un hub indicado |
+|---|---|
+| `GET /internal/routes/day` | Solo las rutas de ese hub (y las que no tienen hub) y los pedidos que le tocan. |
+| `GET /internal/routes/manual/candidates`, `POST …/suggest`, `POST …/preview`, `POST /internal/routes/manual` | Solo se ofrecen los pedidos de ese hub. La ruta sale del hub del **vehículo** del conductor, no del indicado. |
+| `POST /internal/routes/leftovers` | Solo se consideran los pedidos pendientes de ese hub, con su flota. Con la red completa se planifica hub por hub. |
+| `GET /internal/routes/plan-daily/simulation` | Solo la última simulación de ese alcance (`ALL` o ese hub). Sin `hubCode`, la última de cualquiera. |
+| `POST /internal/routes/plan-daily/confirm` | Una simulación de un hub reemplaza solo las rutas sin iniciar de ese hub; la de la red completa, todas. |
+
+Ninguna ruta se guarda con el hub `ALL`: ese valor solo existe como alcance de la consulta.
+
+---
+
 ## Cobertura y días de servicio
 
 Flowex opera en **45 comunas de la Región Metropolitana**. La plataforma rechaza pedidos con

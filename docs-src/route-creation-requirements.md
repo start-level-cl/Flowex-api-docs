@@ -46,7 +46,7 @@ flowchart TD
 
 ## 2. Requisitos del Hub (Centro de Distribución)
 
-El Hub actúa como el **Depot** central: todas las rutas inician y terminan obligatoriamente en las coordenadas del Hub.
+El Hub actúa como el **Depot**: cada ruta inicia y termina obligatoriamente en las coordenadas de su Hub. Con varios hubs, la ruta sale del hub de su vehículo; el detalle de cómo se reparten pedidos, vehículos y conductores está en [Planificación de Rutas](/route-planning#varios-hubs).
 
 * **Tabla de BD:** `hubs` (ver migración `003_geography_and_hubs.sql`).
 * **Código del Hub:** Por defecto `HUB-STGO-CENTRAL` (o el configurado en la solicitud).
