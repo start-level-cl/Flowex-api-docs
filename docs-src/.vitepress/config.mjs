@@ -14,6 +14,7 @@ export default withMermaid(
       nav: [
         { text: 'Inicio', link: '/' },
         { text: 'Arquitectura', link: '/architecture' },
+        { text: 'Despliegue', link: '/deployment' },
         {
           text: 'Guías',
           items: [
@@ -42,6 +43,7 @@ export default withMermaid(
           items: [
             { text: 'Introducción a Flowex', link: '/' },
             { text: 'Arquitectura Global del Sistema', link: '/architecture' },
+            { text: 'Despliegue: Credenciales y Pasos', link: '/deployment' },
           ],
         },
         {

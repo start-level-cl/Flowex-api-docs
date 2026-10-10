@@ -49,6 +49,12 @@ npm run serve
 
 ---
 
+## 🚢 Despliegue de la Plataforma Completa
+
+La guía [`docs-src/deployment.md`](docs-src/deployment.md) (publicada como `/deployment`) documenta cómo desplegar todo Flowex: qué despliega cada repositorio y con qué disparador, dónde vive cada credencial (Secrets Manager, SSM, GitHub y proveedores externos), los requisitos previos, el orden para levantar un ambiente desde cero, la verificación y las brechas conocidas. Si cambias un workflow, un secreto o un construct de `Flowex-iac`, actualiza esa guía.
+
+---
+
 ## 🌐 Despliegue Estático en Vercel
 
 * **URL de Producción en Vivo:** [https://docs-nu-three-75.vercel.app](https://docs-nu-three-75.vercel.app)
@@ -154,7 +160,7 @@ Para garantizar cumplimiento normativo sin introducir latencia sincrónica en el
 * **Microservicio Worker:** `Flowex-consent-worker-lambda` (Node.js 24, AWS Graviton ARM64) consume por lotes la cola `FlowexConsentQueue` con `reportBatchItemFailures`.
 * **Esquemas Canónicos SQS:** Soporta eventos `RECORD_CONSENT` (aceptación de términos/finalidades), `REVOKE_CONSENT` (revocación de finalidades no esenciales) y `PII_ACCESS_AUDIT` (trazabilidad de consultas administrativas de datos sensibles).
 * **Buffer Local (Fase 1):** Almacena eventos de auditoría en tablas PostgreSQL Aurora (`consent_event_buffer` y `admin_pii_access_logs`).
-* **Especificación de Transición:** La estrategia de migración hacia el microservicio centralizado `consentimiento` (Fase 2 SigV4) se detalla en [`technical-debt-consent-integration.md`](file:///C:/Users/joyta/OneDrive/Desktop/inspytech/flowEx/technical-debt-consent-integration.md).
+* **Integración con la central:** el estado de la integración con el servicio central `consentimiento` (SigV4) se describe en [Consent Worker](docs-src/consent-worker.md).
 
 
 
