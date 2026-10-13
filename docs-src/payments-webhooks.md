@@ -56,7 +56,7 @@ Genera el identificador de preferencia y las URLs de redirección para Checkout 
   "orderId": "ord_1771344928",
   "orderIds": ["ord_1771344928", "ord_1771344929"],
   "trackingNumber": "FLX-2026-8492",
-  "payerEmail": "cliente@gmail.com",
+  "payerEmail": "cliente1@ejemplo.cl",
   "payerName": "Andrea Morales"
 }
 ```
@@ -82,7 +82,7 @@ Genera el identificador de preferencia y las URLs de redirección para Checkout 
       }
     ],
     "payer": {
-      "email": "cliente@gmail.com",
+      "email": "cliente1@ejemplo.cl",
       "name": "Andrea Morales"
     },
     "back_urls": {
@@ -108,7 +108,7 @@ Genera la sesión de checkout (`sessionId`) y el `sessionToken` para inicializar
   "orderId": "ord_1771344928",
   "orderIds": ["ord_1771344928", "ord_1771344929"],
   "trackingNumber": "FLX-2026-8492",
-  "payerEmail": "cliente@gmail.com"
+  "payerEmail": "cliente1@ejemplo.cl"
 }
 ```
 
@@ -204,7 +204,7 @@ Receptor de eventos emitidos por Fintoc tras el éxito, rechazo o requerimiento 
     "metadata": {
       "orderId": "ord_1771344928",
       "trackingNumber": "FLX-2026-8492",
-      "payerEmail": "cliente@gmail.com"
+      "payerEmail": "cliente1@ejemplo.cl"
     }
   }
 }

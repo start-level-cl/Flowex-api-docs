@@ -14,7 +14,7 @@ Aquí solo aparecen **nombres** y **ubicaciones**. Los valores se leen en AWS Se
 
 | | `dev` | `prod` |
 | :--- | :--- | :--- |
-| Cuenta AWS | `281414431636` | `281414431636` (la misma cuenta y la misma VPC) |
+| Cuenta AWS | `ID_DE_CUENTA_AWS` | `ID_DE_CUENTA_AWS` (la misma cuenta y la misma VPC) |
 | Región | `us-east-2` | `us-east-2` |
 | Rama que despliega | `develop` | `main` |
 | Stack principal | `FlowexStack-dev` | `FlowexStack-prod` |
@@ -143,7 +143,7 @@ Solo se usan archivos `.env` locales, que **no se versionan**. Los ejemplos est�
 1. **Red compartida:** `network-iac` desplegado, con sus parámetros en `/shared/network/<env>/*`.
 2. **CDK bootstrap** en la cuenta y región, con una identidad de administrador:
    ```bash
-   npx cdk bootstrap aws://281414431636/us-east-2
+   npx cdk bootstrap aws://ID_DE_CUENTA_AWS/us-east-2
    ```
 3. **Proveedor OIDC de GitHub** (`token.actions.githubusercontent.com`) creado en IAM.
 4. **Rol de despliegue de IaC:** desplegar `FlowexBootstrap-<env>` por primera vez con una identidad de administrador. Ese stack crea `flowex-iac-<env>-github-deploy-role`, que usa el workflow:

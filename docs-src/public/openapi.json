@@ -9050,7 +9050,7 @@
           },
           "email": {
             "type": "string",
-            "example": "carlos.chofer@flowex.cl"
+            "example": "conductor2@ejemplo.cl"
           },
           "phone": {
             "type": "string",
@@ -9106,7 +9106,7 @@
           },
           "senderEmail": {
             "type": "string",
-            "example": "juan.cliente@gmail.com"
+            "example": "remitente@ejemplo.cl"
           },
           "senderAddress": {
             "type": "string",
@@ -9126,7 +9126,7 @@
           },
           "recipientEmail": {
             "type": "string",
-            "example": "maria.destinatario@gmail.com"
+            "example": "destinatario@ejemplo.cl"
           },
           "recipientAddress": {
             "type": "string",
@@ -9276,7 +9276,7 @@
           "senderEmail": {
             "type": "string",
             "format": "email",
-            "example": "juan.cliente@gmail.com"
+            "example": "remitente@ejemplo.cl"
           },
           "senderAddress": {
             "type": "string",
@@ -9312,7 +9312,7 @@
           "recipientEmail": {
             "type": "string",
             "format": "email",
-            "example": "maria.destinatario@gmail.com"
+            "example": "destinatario@ejemplo.cl"
           },
           "recipientAddress": {
             "type": "string",
@@ -10029,7 +10029,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "andrea.morales@flowex.cl"
+            "example": "operador@ejemplo.cl"
           },
           "phone": {
             "type": "string",
@@ -10087,7 +10087,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "usuario@flowex.cl"
+            "example": "usuario@ejemplo.cl"
           },
           "password": {
             "type": "string",
@@ -10120,7 +10120,7 @@
               },
               "email": {
                 "type": "string",
-                "example": "usuario@flowex.cl"
+                "example": "usuario@ejemplo.cl"
               },
               "name": {
                 "type": "string",
@@ -10167,7 +10167,7 @@
               },
               "email": {
                 "type": "string",
-                "example": "usuario@flowex.cl"
+                "example": "usuario@ejemplo.cl"
               },
               "role": {
                 "$ref": "#/components/schemas/UserRole"
@@ -10226,7 +10226,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "carlos.chofer@flowex.cl"
+            "example": "conductor2@ejemplo.cl"
           },
           "password": {
             "type": "string",
@@ -10256,7 +10256,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "carlos.chofer@flowex.cl"
+            "example": "conductor2@ejemplo.cl"
           },
           "phone": {
             "type": "string",
@@ -10284,7 +10284,7 @@
           },
           "email": {
             "type": "string",
-            "example": "carlos.chofer@flowex.cl"
+            "example": "conductor2@ejemplo.cl"
           },
           "phone": {
             "type": "string",
@@ -10322,7 +10322,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "cliente.nuevo@gmail.com"
+            "example": "cliente.nuevo@ejemplo.cl"
           },
           "name": {
             "type": "string",
@@ -10431,7 +10431,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "carlos.chofer@gmail.com"
+            "example": "conductor3@ejemplo.cl"
           },
           "name": {
             "type": "string",
@@ -10521,7 +10521,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "cliente.nuevo@gmail.com"
+            "example": "cliente.nuevo@ejemplo.cl"
           },
           "name": {
             "type": "string",
@@ -10651,7 +10651,7 @@
           },
           "email": {
             "type": "string",
-            "example": "cliente.nuevo@gmail.com"
+            "example": "cliente.nuevo@ejemplo.cl"
           },
           "status": {
             "type": "string",
@@ -10686,7 +10686,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "nuevo.correo@gmail.com"
+            "example": "nuevo.correo@ejemplo.cl"
           },
           "phone": {
             "type": "string",
@@ -10724,12 +10724,12 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "cliente.nuevo@gmail.com"
+            "example": "cliente.nuevo@ejemplo.cl"
           },
           "identifier": {
             "type": "string",
             "description": "Alias de `email`.",
-            "example": "cliente.nuevo@gmail.com"
+            "example": "cliente.nuevo@ejemplo.cl"
           },
           "channel": {
             "type": "string",
@@ -10757,7 +10757,7 @@
           },
           "email": {
             "type": "string",
-            "example": "cliente.nuevo@gmail.com"
+            "example": "cliente.nuevo@ejemplo.cl"
           },
           "channel": {
             "type": "string",
@@ -10785,11 +10785,11 @@
         "properties": {
           "target": {
             "type": "string",
-            "example": "cliente.nuevo@gmail.com"
+            "example": "cliente.nuevo@ejemplo.cl"
           },
           "email": {
             "type": "string",
-            "example": "cliente.nuevo@gmail.com"
+            "example": "cliente.nuevo@ejemplo.cl"
           },
           "code": {
             "type": "string",
@@ -10814,7 +10814,7 @@
             "properties": {
               "email": {
                 "type": "string",
-                "example": "cliente.nuevo@gmail.com"
+                "example": "cliente.nuevo@ejemplo.cl"
               },
               "status": {
                 "type": "string",
@@ -10899,7 +10899,7 @@
           },
           "email": {
             "type": "string",
-            "example": "cliente.nuevo@gmail.com"
+            "example": "cliente.nuevo@ejemplo.cl"
           },
           "reviewedBy": {
             "type": "string",
@@ -10937,7 +10937,7 @@
           "payerEmail": {
             "type": "string",
             "format": "email",
-            "example": "cliente@gmail.com"
+            "example": "cliente1@ejemplo.cl"
           },
           "payerName": {
             "type": "string",
@@ -11037,7 +11037,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "cliente@flowex.cl"
+            "example": "cliente@ejemplo.cl"
           },
           "code": {
             "type": "string",
@@ -11058,7 +11058,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "cliente@flowex.cl"
+            "example": "cliente@ejemplo.cl"
           },
           "name": {
             "type": "string",
@@ -11079,7 +11079,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "cliente@flowex.cl"
+            "example": "cliente@ejemplo.cl"
           },
           "recipientName": {
             "type": "string",
@@ -11111,7 +11111,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "example": "cliente@flowex.cl"
+            "example": "cliente@ejemplo.cl"
           },
           "recipientName": {
             "type": "string",

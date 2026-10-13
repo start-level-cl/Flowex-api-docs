@@ -31,7 +31,7 @@ Permite a la consola administrativa consultar todos los usuarios registrados con
       "id": "usr_drv_201",
       "userId": "usr_drv_201",
       "name": "Juan Pérez",
-      "email": "juan.perez@flowex.cl",
+      "email": "admin@ejemplo.cl",
       "phone": "+56 9 9123 4567",
       "role": "driver",
       "rut": "15.432.109-8",
@@ -47,7 +47,7 @@ Permite a la consola administrativa consultar todos los usuarios registrados con
       "id": "usr_drv_201",
       "userId": "usr_drv_201",
       "name": "Juan Pérez",
-      "email": "juan.perez@flowex.cl",
+      "email": "admin@ejemplo.cl",
       "phone": "+56 9 9123 4567",
       "role": "driver",
       "rut": "15.432.109-8",
@@ -78,7 +78,7 @@ Permite a la consola administrativa consultar todos los usuarios registrados con
 ```json
 {
   "name": "Patricio Chofer",
-  "email": "patricio.chofer@flowex.cl",
+  "email": "conductor@ejemplo.cl",
   "password": "PasswordConductor2026!",
   "phone": "+56987654321",
   "role": "driver",
@@ -90,7 +90,7 @@ Permite a la consola administrativa consultar todos los usuarios registrados con
 {
   "userId": "usr_1771345600000",
   "name": "Patricio Chofer",
-  "email": "patricio.chofer@flowex.cl",
+  "email": "conductor@ejemplo.cl",
   "phone": "+56987654321",
   "role": "driver",
   "rut": "16.789.123-4",
@@ -108,7 +108,7 @@ Emite automáticamente el evento de auditoría `PII_ACCESS_AUDIT` a la cola SQS 
 {
   "userId": "usr_drv_201",
   "name": "Juan Pérez",
-  "email": "juan.perez@flowex.cl",
+  "email": "admin@ejemplo.cl",
   "phone": "+56 9 9123 4567",
   "role": "driver",
   "rut": "15.432.109-8",
@@ -149,7 +149,7 @@ Retorna todas las encomiendas vinculadas al usuario (como conductor asignado o c
     }
   ],
   "userId": "usr_drv_201",
-  "userEmail": "juan.perez@flowex.cl",
+  "userEmail": "admin@ejemplo.cl",
   "role": "driver",
   "totalOrders": 3,
   "orders": [
@@ -357,7 +357,7 @@ Permite a roles `root` y `admin` listar las invitaciones de onboarding emitidas 
       "id": "inv_1771344928000",
       "token": "a8f3b2c1...",
       "role": "driver",
-      "targetEmail": "nuevo.conductor@flowex.cl",
+      "targetEmail": "nuevo.conductor@ejemplo.cl",
       "expiresAt": "2026-09-28T23:59:59.000Z"
     }
   ],
@@ -366,7 +366,7 @@ Permite a roles `root` y `admin` listar las invitaciones de onboarding emitidas 
       "id": "inv_1771344928000",
       "token": "a8f3b2c1...",
       "role": "driver",
-      "targetEmail": "nuevo.conductor@flowex.cl",
+      "targetEmail": "nuevo.conductor@ejemplo.cl",
       "expiresAt": "2026-09-28T23:59:59.000Z"
     }
   ],
@@ -409,7 +409,7 @@ Permite a un administrador forzar la activación de una solicitud de registro sa
 ```json
 {
   "message": "Registro forzado/activado manualmente por administrador",
-  "email": "cliente.empresa@gmail.com",
+  "email": "cliente.empresa@ejemplo.cl",
   "reviewedBy": "admin_central",
   "assignedRole": "client",
   "status": "APPROVED"
@@ -424,7 +424,7 @@ Permite a un administrador forzar la activación de una solicitud de registro sa
 ```json
 {
   "action": "FORCE_ACTIVATE",
-  "email": "cliente.empresa@gmail.com",
+  "email": "cliente.empresa@ejemplo.cl",
   "reviewedBy": "lambda_batch_job",
   "notes": "Aprobación masiva por proceso nocturno"
 }

@@ -83,7 +83,7 @@ Endpoint optimizado para el onboarding público de clientes finales sin solicita
 #### Ejemplo de Solicitud:
 ```json
 {
-  "email": "juan.cliente@gmail.com",
+  "email": "remitente@ejemplo.cl",
   "name": "Juan Pérez Silva",
   "rut": "18.345.678-K",
   "phone": "+56991234567",
@@ -99,7 +99,7 @@ Endpoint optimizado para el onboarding público de clientes finales sin solicita
 {
   "message": "Solicitud de cliente registrada correctamente. Proceda a validar mediante OTP.",
   "request": {
-    "email": "juan.cliente@gmail.com",
+    "email": "remitente@ejemplo.cl",
     "name": "Juan Pérez Silva",
     "rut": "18345678-K",
     "phone": "+56991234567",
@@ -122,7 +122,7 @@ Permite registrar solicitudes de clientes o conductores. Para clientes, no se re
 #### Ejemplo Solicitud: Cliente (`role: client`)
 ```json
 {
-  "email": "andrea.cliente@gmail.com",
+  "email": "cliente2@ejemplo.cl",
   "name": "Andrea Morales Silva",
   "rut": "19.876.543-2",
   "phone": "+56991234567",
@@ -143,7 +143,7 @@ Permite registrar solicitudes de clientes o conductores. Para clientes, no se re
 #### Ejemplo Solicitud: Conductor / Repartidor (`role: driver`)
 ```json
 {
-  "email": "carlos.chofer@gmail.com",
+  "email": "conductor3@ejemplo.cl",
   "name": "Carlos Chofer González",
   "rut": "15.987.654-3",
   "phone": "+56987654321",
@@ -164,7 +164,7 @@ Permite registrar solicitudes de clientes o conductores. Para clientes, no se re
 {
   "message": "Solicitud registrada correctamente. Proceda a validar mediante OTP.",
   "request": {
-    "email": "andrea.cliente@gmail.com",
+    "email": "cliente2@ejemplo.cl",
     "name": "Andrea Morales Silva",
     "rut": "19876543-2",
     "phone": "+56991234567",
@@ -194,7 +194,7 @@ Retorna el estado de verificación y si la solicitud requiere validación por OT
 ```json
 {
   "exists": true,
-  "email": "juan.cliente@gmail.com",
+  "email": "remitente@ejemplo.cl",
   "status": "PENDING_VERIFICATION",
   "is_verified": false,
   "is_email_verified": false,
@@ -212,15 +212,15 @@ Permite corregir el número de teléfono o correo en caso de haberlo ingresado c
 ```json
 {
   "phone": "+56999887766",
-  "email": "juan.perez.nuevo@gmail.com"
+  "email": "nuevo.usuario@ejemplo.cl"
 }
 ```
 * **Respuesta (`200 OK`):**
 ```json
 {
   "message": "Contact updated successfully",
-  "originalEmail": "juan.cliente@gmail.com",
-  "updatedEmail": "juan.perez.nuevo@gmail.com",
+  "originalEmail": "remitente@ejemplo.cl",
+  "updatedEmail": "nuevo.usuario@ejemplo.cl",
   "updatedPhone": "+56999887766"
 }
 ```

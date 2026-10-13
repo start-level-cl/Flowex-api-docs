@@ -50,7 +50,7 @@ import { signAccessToken, signRefreshToken, verifyToken, extractTokenFromEvent }
 // Firma de Token de Acceso
 const accessToken = signAccessToken({
   sub: 'usr_flowex_123',
-  email: 'usuario@flowex.cl',
+  email: 'usuario@ejemplo.cl',
   role: 'client'
 });
 
@@ -67,10 +67,10 @@ Permite a usuarios en proceso de onboarding consultar el estado de su solicitud 
 import { generateStatusToken, verifyStatusToken } from 'flowex-shared-layer';
 
 // Generación de Status Token tras solicitud
-const statusToken = generateStatusToken('usuario@gmail.com');
+const statusToken = generateStatusToken('usuario2@ejemplo.cl');
 
 // Verificación en endpoint de consulta
-const isValid = verifyStatusToken(statusToken, 'usuario@gmail.com'); // true
+const isValid = verifyStatusToken(statusToken, 'usuario2@ejemplo.cl'); // true
 ```
 
 ---

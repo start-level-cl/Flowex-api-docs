@@ -70,7 +70,7 @@ Valida las credenciales del usuario y emite los tokens de acceso y renovación.
 * **Cuerpo de Solicitud (`JSON`):**
 ```json
 {
-  "email": "conductor1@flowex.cl",
+  "email": "conductor1@ejemplo.cl",
   "password": "PasswordSegura2026!",
   "role": "driver"
 }
@@ -83,7 +83,7 @@ Valida las credenciales del usuario y emite los tokens de acceso y renovación.
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "sub": "usr_flowex_123",
-    "email": "conductor1@flowex.cl",
+    "email": "conductor1@ejemplo.cl",
     "name": "Usuario FlowEx",
     "role": "driver"
   }
@@ -149,7 +149,7 @@ Verifica la validez del token y retorna los claims del usuario.
   "valid": true,
   "user": {
     "sub": "usr_flowex_123",
-    "email": "conductor1@flowex.cl",
+    "email": "conductor1@ejemplo.cl",
     "name": "Usuario FlowEx",
     "role": "driver",
     "iat": 1771344000,
@@ -217,7 +217,7 @@ Cuando el usuario tiene 2FA requerido o habilitado, `POST /auth/login` no emite 
   "mfaRequired": true,
   "mfaToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "channel": "email",
-  "maskedEmail": "r***t@flowex.cl",
+  "maskedEmail": "r***usuario3@ejemplo.cl",
   "maskedPhone": "+56 9 **** 7217",
   "supportedChannels": ["email"],
   "expiresInSeconds": 300,
@@ -247,7 +247,7 @@ Retorna los tokens definitivos (`accessToken`, `refreshToken`), establece las co
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "sub": "usr_flowex_root",
-    "email": "root@flowex.cl",
+    "email": "root@ejemplo.cl",
     "name": "Super Admin",
     "role": "root",
     "mfaEnabled": true
@@ -276,7 +276,7 @@ Reenvía un código nuevo al correo. No hay otro canal.
   "message": "Código de verificación reenviado exitosamente por correo.",
   "mfaToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "channel": "email",
-  "maskedDestination": "r***t@flowex.cl",
+  "maskedDestination": "r***usuario3@ejemplo.cl",
   "expiresInSeconds": 300,
   "sandboxCode": "730215",
   "isSandbox": true

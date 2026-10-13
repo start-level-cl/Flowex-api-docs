@@ -5749,7 +5749,7 @@ components:
           example: "Carlos Chofer"
         email:
           type: string
-          example: carlos.chofer@flowex.cl
+          example: conductor2@ejemplo.cl
         phone:
           type: string
           example: "+56987654321"
@@ -5790,7 +5790,7 @@ components:
           example: "+56991234567"
         senderEmail:
           type: string
-          example: juan.cliente@gmail.com
+          example: remitente@ejemplo.cl
         senderAddress:
           type: string
           example: "Av. Providencia 1234"
@@ -5805,7 +5805,7 @@ components:
           example: "+56987654321"
         recipientEmail:
           type: string
-          example: maria.destinatario@gmail.com
+          example: destinatario@ejemplo.cl
         recipientAddress:
           type: string
           example: "Av. Las Condes 10200"
@@ -5921,7 +5921,7 @@ components:
         senderEmail:
           type: string
           format: email
-          example: juan.cliente@gmail.com
+          example: remitente@ejemplo.cl
         senderAddress:
           type: string
           description: "Dirección física dinámica de retiro (calle, número)"
@@ -5949,7 +5949,7 @@ components:
         recipientEmail:
           type: string
           format: email
-          example: maria.destinatario@gmail.com
+          example: destinatario@ejemplo.cl
         recipientAddress:
           type: string
           description: "Dirección física dinámica de entrega (calle, número)"
@@ -6489,7 +6489,7 @@ components:
         email:
           type: string
           format: email
-          example: andrea.morales@flowex.cl
+          example: operador@ejemplo.cl
         phone:
           type: string
           example: "+56 9 8765 4321"
@@ -6531,7 +6531,7 @@ components:
         email:
           type: string
           format: email
-          example: usuario@flowex.cl
+          example: usuario@ejemplo.cl
         password:
           type: string
           format: password
@@ -6556,7 +6556,7 @@ components:
               example: usr_flowex_123
             email:
               type: string
-              example: usuario@flowex.cl
+              example: usuario@ejemplo.cl
             name:
               type: string
               example: "Usuario FlowEx"
@@ -6588,7 +6588,7 @@ components:
               example: usr_flowex_123
             email:
               type: string
-              example: usuario@flowex.cl
+              example: usuario@ejemplo.cl
             role:
               $ref: #/components/schemas/UserRole
             exp:
@@ -6631,7 +6631,7 @@ components:
         email:
           type: string
           format: email
-          example: carlos.chofer@flowex.cl
+          example: conductor2@ejemplo.cl
         password:
           type: string
           format: password
@@ -6653,7 +6653,7 @@ components:
         email:
           type: string
           format: email
-          example: carlos.chofer@flowex.cl
+          example: conductor2@ejemplo.cl
         phone:
           type: string
           example: "+56987654321"
@@ -6673,7 +6673,7 @@ components:
           example: "Carlos Chofer"
         email:
           type: string
-          example: carlos.chofer@flowex.cl
+          example: conductor2@ejemplo.cl
         phone:
           type: string
           example: "+56987654321"
@@ -6702,7 +6702,7 @@ components:
         email:
           type: string
           format: email
-          example: cliente.nuevo@gmail.com
+          example: cliente.nuevo@ejemplo.cl
         name:
           type: string
           example: "Andrea Morales"
@@ -6787,7 +6787,7 @@ components:
         email:
           type: string
           format: email
-          example: carlos.chofer@gmail.com
+          example: conductor3@ejemplo.cl
         name:
           type: string
           example: "Carlos Chofer González"
@@ -6857,7 +6857,7 @@ components:
         email:
           type: string
           format: email
-          example: cliente.nuevo@gmail.com
+          example: cliente.nuevo@ejemplo.cl
         name:
           type: string
           example: "Andrea Morales"
@@ -6956,7 +6956,7 @@ components:
           example: true
         email:
           type: string
-          example: cliente.nuevo@gmail.com
+          example: cliente.nuevo@ejemplo.cl
         status:
           type: string
           enum:
@@ -6982,7 +6982,7 @@ components:
         email:
           type: string
           format: email
-          example: nuevo.correo@gmail.com
+          example: nuevo.correo@ejemplo.cl
         phone:
           type: string
           example: "+56999887766"
@@ -7009,11 +7009,11 @@ components:
         email:
           type: string
           format: email
-          example: cliente.nuevo@gmail.com
+          example: cliente.nuevo@ejemplo.cl
         identifier:
           type: string
           description: "Alias de `email`."
-          example: cliente.nuevo@gmail.com
+          example: cliente.nuevo@ejemplo.cl
         channel:
           type: string
           enum:
@@ -7033,7 +7033,7 @@ components:
           example: otp_1771344928000
         email:
           type: string
-          example: cliente.nuevo@gmail.com
+          example: cliente.nuevo@ejemplo.cl
         channel:
           type: string
           enum:
@@ -7053,10 +7053,10 @@ components:
       properties:
         target:
           type: string
-          example: cliente.nuevo@gmail.com
+          example: cliente.nuevo@ejemplo.cl
         email:
           type: string
-          example: cliente.nuevo@gmail.com
+          example: cliente.nuevo@ejemplo.cl
         code:
           type: string
           description: "Código OTP de 6 dígitos numéricos"
@@ -7075,7 +7075,7 @@ components:
           properties:
             email:
               type: string
-              example: cliente.nuevo@gmail.com
+              example: cliente.nuevo@ejemplo.cl
             status:
               type: string
               example: APPROVED
@@ -7135,7 +7135,7 @@ components:
           example: "Registro forzado/activado manualmente por administrador"
         email:
           type: string
-          example: cliente.nuevo@gmail.com
+          example: cliente.nuevo@ejemplo.cl
         reviewedBy:
           type: string
           example: admin_root
@@ -7163,7 +7163,7 @@ components:
         payerEmail:
           type: string
           format: email
-          example: cliente@gmail.com
+          example: cliente1@ejemplo.cl
         payerName:
           type: string
           example: "Juan Pérez"
@@ -7235,7 +7235,7 @@ components:
         email:
           type: string
           format: email
-          example: cliente@flowex.cl
+          example: cliente@ejemplo.cl
         code:
           type: string
           example: 839201
@@ -7250,7 +7250,7 @@ components:
         email:
           type: string
           format: email
-          example: cliente@flowex.cl
+          example: cliente@ejemplo.cl
         name:
           type: string
           example: "Rodrigo Fuentes"
@@ -7265,7 +7265,7 @@ components:
         email:
           type: string
           format: email
-          example: cliente@flowex.cl
+          example: cliente@ejemplo.cl
         recipientName:
           type: string
           example: "María López"
@@ -7289,7 +7289,7 @@ components:
         email:
           type: string
           format: email
-          example: cliente@flowex.cl
+          example: cliente@ejemplo.cl
         recipientName:
           type: string
           example: "María López"

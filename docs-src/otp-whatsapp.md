@@ -52,7 +52,7 @@ sequenceDiagram
 ### 1. Enviar el código (`POST /otp/send`)
 
 ```json
-{ "email": "cliente@flowex.cl" }
+{ "email": "cliente@ejemplo.cl" }
 ```
 
 Respuesta (`200 OK`). `delivered` dice si el correo salió de verdad; si el proveedor falla
@@ -63,7 +63,7 @@ responde `200` con `delivered: false` y `success: false`, no un `5xx`:
   "success": true,
   "message": "Código enviado. Vence en 10 minutos.",
   "deliveryId": "otp_1771344928000",
-  "email": "cliente@flowex.cl",
+  "email": "cliente@ejemplo.cl",
   "channel": "email",
   "delivered": true,
   "error": null
@@ -73,7 +73,7 @@ responde `200` con `delivered: false` y `success: false`, no un `5xx`:
 ### 2. Verificar el código (`POST /otp/verify`)
 
 ```json
-{ "email": "cliente@flowex.cl", "code": "482910", "registrationId": "reg_1771344928000" }
+{ "email": "cliente@ejemplo.cl", "code": "482910", "registrationId": "reg_1771344928000" }
 ```
 
 * Sin `registrationId` solo confirma el código: `{ "status": "VERIFIED", "verified": true, "statusToken": "…" }`.
@@ -85,7 +85,7 @@ responde `200` con `delivered: false` y `success: false`, no un `5xx`:
   "status": "APPROVED",
   "account": {
     "userId": "3c3c3c3c-1111-4222-8333-444455556666",
-    "email": "cliente@flowex.cl",
+    "email": "cliente@ejemplo.cl",
     "role": "client",
     "status": "APPROVED",
     "isActive": true,

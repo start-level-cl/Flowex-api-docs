@@ -51,15 +51,15 @@ Almacena la clave privada de la cuenta de servicio de Google Cloud. Debe guardar
 ```json
 {
   "type": "service_account",
-  "project_id": "flowex-logistics-prod",
+  "project_id": "ID_DEL_PROYECTO_GCP",
   "private_key_id": "example_private_key_id",
   "private_key": "-----BEGIN PRIVATE KEY-----\\n<CONTENIDO_DE_TU_CLAVE_PRIVADA_RSA_PEM>\\n-----END PRIVATE KEY-----\\n",
-  "client_email": "flowex-route-optimizer@flowex-logistics-prod.iam.gserviceaccount.com",
+  "client_email": "CUENTA_DE_SERVICIO@ID_DEL_PROYECTO_GCP.iam.gserviceaccount.com",
   "client_id": "109876543210987654321",
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
   "token_uri": "https://oauth2.googleapis.com/token",
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/flowex-route-optimizer%40flowex-logistics-prod.iam.gserviceaccount.com"
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/CUENTA_DE_SERVICIO%40ID_DEL_PROYECTO_GCP.iam.gserviceaccount.com"
 }
 ```
 
@@ -100,7 +100,7 @@ Ambas APIs deben estar activas y el proyecto debe tener una cuenta de facturaci√
 
 ```bash
 # Definir ID de proyecto GCP
-export GCP_PROJECT_ID="flowex-logistics-prod"
+export GCP_PROJECT_ID="ID_DEL_PROYECTO_GCP"
 
 # Habilitar Route Optimization API y Directions API
 gcloud services enable \
@@ -113,7 +113,7 @@ gcloud services enable \
 
 ```bash
 # Crear la cuenta de servicio dedicada al optimizador
-gcloud iam service-accounts create flowex-route-optimizer \
+gcloud iam service-accounts create CUENTA_DE_SERVICIO \
   --display-name="Flowex Route Optimization Engine" \
   --description="Cuenta de servicio para invocaci√≥n de optimizeTours desde AWS Lambda" \
   --project="${GCP_PROJECT_ID}"
@@ -125,7 +125,7 @@ La cuenta requiere el rol de editor o invocador de la Route Optimization API:
 
 ```bash
 gcloud projects add-iam-policy-binding "${GCP_PROJECT_ID}" \
-  --member="serviceAccount:flowex-route-optimizer@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  --member="serviceAccount:CUENTA_DE_SERVICIO@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
   --role="roles/routeoptimization.editor"
 ```
 
@@ -134,7 +134,7 @@ gcloud projects add-iam-policy-binding "${GCP_PROJECT_ID}" \
 ```bash
 # Generar la credencial en archivo JSON
 gcloud iam service-accounts keys create gcp-service-account-key.json \
-  --iam-account="flowex-route-optimizer@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  --iam-account="CUENTA_DE_SERVICIO@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
   --project="${GCP_PROJECT_ID}"
 ```
 

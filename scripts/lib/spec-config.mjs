@@ -116,7 +116,7 @@ export const schemas = {
       id: { type: 'string', example: 'usr_1771344000000' },
       userId: { type: 'string', example: 'usr_1771344000000' },
       name: { type: 'string', example: 'Carlos Chofer' },
-      email: { type: 'string', example: 'carlos.chofer@flowex.cl' },
+      email: { type: 'string', example: 'conductor2@ejemplo.cl' },
       phone: { type: 'string', example: '+56987654321' },
       role: { $ref: '#/components/schemas/UserRole' },
       rut: { type: 'string', example: '12.345.678-5' },
@@ -134,12 +134,12 @@ export const schemas = {
       trackingNumber: { type: 'string', example: 'FLX-2026-8492' },
       senderName: { type: 'string', example: 'Juan Pérez Silva' },
       senderPhone: { type: 'string', example: '+56991234567' },
-      senderEmail: { type: 'string', example: 'juan.cliente@gmail.com' },
+      senderEmail: { type: 'string', example: 'remitente@ejemplo.cl' },
       senderAddress: { type: 'string', example: 'Av. Providencia 1234' },
       senderCommune: { type: 'string', example: 'Providencia' },
       recipientName: { type: 'string', example: 'María López González' },
       recipientPhone: { type: 'string', example: '+56987654321' },
-      recipientEmail: { type: 'string', example: 'maria.destinatario@gmail.com' },
+      recipientEmail: { type: 'string', example: 'destinatario@ejemplo.cl' },
       recipientAddress: { type: 'string', example: 'Av. Las Condes 10200' },
       recipientCommune: { type: 'string', example: 'Las Condes' },
       status: { $ref: '#/components/schemas/OrderStatus' },
@@ -417,7 +417,7 @@ export const schemas = {
     properties: {
       id: { type: 'string', example: 'usr_flowex_01' },
       name: { type: 'string', example: 'Andrea Morales González' },
-      email: { type: 'string', format: 'email', example: 'andrea.morales@flowex.cl' },
+      email: { type: 'string', format: 'email', example: 'operador@ejemplo.cl' },
       phone: { type: 'string', example: '+56 9 8765 4321' },
       role: { $ref: '#/components/schemas/UserRole' },
       roleTitle: { type: 'string', example: 'Cliente Corporativo' },
@@ -441,7 +441,7 @@ export const schemas = {
       email: {
         type: 'string',
         format: 'email',
-        example: 'usuario@flowex.cl',
+        example: 'usuario@ejemplo.cl',
       },
       password: {
         type: 'string',
@@ -469,7 +469,7 @@ export const schemas = {
         type: 'object',
         properties: {
           sub: { type: 'string', example: 'usr_flowex_123' },
-          email: { type: 'string', example: 'usuario@flowex.cl' },
+          email: { type: 'string', example: 'usuario@ejemplo.cl' },
           name: { type: 'string', example: 'Usuario FlowEx' },
           role: { $ref: '#/components/schemas/UserRole' },
         },
@@ -502,7 +502,7 @@ export const schemas = {
         type: 'object',
         properties: {
           sub: { type: 'string', example: 'usr_flowex_123' },
-          email: { type: 'string', example: 'usuario@flowex.cl' },
+          email: { type: 'string', example: 'usuario@ejemplo.cl' },
           role: { $ref: '#/components/schemas/UserRole' },
           exp: { type: 'integer', example: 1771344000 },
           iss: { type: 'string', example: 'flowex-auth' },
@@ -524,7 +524,7 @@ export const schemas = {
     required: ['name', 'email', 'password', 'phone', 'role', 'rut'],
     properties: {
       name: { type: 'string', example: 'Carlos Chofer' },
-      email: { type: 'string', format: 'email', example: 'carlos.chofer@flowex.cl' },
+      email: { type: 'string', format: 'email', example: 'conductor2@ejemplo.cl' },
       password: { type: 'string', format: 'password', example: 'ChoferPass2026!' },
       phone: { type: 'string', example: '+56987654321' },
       role: { $ref: '#/components/schemas/UserRole' },
@@ -535,7 +535,7 @@ export const schemas = {
     type: 'object',
     properties: {
       name: { type: 'string', example: 'Carlos Chofer Actualizado' },
-      email: { type: 'string', format: 'email', example: 'carlos.chofer@flowex.cl' },
+      email: { type: 'string', format: 'email', example: 'conductor2@ejemplo.cl' },
       phone: { type: 'string', example: '+56987654321' },
       role: { $ref: '#/components/schemas/UserRole' },
       isActive: { type: 'boolean', example: true },
@@ -546,7 +546,7 @@ export const schemas = {
     properties: {
       userId: { type: 'string', example: 'usr_1771344000000' },
       name: { type: 'string', example: 'Carlos Chofer' },
-      email: { type: 'string', example: 'carlos.chofer@flowex.cl' },
+      email: { type: 'string', example: 'conductor2@ejemplo.cl' },
       phone: { type: 'string', example: '+56987654321' },
       role: { $ref: '#/components/schemas/UserRole' },
       rut: { type: 'string', example: '12345678-5' },
@@ -559,7 +559,7 @@ export const schemas = {
     required: ['email', 'name', 'rut', 'phone', 'password', 'consentimiento'],
     description: 'Contrato de registro para cliente final. No requiere direcciones fijas (calle, número, comuna o región) al registrarse, ya que los domicilios de retiro y entrega se suministran dinámicamente en cada envío mediante POST /orders.',
     properties: {
-      email: { type: 'string', format: 'email', example: 'cliente.nuevo@gmail.com' },
+      email: { type: 'string', format: 'email', example: 'cliente.nuevo@ejemplo.cl' },
       name: { type: 'string', example: 'Andrea Morales' },
       rut: { type: 'string', description: 'RUT chileno validado por Módulo 11', example: '19876543-2' },
       phone: { type: 'string', description: 'Teléfono formato E.164 (+569...)', example: '+56991234567' },
@@ -596,7 +596,7 @@ export const schemas = {
     description: 'Contrato de registro mediante token de invitación para administradores o conductores.',
     properties: {
       inviteToken: { type: 'string', description: 'Token de invitación (INV-ADM-... para admin o INV-DRV-... para driver)', example: 'INV-DRV-2026-XYZ' },
-      email: { type: 'string', format: 'email', example: 'carlos.chofer@gmail.com' },
+      email: { type: 'string', format: 'email', example: 'conductor3@ejemplo.cl' },
       name: { type: 'string', example: 'Carlos Chofer González' },
       rut: { type: 'string', description: 'RUT chileno validado por Módulo 11', example: '15987654-3' },
       phone: { type: 'string', description: 'Teléfono formato E.164 (+569...)', example: '+56987654321' },
@@ -619,7 +619,7 @@ export const schemas = {
     required: ['email', 'name', 'rut', 'phone', 'password', 'consentimiento'],
     description: 'Contrato de registro general para clientes o conductores. Las direcciones fijas (streetAndNumber, housingType, region, comuna) no son obligatorias en el registro; los puntos de retiro y entrega se suministran dinámicamente por envío en POST /orders.',
     properties: {
-      email: { type: 'string', format: 'email', example: 'cliente.nuevo@gmail.com' },
+      email: { type: 'string', format: 'email', example: 'cliente.nuevo@ejemplo.cl' },
       name: { type: 'string', example: 'Andrea Morales' },
       rut: { type: 'string', description: 'RUT chileno validado por Módulo 11', example: '19876543-2' },
       phone: { type: 'string', description: 'Teléfono formato E.164 (+569...)', example: '+56991234567' },
@@ -662,7 +662,7 @@ export const schemas = {
     type: 'object',
     properties: {
       exists: { type: 'boolean', example: true },
-      email: { type: 'string', example: 'cliente.nuevo@gmail.com' },
+      email: { type: 'string', example: 'cliente.nuevo@ejemplo.cl' },
       status: { type: 'string', enum: ['PENDING_VERIFICATION', 'APPROVED', 'REJECTED'], example: 'PENDING_VERIFICATION' },
       is_verified: { type: 'boolean', example: false },
       is_email_verified: { type: 'boolean', example: false },
@@ -673,7 +673,7 @@ export const schemas = {
   UpdateContactRequest: {
     type: 'object',
     properties: {
-      email: { type: 'string', format: 'email', example: 'nuevo.correo@gmail.com' },
+      email: { type: 'string', format: 'email', example: 'nuevo.correo@ejemplo.cl' },
       phone: { type: 'string', example: '+56999887766' },
     },
   },
@@ -691,8 +691,8 @@ export const schemas = {
     required: ['email'],
     description: 'El código de verificación tiene un único canal: el correo. Un teléfono o un `channel` distinto se ignoran.',
     properties: {
-      email: { type: 'string', format: 'email', example: 'cliente.nuevo@gmail.com' },
-      identifier: { type: 'string', description: 'Alias de `email`.', example: 'cliente.nuevo@gmail.com' },
+      email: { type: 'string', format: 'email', example: 'cliente.nuevo@ejemplo.cl' },
+      identifier: { type: 'string', description: 'Alias de `email`.', example: 'cliente.nuevo@ejemplo.cl' },
       channel: { type: 'string', enum: ['email'], example: 'email' },
     },
   },
@@ -702,7 +702,7 @@ export const schemas = {
       success: { type: 'boolean', example: true },
       message: { type: 'string', example: 'Código enviado. Vence en 10 minutos.' },
       deliveryId: { type: 'string', example: 'otp_1771344928000' },
-      email: { type: 'string', example: 'cliente.nuevo@gmail.com' },
+      email: { type: 'string', example: 'cliente.nuevo@ejemplo.cl' },
       channel: { type: 'string', enum: ['email'], example: 'email' },
       delivered: { type: 'boolean', example: true },
       devOtpCode: { type: 'string', description: 'Solo fuera de producción y con activación explícita.', example: '654321' },
@@ -712,8 +712,8 @@ export const schemas = {
     type: 'object',
     required: ['code'],
     properties: {
-      target: { type: 'string', example: 'cliente.nuevo@gmail.com' },
-      email: { type: 'string', example: 'cliente.nuevo@gmail.com' },
+      target: { type: 'string', example: 'cliente.nuevo@ejemplo.cl' },
+      email: { type: 'string', example: 'cliente.nuevo@ejemplo.cl' },
       code: { type: 'string', description: 'Código OTP de 6 dígitos numéricos', example: '482910' },
     },
   },
@@ -725,7 +725,7 @@ export const schemas = {
       account: {
         type: 'object',
         properties: {
-          email: { type: 'string', example: 'cliente.nuevo@gmail.com' },
+          email: { type: 'string', example: 'cliente.nuevo@ejemplo.cl' },
           status: { type: 'string', example: 'APPROVED' },
           isActive: { type: 'boolean', example: true },
           is_verified: { type: 'boolean', example: true },
@@ -764,7 +764,7 @@ export const schemas = {
     type: 'object',
     properties: {
       message: { type: 'string', example: 'Registro forzado/activado manualmente por administrador' },
-      email: { type: 'string', example: 'cliente.nuevo@gmail.com' },
+      email: { type: 'string', example: 'cliente.nuevo@ejemplo.cl' },
       reviewedBy: { type: 'string', example: 'admin_root' },
       assignedRole: { $ref: '#/components/schemas/UserRole' },
       status: { type: 'string', example: 'APPROVED' },
@@ -777,7 +777,7 @@ export const schemas = {
       orderId: { type: 'string', example: 'ord_1771344928' },
       trackingNumber: { type: 'string', example: 'FLX-2026-8492' },
       amount: { type: 'number', example: 14500 },
-      payerEmail: { type: 'string', format: 'email', example: 'cliente@gmail.com' },
+      payerEmail: { type: 'string', format: 'email', example: 'cliente1@ejemplo.cl' },
       payerName: { type: 'string', example: 'Juan Pérez' },
     },
   },
@@ -817,7 +817,7 @@ export const schemas = {
     type: 'object',
     required: ['email', 'code'],
     properties: {
-      email: { type: 'string', format: 'email', example: 'cliente@flowex.cl' },
+      email: { type: 'string', format: 'email', example: 'cliente@ejemplo.cl' },
       code: { type: 'string', example: '839201' },
       name: { type: 'string', example: 'Rodrigo Fuentes' },
     },
@@ -826,7 +826,7 @@ export const schemas = {
     type: 'object',
     required: ['email'],
     properties: {
-      email: { type: 'string', format: 'email', example: 'cliente@flowex.cl' },
+      email: { type: 'string', format: 'email', example: 'cliente@ejemplo.cl' },
       name: { type: 'string', example: 'Rodrigo Fuentes' },
       role: { $ref: '#/components/schemas/UserRole' },
     },
@@ -835,7 +835,7 @@ export const schemas = {
     type: 'object',
     required: ['email', 'trackingNumber'],
     properties: {
-      email: { type: 'string', format: 'email', example: 'cliente@flowex.cl' },
+      email: { type: 'string', format: 'email', example: 'cliente@ejemplo.cl' },
       recipientName: { type: 'string', example: 'María López' },
       trackingNumber: { type: 'string', example: 'FLX-2026-8492' },
       deliveryCode: { type: 'string', description: 'PIN de 4 dígitos para entrega al conductor', example: '4920' },
@@ -846,7 +846,7 @@ export const schemas = {
     type: 'object',
     required: ['email', 'trackingNumber', 'newStatus'],
     properties: {
-      email: { type: 'string', format: 'email', example: 'cliente@flowex.cl' },
+      email: { type: 'string', format: 'email', example: 'cliente@ejemplo.cl' },
       recipientName: { type: 'string', example: 'María López' },
       trackingNumber: { type: 'string', example: 'FLX-2026-8492' },
       newStatus: { $ref: '#/components/schemas/OrderStatus' },
@@ -874,7 +874,7 @@ export const schemas = {
     properties: {
       senderName: { type: 'string', example: 'Juan Pérez Silva' },
       senderPhone: { type: 'string', example: '+56991234567' },
-      senderEmail: { type: 'string', format: 'email', example: 'juan.cliente@gmail.com' },
+      senderEmail: { type: 'string', format: 'email', example: 'remitente@ejemplo.cl' },
       senderAddress: { type: 'string', description: 'Dirección física dinámica de retiro (calle, número)', example: 'Av. Providencia 1234' },
       senderDeptOrOffice: { type: 'string', example: 'Oficina 502' },
       senderCommune: { type: 'string', description: 'Comuna de recolección', example: 'Providencia' },
@@ -882,7 +882,7 @@ export const schemas = {
       senderReference: { type: 'string', example: 'Frente a estación Metro Manuel Montt' },
       recipientName: { type: 'string', example: 'María López González' },
       recipientPhone: { type: 'string', example: '+56987654321' },
-      recipientEmail: { type: 'string', format: 'email', example: 'maria.destinatario@gmail.com' },
+      recipientEmail: { type: 'string', format: 'email', example: 'destinatario@ejemplo.cl' },
       recipientAddress: { type: 'string', description: 'Dirección física dinámica de entrega (calle, número)', example: 'Av. Las Condes 10200' },
       recipientDeptOrOffice: { type: 'string', example: 'Depto 401' },
       recipientCommune: { type: 'string', description: 'Comuna de entrega', example: 'Las Condes' },

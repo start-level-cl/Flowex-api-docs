@@ -227,7 +227,7 @@ entrega y la identidad del personal; la lista va en `export.excluded`.
     "formatVersion": "1.0",
     "generatedAt": "2026-09-24T12:00:00.000Z",
     "legalBasis": "Derecho de portabilidad, Ley N° 21.719 (art. 9)",
-    "subject": { "id": "3c3c3c3c-…", "email": "cliente@flowex.cl" },
+    "subject": { "id": "3c3c3c3c-…", "email": "cliente@ejemplo.cl" },
     "account": { "name": "…", "rut": "…", "phone": "…" },
     "addresses": [],
     "contactBook": [],
